@@ -33,6 +33,11 @@ dokka {
     outputDirectory = "$buildDir/javadoc"
 }
 
+startScripts {
+    // Set name of executable start scripts in binary distribution.
+    applicationName = "rimuc"
+}
+
 tasks["build"].dependsOn("hello")
 
 task("hello") {

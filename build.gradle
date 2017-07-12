@@ -35,10 +35,11 @@ dokka {
 
 startScripts {
     // Set name of executable start scripts in binary distribution.
-    applicationName = "rimuc"
+    applicationName = "rimuck"
 }
 
-tasks["build"].dependsOn("hello")
+// Build also installs distribution.
+tasks["build"].dependsOn("installDist")
 
 task("hello") {
     group = "test"

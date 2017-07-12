@@ -8,7 +8,9 @@ package org.rimumarkup
  * Created by Andy Bowes on 05/05/2016.
  * https://github.com/gazolla/Kotlin-Algorithm/tree/master/Deque
  *
- * SJR: 2017-07-12: Added contructor argument and toString() method.
+ * SJR: 2017-07-12:
+ * Added contructor argument and toString() method.
+ * Added isEmpty() method.
  *
  */
 class Deque<T>(list: MutableList<T>) {
@@ -18,6 +20,8 @@ class Deque<T>(list: MutableList<T>) {
     override fun toString(): String {
         return backingList.toString()
     }
+
+    fun isEmpty() = backingList.isEmpty()
 
     fun pushFirst(element: T) {
         backingList.add(0, element)

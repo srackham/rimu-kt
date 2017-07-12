@@ -4,6 +4,8 @@
 
 package org.rimumarkup
 
+import joptsimple.OptionParser
+
 val MANPAGE = """
 NAME
   rimuc - convert Rimu source to HTML
@@ -127,14 +129,56 @@ STYLING MACROS AND CLASSES
 """
 
 fun main(args: Array<String>) {
-    val arg_list = Deque(args.toMutableList())
-    var source = ""
 
-    while (arg_list.peekFirst() != null) {
+    // Helpers.
+    fun die(message: String) {
+        System.err.print(message)
+        System.exit(1)
+    }
+
+//    val parser = OptionParser("h")
+//    val options = parser.parse(*args)
+//
+//    if (options.has("h")) {
+//        print(MANPAGE)
+//    } else {
+//        println(args.toMutableList())
+//    }
+
+    val arg_list = Deque(args.toMutableList())
+//    var safe_mode = 0
+//    var html_replacement = ""
+//    var styled = false
+//    var styled_name = "classic"
+//    var no_rimurc = false
+    var lint = false
+//
+//    var source = ""
+    var outfile = ""
+
+    println("args: $arg_list")
+
+    outer@
+    while (!arg_list.isEmpty()) {
         var arg = arg_list.popFirst()
         when (arg) {
-            "--help", "-h" -> print(MANPAGE)
-            else -> print(arg_list)
+            "--help", "-h" -> {
+                print(MANPAGE)
+            }
+            "--lint", "-l" -> {
+                lint = true
+            }
+            "--output", "-o" -> {
+                if (arg_list.isEmpty()) {
+                    die("missing --output file name")
+                }
+                outfile = arg_list.popFirst()!!
+            }
+            else -> {
+                break@outer
+            }
         }
     }
+    if (lint) println("lint: enabled")
+    println("outfile: $outfile")
 }

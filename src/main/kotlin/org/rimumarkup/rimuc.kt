@@ -145,7 +145,9 @@ fun main(args: Array<String>) {
 //        println(args.toMutableList())
 //    }
 
-    val arg_list = Deque(args.toMutableList())
+//    val arg_list = args.toDeque()
+    val arg_list = args.toMutableList()
+
 //    var safe_mode = 0
 //    var html_replacement = ""
 //    var styled = false

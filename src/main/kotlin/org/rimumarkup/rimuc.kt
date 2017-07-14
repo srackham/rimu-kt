@@ -182,4 +182,5 @@ fun main(args: Array<String>) {
     }
     if (lint) println("lint: enabled")
     println("outfile: $outfile")
+    System.exit(0)
 }

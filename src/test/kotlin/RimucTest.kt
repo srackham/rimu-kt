@@ -1,22 +1,30 @@
+import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
-import org.junit.Assert.*
+import org.junit.contrib.java.lang.system.ExpectedSystemExit
+import org.junit.contrib.java.lang.system.SystemOutRule
 import org.rimumarkup.main
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
+
 
 class RimucTest {
-    @Test fun help() {
-        val savedOut = System.out
-        val out: String
-        try {
-            val myOut = ByteArrayOutputStream()
-            System.setOut(PrintStream(myOut))
-            main(arrayOf("-h"))
-            out = myOut.toString()
-        } finally {
-            System.setOut(savedOut)
-        }
-        print("out: $out")
-        assertTrue("help message starts with NAME",out.startsWith("\nNAME"))
+    @Rule
+    @JvmField
+    val systemOutRule = SystemOutRule().enableLog()
+
+    @Rule
+    @JvmField
+    val exit = ExpectedSystemExit.none()
+
+    @Test
+    fun helpCommand() {
+        exit.expectSystemExitWithStatus(0)
+        main(arrayOf("-h"))
+        assertTrue("help message starts with NAME", systemOutRule.log.startsWith("\nNAME"))
+    }
+
+    @Test
+    fun noOutputFileSpecified() {
+        exit.expectSystemExitWithStatus(1)
+        main(arrayOf("-o"))
     }
 }

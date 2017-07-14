@@ -159,8 +159,6 @@ fun main(args: Array<String>) {
 //    var source = ""
     var outfile = ""
 
-    println("args: $arg_list")
-
     outer@
     while (!arg_list.isEmpty()) {
         var arg = arg_list.popFirst()

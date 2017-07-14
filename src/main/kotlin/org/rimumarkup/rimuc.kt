@@ -128,6 +128,9 @@ STYLING MACROS AND CLASSES
   ______________________________________________________________
 """
 
+/**
+ * Rimu command-line compiler.
+ */
 fun main(args: Array<String>) {
 
     // Helpers.
@@ -145,9 +148,7 @@ fun main(args: Array<String>) {
 //        println(args.toMutableList())
 //    }
 
-//    val arg_list = args.toDeque()
-    val arg_list = args.toMutableList()
-
+    val arg_list = Deque(args.toMutableList())
 //    var safe_mode = 0
 //    var html_replacement = ""
 //    var styled = false

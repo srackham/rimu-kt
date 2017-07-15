@@ -4,8 +4,6 @@
 
 package org.rimumarkup
 
-import joptsimple.OptionParser
-
 val MANPAGE = """
 NAME
   rimuc - convert Rimu source to HTML
@@ -129,26 +127,37 @@ STYLING MACROS AND CLASSES
 """
 
 /**
- * Rimu command-line compiler.
+ * Thrown by the Rimu compiler on encountering illegal command options or missing inputs.
+ */
+class RimucException(message: String) : Exception(message)
+
+/**
+ * Main wrapper to handle execeptions and set system exit code.
  */
 fun main(args: Array<String>) {
+    try {
+        Rimuc(args)
+    } catch(e: RimucException) {
+        System.err.println(e.message)
+        System.exit(1)
+    } catch (e: Exception) {
+        System.err.println("Unexpected error: ${e.message}")
+        System.exit(2)
+    }
+    System.exit(0)
+}
+
+/**
+ * Rimu command-line compiler.
+ */
+fun Rimuc(args: Array<String>) {
 
     // Helpers.
     fun die(message: String) {
-        System.err.print(message)
-        System.exit(1)
+        throw RimucException(message)
     }
 
-//    val parser = OptionParser("h")
-//    val options = parser.parse(*args)
-//
-//    if (options.has("h")) {
-//        print(MANPAGE)
-//    } else {
-//        println(args.toMutableList())
-//    }
-
-    val arg_list = Deque(args.toMutableList())
+    val argList = Deque(args.toMutableList())
 //    var safe_mode = 0
 //    var html_replacement = ""
 //    var styled = false
@@ -160,27 +169,31 @@ fun main(args: Array<String>) {
     var outfile = ""
 
     outer@
-    while (!arg_list.isEmpty()) {
-        var arg = arg_list.popFirst()
+    while (!argList.isEmpty()) {
+        var arg = argList.popFirst()
         when (arg) {
             "--help", "-h" -> {
                 print(MANPAGE)
+                return
             }
             "--lint", "-l" -> {
                 lint = true
             }
             "--output", "-o" -> {
-                if (arg_list.isEmpty()) {
-                    die("missing --output file name")
+                if (argList.isEmpty()) {
+                    die("missing --output argument")
                 }
-                outfile = arg_list.popFirst()!!
+                outfile = argList.popFirst()
             }
             else -> {
+                if (arg[0] == '-') {
+                    die("illegal option: $arg")
+                }
+                argList.pushFirst(arg); // argv contains source file names.
                 break@outer
             }
         }
     }
-    if (lint) println("lint: enabled")
-    println("outfile: $outfile")
-    System.exit(0)
+    val src = System.`in`.readTextAndClose()
+    print(render(src))
 }

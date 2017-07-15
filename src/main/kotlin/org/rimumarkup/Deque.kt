@@ -10,45 +10,72 @@ class Deque<E>(list: MutableList<E> = ArrayList<E>().toMutableList()) : MutableL
         return this.joinToString(prefix = "[", postfix = "]")
     }
 
+    /**
+     * Prepends [element] to start of queue.
+     */
     fun pushFirst(element: E) {
         this.add(0, element)
     }
 
-    fun popFirst(): E? {
-        if (this.isEmpty()) {
-            return null
-        }
+    /**
+     * Removes and returns first element.
+     * @return first element.
+     * @throws [NoSuchElementException] if queue is empty.
+     */
+    fun popFirst(): E {
         val value = this.first()
         removeFirst()
         return value
     }
 
+    /**
+     * Removes first element.
+     * @throws [IndexOutOfBoundsException] if queue is empty.
+     */
     fun removeFirst() {
-        if (this.isNotEmpty()) this.removeAt(0)
+        this.removeAt(0)
     }
 
-    fun peekFirst(): E? {
-        return if (this.isNotEmpty()) this.first() else null
+    /**
+     * Returns first element.
+     * @return first element.
+     * @throws [NoSuchElementException] if queue is empty.
+     */
+    fun peekFirst(): E {
+        return this.first()
     }
 
+    /**
+     * Appends [element] to end of queue.
+     */
     fun pushLast(element: E) {
         this.add(element)
     }
 
-    fun popLast(): E? {
-        if (this.isEmpty()) {
-            return null
-        }
+    /**
+     * Removes and returns last element.
+     * @throws [NoSuchElementException] if queue is empty.
+     */
+    fun popLast(): E {
         val value = this.last()
         removeLast()
         return value
     }
 
+    /**
+     * Removes last element.
+     * @throws [IndexOutOfBoundsException] if queue is empty.
+     */
     fun removeLast() {
-        if (this.isNotEmpty()) this.removeAt(this.size - 1)
+        this.removeAt(this.size - 1)
     }
 
-    fun peekLast(): E? {
-        return if (this.isNotEmpty()) this.last() else null
+    /**
+     * Returns last element.
+     * @return last element.
+     * @throws [NoSuchElementException] if queue is empty.
+     */
+    fun peekLast(): E {
+        return this.last()
     }
 }

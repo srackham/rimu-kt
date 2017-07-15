@@ -1,5 +1,5 @@
 package org.rimumarkup
 
 fun render(source: String): String {
-    return source
+    return "<p>${source.trim()}</p>"
 }

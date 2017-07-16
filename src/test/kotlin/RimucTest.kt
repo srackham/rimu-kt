@@ -34,12 +34,24 @@ class RimucTest {
     @JvmField
     var exceptionRule = ExpectedException.none()
 
+    /*
+        Helper functions.
+     */
     fun compileStdin(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
         stdinMock.provideLines(source)
         Rimuc(args)
         assertEquals(message, expected, systemOutRule.log)
     }
 
+    fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
+        exceptionRule.expect(type)
+        exceptionRule.expectMessage(message)
+        Rimuc(args)
+    }
+
+    /*
+        main() wrapper tests.
+     */
     @Test
     fun exitCodeZero() {
         exitRule.expectSystemExitWithStatus(0)
@@ -52,6 +64,9 @@ class RimucTest {
         main(arrayOf("--illegal-option"))
     }
 
+    /*
+        Rimuc() fompiler tests.
+     */
     @Test
     fun helpCommand() {
         Rimuc(arrayOf("-h"))
@@ -60,20 +75,23 @@ class RimucTest {
 
     @Test
     fun missingOutputArgument() {
-        exceptionRule.expect(RimucException::class.java)
-        exceptionRule.expectMessage("missing --output argument")
-        Rimuc(arrayOf("-o"))
+        expectException(
+                args = arrayOf("-o"),
+                type = RimucException::class.java,
+                message = "missing --output argument"
+        )
     }
 
     @Test
     @Ignore
     fun missingInputFile() {
-        exceptionRule.expect(RimucException::class.java)
-        exceptionRule.expectMessage("missing input file: MISSING_FILE_NAME")
-        Rimuc(arrayOf("MISSING_FILE_NAME"))
+        expectException(
+                args = arrayOf("MISSING_FILE_NAME"),
+                type = RimucException::class.java,
+                message = "missing input file: MISSING_FILE_NAME"
+        )
     }
 
-    // Parameterised test various inputs. See http://www.vogella.com/tutorials/JUnit/article.html#usingjuni4
     @Test
     fun compilations() {
         compileStdin(

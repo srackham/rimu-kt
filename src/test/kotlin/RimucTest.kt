@@ -1,6 +1,5 @@
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
@@ -8,10 +7,12 @@ import org.junit.contrib.java.lang.system.SystemErrRule
 import org.junit.contrib.java.lang.system.SystemOutRule
 import org.junit.contrib.java.lang.system.TextFromStandardInputStream
 import org.junit.rules.ExpectedException
-import org.rimumarkup.Rimuc
-import org.rimumarkup.RimucException
-import org.rimumarkup.main
+import org.junit.rules.TemporaryFolder
+import org.rimumarkup.*
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.nio.file.Paths
+
 
 class RimucTest {
     @Rule
@@ -34,6 +35,11 @@ class RimucTest {
     @Rule
     @JvmField
     var exceptionRule = ExpectedException.none()
+
+    @Rule
+    @JvmField
+    var tempFolderRule = TemporaryFolder()
+
 
     /*
         Helper functions.
@@ -74,7 +80,7 @@ class RimucTest {
     }
 
     /*
-        Rimuc() fompiler tests.
+        Rimuc() compiler tests.
      */
     @Test
     fun helpCommand() {
@@ -107,5 +113,24 @@ class RimucTest {
                 expected = "<p>Hello World!</p>",
                 message = "rimuc basic test"
         )
+    }
+
+    @Test
+    fun compileFromFiles() {
+        // Write two temporary input files to be compiled.
+        val file1 = tempFolderRule.newFile("TEST_FILE_1")
+        FileOutputStream(file1).writeTextAndClose("Hello World!")
+        val file2 = tempFolderRule.newFile("TEST_FILE_2")
+        FileOutputStream(file2).writeTextAndClose("Hello again World!")
+        Rimuc(arrayOf(file1.path, file2.path))
+        assertEquals("<p>Hello World!</p>\n<p>Hello again World!</p>", systemOutRule.log)
+    }
+
+    @Test
+    fun compileToFile() {
+        stdinMock.provideLines("Hello World!")
+        val fileName = Paths.get(tempFolderRule.root.path, "TEST_FILE").toString()
+        Rimuc(arrayOf("-o", fileName))
+        assertEquals("<p>Hello World!</p>", fileToString(fileName))
     }
 }

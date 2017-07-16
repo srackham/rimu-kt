@@ -11,6 +11,7 @@ import org.junit.rules.ExpectedException
 import org.rimumarkup.Rimuc
 import org.rimumarkup.RimucException
 import org.rimumarkup.main
+import java.io.FileNotFoundException
 
 class RimucTest {
     @Rule
@@ -61,7 +62,15 @@ class RimucTest {
     @Test
     fun exitCodeOne() {
         exitRule.expectSystemExitWithStatus(1)
+        // Throws RimuException.
         main(arrayOf("--illegal-option"))
+    }
+
+    @Test
+    fun exitCodeTwo() {
+        exitRule.expectSystemExitWithStatus(2)
+        // Throws java.io.FileNotFoundException.
+        main(arrayOf("MISSING_FILE_NAME"))
     }
 
     /*
@@ -83,12 +92,11 @@ class RimucTest {
     }
 
     @Test
-    @Ignore
     fun missingInputFile() {
         expectException(
                 args = arrayOf("MISSING_FILE_NAME"),
-                type = RimucException::class.java,
-                message = "missing input file: MISSING_FILE_NAME"
+                type = FileNotFoundException::class.java,
+                message = "MISSING_FILE_NAME"
         )
     }
 

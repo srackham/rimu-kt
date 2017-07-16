@@ -4,9 +4,6 @@
 
 package org.rimumarkup
 
-import java.io.FileInputStream
-import java.io.FileOutputStream
-
 val MANPAGE = """
 NAME
   rimuc - convert Rimu source to HTML
@@ -201,12 +198,12 @@ fun Rimuc(args: Array<String>) {
     if (argsList.isEmpty()) {
         html += render(System.`in`.readTextAndClose())
     } else {
-        html += argsList.fold("") { total, next -> total + render(FileInputStream(next).readTextAndClose()) + "\n" }
+        html += argsList.fold("") { total, next -> total + render(fileToString(next)) + "\n" }
     }
     html = html.trim()
     if (outfile.isBlank()) {
         print(html)
     } else {
-        FileOutputStream(outfile).writeTextAndClose(html)
+        stringToFile(html, outfile)
     }
 }

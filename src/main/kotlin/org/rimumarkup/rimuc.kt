@@ -4,6 +4,9 @@
 
 package org.rimumarkup
 
+import java.io.FileInputStream
+import java.io.FileOutputStream
+
 val MANPAGE = """
 NAME
   rimuc - convert Rimu source to HTML
@@ -141,7 +144,7 @@ fun main(args: Array<String>) {
         System.err.println(e.message)
         System.exit(1)
     } catch (e: Exception) {
-        System.err.println("Unexpected error: ${e.message}")
+        System.err.println("${e::class.java.name}: ${e.message}")
         System.exit(2)
     }
     System.exit(0)
@@ -157,7 +160,7 @@ fun Rimuc(args: Array<String>) {
         throw RimucException(message)
     }
 
-    val argList = Deque(args.toMutableList())
+    val argsList = Deque(args.toMutableList())
 //    var safe_mode = 0
 //    var html_replacement = ""
 //    var styled = false
@@ -169,8 +172,8 @@ fun Rimuc(args: Array<String>) {
     var outfile = ""
 
     outer@
-    while (!argList.isEmpty()) {
-        var arg = argList.popFirst()
+    while (!argsList.isEmpty()) {
+        var arg = argsList.popFirst()
         when (arg) {
             "--help", "-h" -> {
                 print(MANPAGE)
@@ -180,20 +183,30 @@ fun Rimuc(args: Array<String>) {
                 lint = true
             }
             "--output", "-o" -> {
-                if (argList.isEmpty()) {
+                if (argsList.isEmpty()) {
                     die("missing --output argument")
                 }
-                outfile = argList.popFirst()
+                outfile = argsList.popFirst()
             }
             else -> {
                 if (arg[0] == '-') {
                     die("illegal option: $arg")
                 }
-                argList.pushFirst(arg); // argv contains source file names.
+                argsList.pushFirst(arg); // argv contains source file names.
                 break@outer
             }
         }
     }
-    val src = System.`in`.readTextAndClose()
-    print(render(src))
+    var html = ""
+    if (argsList.isEmpty()) {
+        html += render(System.`in`.readTextAndClose())
+    } else {
+        html += argsList.fold("") { total, next -> total + render(FileInputStream(next).readTextAndClose()) + "\n" }
+    }
+    html = html.trim()
+    if (outfile.isBlank()) {
+        print(html)
+    } else {
+        FileOutputStream(outfile).writeTextAndClose(html)
+    }
 }

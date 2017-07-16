@@ -17,7 +17,7 @@ apply plugin: "kotlin"
 apply plugin: "org.jetbrains.dokka"
 
 mainClassName = "org.rimumarkup.RimucKt"
-applicationName = "kotlin-rimu"
+applicationName = "rimu-kt"
 
 repositories {
     jcenter()
@@ -36,16 +36,6 @@ dokka {
 
 startScripts {
     // Set name of executable start scripts in binary distribution.
-    applicationName = "rimuck"
+    applicationName = "rimuc-kt"
 }
 
-// Build also installs distribution.
-tasks["build"].dependsOn("installDist")
-
-task("hello") {
-    group = "test"
-    description = "A test task."
-    doLast {
-        println("Hello World!")
-    }
-}

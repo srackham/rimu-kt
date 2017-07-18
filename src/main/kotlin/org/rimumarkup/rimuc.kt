@@ -266,17 +266,17 @@ fun Rimuc(args: Array<String>) {
         infiles.pushFirst("resource:/${styled_name}-header.rmu")
         infiles.pushLast("resource:/${styled_name}-footer.rmu")
     }
-    html += infiles.fold("") { result, fileName ->
-        var text = if (fileName.startsWith("resource:"))
-            readResouce(fileName.removePrefix("resource:"))
-        else if (fileName == "/dev/stdin")
+    for (infile in infiles) {
+        var text = if (infile.startsWith("resource:"))
+            readResouce(infile.removePrefix("resource:"))
+        else if (infile == "/dev/stdin")
             System.`in`.readTextAndClose()
         else
-            fileToString(fileName)
-        if (!fileName.endsWith(".html")) {
+            fileToString(infile)
+        if (!infile.endsWith(".html")) {
             text = render(text)
         }
-        result + text + "\n"
+        html += "$text\n"
     }
     html = html.trim()
     if (outfile.isEmpty()) {

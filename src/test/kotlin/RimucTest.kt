@@ -151,4 +151,12 @@ class RimucTest {
         assertTrue(text.contains("<p>Hello World!</p>"))
     }
 
+    @Test
+    fun compileHtmlFile() {
+        // Input files with .html extensions are passed through.
+        val infile = tempFolderRule.newFile("test-file.html")
+        FileOutputStream(infile).writeTextAndClose("<p>Hello World!</p>")
+        Rimuc(arrayOf(infile.path))
+        assertEquals("<p>Hello World!</p>", systemOutRule.log)
+    }
 }

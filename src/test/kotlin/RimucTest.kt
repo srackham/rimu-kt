@@ -76,12 +76,17 @@ class RimucTest {
     fun exitCodeTwo() {
         exitRule.expectSystemExitWithStatus(2)
         // Throws java.io.FileNotFoundException.
-        main(arrayOf("MISSING_FILE_NAME"))
+        main(arrayOf("missing-file-name"))
     }
 
     /*
         Rimuc() compiler tests.
      */
+    @Test
+    fun checkResourceExists() {
+        readResouce("/classic-header.rmu") // Throws exception if not found.
+    }
+
     @Test
     fun helpCommand() {
         Rimuc(arrayOf("-h"))
@@ -91,18 +96,18 @@ class RimucTest {
     @Test
     fun missingOutputArgument() {
         expectException(
-                args = arrayOf("-o"),
+                args = arrayOf("--output"),
                 type = RimucException::class.java,
-                message = "missing --output argument"
+                message = "missing --output option value"
         )
     }
 
     @Test
     fun missingInputFile() {
         expectException(
-                args = arrayOf("MISSING_FILE_NAME"),
+                args = arrayOf("missing-file-name"),
                 type = FileNotFoundException::class.java,
-                message = "MISSING_FILE_NAME"
+                message = "missing-file-name"
         )
     }
 
@@ -118,9 +123,9 @@ class RimucTest {
     @Test
     fun compileFromFiles() {
         // Write two temporary input files to be compiled.
-        val file1 = tempFolderRule.newFile("TEST_FILE_1")
+        val file1 = tempFolderRule.newFile("test-file-1")
         FileOutputStream(file1).writeTextAndClose("Hello World!")
-        val file2 = tempFolderRule.newFile("TEST_FILE_2")
+        val file2 = tempFolderRule.newFile("test-file-2")
         FileOutputStream(file2).writeTextAndClose("Hello again World!")
         Rimuc(arrayOf(file1.path, file2.path))
         assertEquals("<p>Hello World!</p>\n<p>Hello again World!</p>", systemOutRule.log)
@@ -129,8 +134,21 @@ class RimucTest {
     @Test
     fun compileToFile() {
         stdinMock.provideLines("Hello World!")
-        val fileName = Paths.get(tempFolderRule.root.path, "TEST_FILE").toString()
+        val fileName = Paths.get(tempFolderRule.root.path, "test-file").toString()
         Rimuc(arrayOf("-o", fileName))
         assertEquals("<p>Hello World!</p>", fileToString(fileName))
     }
+
+    @Test
+    fun compileToImplicitStyledOutputFile() {
+        // If the --styled option is specified and a single input file then an output HTML file with the same file name is generated.
+        val infile = tempFolderRule.newFile("test-file.rmu")
+        FileOutputStream(infile).writeTextAndClose("Hello World!")
+        Rimuc(arrayOf("--styled", infile.path))
+        val outfile = infile.path.replaceAfterLast('.', "html")
+        val text = fileToString(outfile)
+        assertTrue(text.contains("<!DOCTYPE HTML>"))
+        assertTrue(text.contains("<p>Hello World!</p>"))
+    }
+
 }

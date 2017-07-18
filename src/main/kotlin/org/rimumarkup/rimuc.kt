@@ -152,25 +152,33 @@ fun main(args: Array<String>) {
  */
 fun Rimuc(args: Array<String>) {
 
+    val argsList = Deque(args.toMutableList())
+
+    // Command option values.
+    var safe_mode = 0
+    var html_replacement = ""
+    var styled = false
+    var styled_name = "classic"
+    var no_rimurc = false
+    var lint = false
+    var source = ""
+    var outfile = ""
+
     // Helpers.
     fun die(message: String) {
         throw RimucException(message)
     }
 
-    val argsList = Deque(args.toMutableList())
-//    var safe_mode = 0
-//    var html_replacement = ""
-//    var styled = false
-//    var styled_name = "classic"
-//    var no_rimurc = false
-    var lint = false
-//
-//    var source = ""
-    var outfile = ""
+    fun popOptionValue(arg: String): String {
+        if (argsList.isEmpty()) {
+            die("missing $arg option value")
+        }
+        return argsList.popFirst()
+    }
 
     outer@
     while (!argsList.isEmpty()) {
-        var arg = argsList.popFirst()
+        val arg = argsList.popFirst()
         when (arg) {
             "--help", "-h" -> {
                 print(MANPAGE)
@@ -180,28 +188,98 @@ fun Rimuc(args: Array<String>) {
                 lint = true
             }
             "--output", "-o" -> {
+                outfile = popOptionValue(arg)
+            }
+
+            "--prepend", "-p" -> {
+                source += popOptionValue(arg) + "\n"
+            }
+            "--no-rimurc" -> {
+                no_rimurc = true
+            }
+            "--safe-mode",
+            "--safeMode"    /*DEPRECATED*/ -> {
                 if (argsList.isEmpty()) {
-                    die("missing --output argument")
+                    die("missing --safe-mode argument")
                 }
-                outfile = argsList.popFirst()
+                safe_mode = popOptionValue(arg).toInt()
+                if (safe_mode < 0 || safe_mode > 15) {
+                    die("illegal --safe-mode option value: $safe_mode")
+                }
+            }
+            "--html-replacement",
+            "--htmlReplacement" /*DEPRECATED*/ -> {
+                html_replacement = popOptionValue(arg)
+            }
+            "--styled", "-s" -> {
+                styled = true
+
+            }
+        // Styling macro definitions shortcut options.
+            "--highlightjs",
+            "--mathjax",
+            "--section-numbers",
+            "--theme",
+            "--title",
+            "--lang",
+            "--toc", // DEPRECATED
+            "--sidebar-toc",
+            "--dropdown-toc",
+            "--custom-toc" -> {
+                val macro_value = if (arrayOf("--lang", "--title", "--theme").contains(arg))
+                    popOptionValue(arg)
+                else
+                    "true"
+                source += "{$arg}=\"$macro_value\"\n"
+            }
+            "--styled-name" -> {
+                styled_name = popOptionValue(arg)
+                if (!arrayOf("classic", "flex", "v8").contains(styled_name)) {
+                    die("illegal --styled-name: $styled_name")
+                }
             }
             else -> {
                 if (arg[0] == '-') {
                     die("illegal option: $arg")
                 }
-                argsList.pushFirst(arg); // argv contains source file names.
+                argsList.pushFirst(arg) // Contains source file names.
                 break@outer
             }
         }
     }
     var html = ""
-    if (argsList.isEmpty()) {
-        html += render(System.`in`.readTextAndClose())
-    } else {
-        html += argsList.fold("") { total, next -> total + render(fileToString(next)) + "\n" }
+    val infiles = argsList // argsList contains the list of source files.
+    if (styled && outfile.isEmpty() && infiles.size == 1) {
+        // Use the source file name with .html extension for the output file.
+        val infile = infiles[0]
+        outfile = if ('.' in infile) {
+            infile.replaceAfterLast('.', "html")
+        } else {
+            "$infile.html"
+        }
+    }
+    if (infiles.isEmpty()) {
+        infiles.pushFirst("/dev/stdin")
+    }
+    if (styled) {
+        // Envelope source files with header and footer resource file names.
+        infiles.pushFirst("resource:/${styled_name}-header.rmu")
+        infiles.pushLast("resource:/${styled_name}-footer.rmu")
+    }
+    html += infiles.fold("") { result, fileName ->
+        var text = if (fileName.startsWith("resource:"))
+            readResouce(fileName.removePrefix("resource:"))
+        else if (fileName == "/dev/stdin")
+            System.`in`.readTextAndClose()
+        else
+            fileToString(fileName)
+        if (!fileName.endsWith(".html")) {
+            text = render(text)
+        }
+        result + text + "\n"
     }
     html = html.trim()
-    if (outfile.isBlank()) {
+    if (outfile.isEmpty()) {
         print(html)
     } else {
         stringToFile(html, outfile)

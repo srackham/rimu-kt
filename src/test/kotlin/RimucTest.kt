@@ -13,7 +13,6 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.file.Paths
 
-
 class RimucTest {
     @Rule
     @JvmField
@@ -84,7 +83,11 @@ class RimucTest {
      */
     @Test
     fun checkResourceExists() {
-        readResouce("/classic-header.rmu") // Throws exception if not found.
+        // Throws exception if there is a missing resource file.
+        for (style in arrayOf("classic","flex","v8")) {
+            readResouce("/$style-header.rmu")
+            readResouce("/$style-footer.rmu")
+        }
     }
 
     @Test

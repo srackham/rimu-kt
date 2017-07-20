@@ -271,9 +271,8 @@ fun rimuc(args: Array<String>) {
     }
 
     // Include .rimurc file if it exists.
+    val rimurc = Paths.get(System.getProperty("user.home"), ".rimurc")
     if (!no_rimurc) {
-        val home_dir = System.getProperty("user.home")
-        val rimurc = Paths.get(home_dir, ".rimurc")
         if (Files.exists(rimurc)) {
             infiles.pushFirst(rimurc.toString())
         }
@@ -285,9 +284,8 @@ fun rimuc(args: Array<String>) {
         html = render(source) + '\n'
     }
 
-    val errors = 0
+    var errors = 0
     val options = Options.RenderOptions()
-    options.safeMode=safe_mode
     if (html_replacement !== null) {
         options.htmlReplacement = html_replacement
     }
@@ -300,6 +298,20 @@ fun rimuc(args: Array<String>) {
         else
             fileToString(infile)
         if (!infile.endsWith(".html")) {
+            // rimurc and resouces trusted with safeMode.
+            options.safeMode = if (infile == rimurc.toString() || infile.startsWith("resouce:")) 0 else safe_mode
+            if (lint) {
+                options.callback = fun(message: CallbackMessage) {
+                    var msg = "${message.type}: $infile: ${message.text}"
+                    if (msg.length > 120) {
+                        msg = msg.substring(0, 117) + "..."
+                    }
+                    System.err.println(msg)
+                    if (message.type == "error") {
+                        errors += 1
+                    }
+                }
+            }
             text = render(text, options)
         }
         html += "$text\n"

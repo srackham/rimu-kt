@@ -45,7 +45,7 @@ object Options {
         return safeMode != 0 && (safeMode and 0x4) != 0
     }
 
-    fun updateOptions(options: RenderOptions) {
+    fun update(options: RenderOptions) {
         if (options.reset) Api.init() // Reset takes priority.
         // Only update specified (non-null) options.
         safeMode = options.safeMode ?: safeMode
@@ -54,16 +54,17 @@ object Options {
     }
 
     // Set named option value.
-    // TODO: Rename to setOptions()
-    fun setOption(name: String, value: Any) {
-        val option = Options.RenderOptions()
-        when (name) {
-            "safeMode" -> option.safeMode = value as Int
-            "htmlReplacement" -> option.htmlReplacement = value as String
-            "init" -> option.reset = value as Boolean
-            else -> throw IllegalArgumentException("setOption(name)")
+    fun update(name: String, value: String) {
+        try {
+            when (name) {
+                "safeMode" -> safeMode = value.toInt()
+                "htmlReplacement" -> htmlReplacement = value
+                "reset" -> if (value.toBoolean()) Api.init()
+                else -> throw IllegalArgumentException()
+            }
+        } catch(e: Exception) {
+            throw IllegalArgumentException("Illegal API option: '$name=$value'")
         }
-        updateOptions(option)
     }
 
     // Filter HTML based on current safeMode.

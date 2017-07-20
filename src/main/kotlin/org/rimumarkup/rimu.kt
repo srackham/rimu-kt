@@ -10,10 +10,11 @@ val doNothing: CallbackFunction = fun(message: CallbackMessage) = Unit   // Defa
 
 /**
  * Public API to translate Rimu Markup to HTML.
+ * @throws [Exception]
  */
-fun render(source: String, opts: Options.RenderOptions = Options.RenderOptions()): String {
-    Options.updateOptions(opts)
-    return Api.render(source)
+fun render(text: String, opts: Options.RenderOptions = Options.RenderOptions()): String {
+    Options.update(opts)
+    return Api.render(text)
 }
 
 object Api {
@@ -33,8 +34,10 @@ object Api {
 //        Replacements.init()
     }
 
-    fun render(source: String): String {
-        return "<p>${source.trim()}</p>"
+    // Render text with current Options state.
+    // TODO: This seems to be redundant, it's equivealent to public render(text) with default opts, so this object is Init.
+    fun render(text: String): String {
+        return "<p>${text.trim()}</p>"
     }
 
 }

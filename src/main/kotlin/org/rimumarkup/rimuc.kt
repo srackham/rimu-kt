@@ -4,6 +4,9 @@
 
 package org.rimumarkup
 
+import java.nio.file.Files
+import java.nio.file.Paths
+
 val MANPAGE = """
 NAME
   rimuc - convert Rimu source to HTML
@@ -136,7 +139,7 @@ class RimucException(message: String) : Exception(message)
  */
 fun main(args: Array<String>) {
     try {
-        Rimuc(args)
+        rimuc(args)
     } catch(e: RimucException) {
         System.err.println(e.message)
         System.exit(1)
@@ -149,14 +152,15 @@ fun main(args: Array<String>) {
 
 /**
  * Rimu command-line compiler.
+ * Resides in org.rimumarkup.rimuc package.
  */
-fun Rimuc(args: Array<String>) {
+fun rimuc(args: Array<String>) {
 
     val argsList = Deque(args.toMutableList())
 
     // Command option values.
     var safe_mode = 0
-    var html_replacement = ""
+    var html_replacement: String? = null
     var styled = false
     var styled_name = "classic"
     var no_rimurc = false
@@ -247,7 +251,6 @@ fun Rimuc(args: Array<String>) {
             }
         }
     }
-    var html = ""
     val infiles = argsList // argsList contains the list of source files.
     if (styled && outfile.isEmpty() && infiles.size == 1) {
         // Use the source file name with .html extension for the output file.
@@ -266,6 +269,29 @@ fun Rimuc(args: Array<String>) {
         infiles.pushFirst("resource:/${styled_name}-header.rmu")
         infiles.pushLast("resource:/${styled_name}-footer.rmu")
     }
+
+    // Include .rimurc file if it exists.
+    if (!no_rimurc) {
+        val home_dir = System.getProperty("user.home")
+        val rimurc = Paths.get(home_dir, ".rimurc")
+        if (Files.exists(rimurc)) {
+            infiles.pushFirst(rimurc.toString())
+        }
+    }
+
+    var html = ""
+    // Start by processing --prepend options source.
+    if (source.isNotBlank()) {
+        html = render(source) + '\n'
+    }
+
+    val errors = 0
+    val options = Options.RenderOptions()
+    options.safeMode=safe_mode
+    if (html_replacement !== null) {
+        options.htmlReplacement = html_replacement
+    }
+
     for (infile in infiles) {
         var text = if (infile.startsWith("resource:"))
             readResouce(infile.removePrefix("resource:"))
@@ -274,7 +300,7 @@ fun Rimuc(args: Array<String>) {
         else
             fileToString(infile)
         if (!infile.endsWith(".html")) {
-            text = render(text)
+            text = render(text, options)
         }
         html += "$text\n"
     }

@@ -12,7 +12,6 @@ object Options {
             }
             field = value
         }
-
     var htmlReplacement = "<mark>replaced HTML</mark>"
     var callback: CallbackFunction = doNothing
 
@@ -55,8 +54,9 @@ object Options {
     }
 
     // Set named option value.
+    // TODO: Rename to setOptions()
     fun setOption(name: String, value: Any) {
-        var option = Options.RenderOptions()
+        val option = Options.RenderOptions()
         when (name) {
             "safeMode" -> option.safeMode = value as Int
             "htmlReplacement" -> option.htmlReplacement = value as String

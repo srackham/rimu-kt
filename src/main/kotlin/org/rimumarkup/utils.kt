@@ -28,10 +28,16 @@ fun stringToFile(text: String, fileName: String) {
  */
 fun readResouce(fileName: String): String {
     // The anonymous object is necessary to retrieve a Java class to call getResouce() against.
-    val url= object {}::class.java.getResource(fileName)
+    val url = object {}::class.java.getResource(fileName)
     if (url === null) {
         throw FileNotFoundException("Missing resource file: $fileName")
     }
     return url.readText()
 }
 
+// TODO: Make this a String extension function.
+fun replaceSpecialChars(s: String): String {
+    return s.replace("&", "&amp;")
+            .replace(">", "&gt;")
+            .replace("<", "&lt;")
+}

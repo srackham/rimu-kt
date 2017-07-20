@@ -1,5 +1,6 @@
 package org.rimumarkup
 
+// TODO: Not necessary, use java.util.Deque, see https://docs.oracle.com/javase/7/docs/api/java/util/Deque.html
 /**
  * Double ended queue which can be pushed and popped from both ends.
  * @param E the type of elements contained in the list (defaults to empty list).

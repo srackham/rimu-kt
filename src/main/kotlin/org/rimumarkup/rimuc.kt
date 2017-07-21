@@ -297,29 +297,33 @@ fun rimuc(args: Array<String>) {
             System.`in`.readTextAndClose()
         else
             fileToString(infile)
-        if (!infile.endsWith(".html")) {
-            // rimurc and resouces trusted with safeMode.
-            options.safeMode = if (infile == rimurc.toString() || infile.startsWith("resouce:")) 0 else safe_mode
-            if (lint) {
-                options.callback = fun(message: CallbackMessage) {
-                    var msg = "${message.type}: $infile: ${message.text}"
-                    if (msg.length > 120) {
-                        msg = msg.substring(0, 117) + "..."
-                    }
-                    System.err.println(msg)
-                    if (message.type == "error") {
-                        errors += 1
-                    }
+        if (infile.endsWith(".html")) {
+            html += "$text\n"
+            continue
+        }
+        // rimurc and resouces trusted with safeMode.
+        options.safeMode = if (infile == rimurc.toString() || infile.startsWith("resouce:")) 0 else safe_mode
+        if (lint) {
+            options.callback = fun(message: CallbackMessage) {
+                var text = "${message.type}: $infile: ${message.text}"
+                if (text.length > 120) {
+                    text = text.substring(0..116) + "..."
+                }
+                System.err.println(text)
+                if (message.type == "error") {
+                    errors += 1
                 }
             }
-            text = render(text, options)
         }
-        html += "$text\n"
+        html += render(text, options) + "\n"
     }
     html = html.trim()
     if (outfile.isEmpty()) {
         print(html)
     } else {
         stringToFile(html, outfile)
+    }
+    if (errors != 0) {
+        System.exit(1)
     }
 }

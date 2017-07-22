@@ -77,7 +77,7 @@ object Options {
             2 ->   // Replace HTML with 'htmlReplacement' option string.
                 return htmlReplacement
             3 ->   // Render HTML as text.
-                return replaceSpecialChars(html)
+                return Utils.replaceSpecialChars(html)
             else ->
                 return ""
         }

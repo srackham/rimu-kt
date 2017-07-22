@@ -6,7 +6,7 @@ typealias CallbackFunction = (message: CallbackMessage) -> Unit
 
 data class CallbackMessage(val type: String, val text: String)
 
-val doNothing: CallbackFunction = fun(message: CallbackMessage) = Unit   // Default render() callback.
+val doNothing: CallbackFunction = fun(_: CallbackMessage) = Unit   // Default render() callback.
 
 /**
  * Public API to translate Rimu Markup to HTML.

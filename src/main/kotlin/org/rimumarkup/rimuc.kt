@@ -305,11 +305,11 @@ fun rimuc(args: Array<String>) {
         options.safeMode = if (infile == rimurc.toString() || infile.startsWith("resouce:")) 0 else safe_mode
         if (lint) {
             options.callback = fun(message: CallbackMessage) {
-                var text = "${message.type}: $infile: ${message.text}"
-                if (text.length > 120) {
-                    text = text.substring(0..116) + "..."
+                var s = "${message.type}: $infile: ${message.text}"
+                if (s.length > 120) {
+                    s = s.substring(0..116) + "..."
                 }
-                System.err.println(text)
+                System.err.println(s)
                 if (message.type == "error") {
                     errors += 1
                 }

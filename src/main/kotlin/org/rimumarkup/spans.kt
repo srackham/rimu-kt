@@ -84,12 +84,12 @@ object Spans {
         val def = Quotes.getDefinition(quote)!!
         // Check for same closing quote one character further to the right.
         var quoted = match.groupValues[2]
-        while (nextIndex<fragment.text.length && fragment.text[nextIndex] == quote[0]) {
+        while (nextIndex < fragment.text.length && fragment.text[nextIndex] == quote[0]) {
             // Move to closing quote one character to right.
             quoted += quote[0]
             nextIndex += 1
         }
-        val before = fragment.text.substring(0..match.range.first-1)
+        val before = fragment.text.substring(0..match.range.first - 1)
         val after = fragment.text.substring(nextIndex)
         result.add(Fragment(text = before, done = false))
         result.add(Fragment(text = def.openTag, done = true))
@@ -165,7 +165,7 @@ object Spans {
         // The replacement splits the input fragment into 3 output fragments:
         // Text before the replacement, replaced text and text after the replacement.
         val before: String = fragment.text.substring(0..match.range.first - 1)
-        val after: String = fragment.text.substring(match.range.last+1)
+        val after: String = fragment.text.substring(match.range.last + 1)
         val result = mutableListOf<Fragment>()
         result.add(Fragment(text = before, done = false))
         val replacement: String

@@ -6,7 +6,7 @@ object Io {
         // Split lines on newline boundaries.
         val lines = text.split(Regex("""\r\n|\r|\n"""))
         var pos = 0       // Line index of current line.
-        val cursor: String
+        var cursor: String = ""
             get() = this.lines[this.pos]
 
         // Return true if the cursor has advanced over all input lines.
@@ -24,8 +24,8 @@ object Io {
         // the $1 match group (if it exists).
         // Return null if an EOF is encountered.
         // Exit with the reader pointing to the line following the match.
-        fun readTo(find: String): List<String>? {
-            val re = Regex(find)
+        // TODO: Maybe not return null, no lines would be the same?
+        fun readTo(re: Regex): List<String>? {
             val result = mutableListOf<String>()
             var match: MatchResult? = null
             while (!this.eof()) {
@@ -41,7 +41,7 @@ object Io {
                 this.next()
             }
             // Blank line matches EOF.
-            if (match != null || find.toString() == "^$" && this.eof()) {
+            if (match != null || re.toString() == "^$" && this.eof()) {
                 return result
             } else {
                 return null

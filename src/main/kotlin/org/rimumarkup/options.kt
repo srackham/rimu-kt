@@ -68,7 +68,7 @@ object Options {
     }
 
     // Filter HTML based on current safeMode.
-    fun htmlSafeModeFilter(html: String): String {
+    val htmlSafeModeFilter: ContentFilter = fun(html: String, _, _): String {
         when (safeMode and 0x3) {
             0 ->   // Raw HTML (default behavior).
                 return html

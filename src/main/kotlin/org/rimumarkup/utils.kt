@@ -65,7 +65,8 @@ object Utils {
 // if it starts with two '$' characters add spans to `expansionOptions`.
     fun replaceMatch(match: MatchResult,
                      replacement: String,
-                     expansionOptions: ExpansionOptions): String {
+                     expansionOptions: ExpansionOptions = ExpansionOptions()
+    ): String {
         return replacement.replace(Regex("(\\\${1,2})(\\d)"), fun(mr: MatchResult): String {
             // Replace $1, $2 ... with corresponding match groups.
             if (mr.groupValues[1] == "$$") {
@@ -81,7 +82,7 @@ object Utils {
 
     // Replace the inline elements specified in options in text and return the result.
     fun replaceInline(text: String, expansionOptions: ExpansionOptions): String {
-        var result = ""
+        var result = text
         if (expansionOptions.macros) {
 //TODO: Uncomment once implemented.            
 //            result = Macros.render(result)
@@ -89,8 +90,7 @@ object Utils {
         }
         // Spans also expand special characters.
         if (expansionOptions.spans) {
-//TODO: Uncomment once implemented.            
-//            result = Spans.render(result)
+            result = Spans.render(result)
         } else if (expansionOptions.specials) {
             result = replaceSpecialChars(result)
         }

@@ -8,7 +8,7 @@ object Replacements {
             val filter: ((match: MatchResult, def: Definition) -> String)? = null
     )
 
-    var defs = mutableListOf<Definition>()  // Initialized by DEFAULT_DEFS.
+    val defs = mutableListOf<Definition>()  // Initialized by DEFAULT_DEFS.
 
     val DEFAULT_DEFS = arrayOf<Definition>(
             // Begin match with \\? to allow the replacement to be escaped.
@@ -142,13 +142,14 @@ object Replacements {
 
     // Reset definitions to defaults.
     fun init() {
-        defs = DEFAULT_DEFS.toMutableList()
+        defs.clear()
+        defs.addAll(DEFAULT_DEFS)
     }
 
     // Update existing or add new replacement definition.
     // TODO: rename to updateDefinition()
     fun setDefinition(pattern: String, flags: String, replacement: String) {
-        val reopts = mutableListOf<RegexOption>()
+        val reopts = mutableSetOf<RegexOption>()
         if (flags.contains("i"))
             reopts.add(RegexOption.IGNORE_CASE)
         if (!flags.contains("m")) {

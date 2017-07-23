@@ -61,7 +61,8 @@ object Quotes {
 
     // Reset definitions to defaults.
     fun init() {
-        DEFAULT_DEFS.forEach { def -> defs.add(def) }
+        defs.clear()
+        defs.addAll(DEFAULT_DEFS)
         initializeRegExps()
     }
 
@@ -83,7 +84,7 @@ object Quotes {
     fun getDefinition(quote: String): Definition? {
 //    return defs.first {def -> def.quote === quote}
         for (def in defs) {
-            if (def.quote === quote) return def
+            if (def.quote == quote) return def
         }
         return null
     }

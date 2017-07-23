@@ -300,32 +300,6 @@ object DelimitedBlocks {
         return defs.first { def -> def.name == name }
     }
 
-    // TODO: Move to Options.ExpansionOptions.parse(text)
-    // Parse block-options string into blockOptions.
-    fun setBlockOptions(blockOptions: Utils.ExpansionOptions, optionsString: String) {
-        if (optionsString.isNotBlank()) {
-            val opts = optionsString.trim().split(Regex("""s+"""))
-            for (opt in opts) {
-                if (Options.isSafeModeNz() && opt == "-specials") {
-                    Options.errorCallback("-specials block option not valid in safeMode")
-                    continue
-                }
-                if (Regex("""^[+-](macros|spans|specials|container|skip)$""").matches(opt)) {
-                    val value = opt[0] == '+'
-                    when (opt.substring(1)) {
-                        "macros" -> blockOptions.macros = value
-                        "spans" -> blockOptions.spans = value
-                        "specials" -> blockOptions.specials = value
-                        "container" -> blockOptions.container = value
-                        "skip" -> blockOptions.skip = value
-                    }
-                } else {
-                    Options.errorCallback("illegal block option: " + opt)
-                }
-            }
-        }
-    }
-
     // Update existing named definition.
 // Value syntax: <open-tag>|<close-tag> block-options
     fun setDefinition(name: String, value: String) {
@@ -338,7 +312,7 @@ object DelimitedBlocks {
         if (match != null) {
             if (match.groupValues.size > 1) def.openTag = match.groupValues[1]
             if (match.groupValues.size > 2) def.closeTag = match.groupValues[2]
-            if (match.groupValues.size > 3) setBlockOptions(def.expansionOptions, match.groupValues[3])
+            if (match.groupValues.size > 3) def.expansionOptions.parse(match.groupValues[3])
         }
     }
 

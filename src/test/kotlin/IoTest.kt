@@ -1,21 +1,20 @@
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.rimumarkup.Reader
-import org.rimumarkup.Writer
+import org.rimumarkup.Io
 
 class IoTest {
     @Test
     fun readerTest() {
-        var reader: Reader
+        var reader: Io.Reader
 
-        reader = Reader("")
+        reader = Io.Reader("")
         assertEquals(false, reader.eof())
         assertEquals(1, reader.lines.size)
         assertEquals("", reader.cursor)
         reader.next()
         assertEquals(true, reader.eof())
 
-        reader = Reader("Hello\nWorld!")
+        reader = Io.Reader("Hello\nWorld!")
         assertEquals(2, reader.lines.size)
         assertEquals("Hello", reader.cursor)
         reader.next()
@@ -24,7 +23,7 @@ class IoTest {
         reader.next()
         assertEquals(true, reader.eof())
 
-        reader = Reader("\n\nHello")
+        reader = Io.Reader("\n\nHello")
         assertEquals(3, reader.lines.size)
         reader.skipBlankLines()
         assertEquals("Hello", reader.cursor)
@@ -32,7 +31,7 @@ class IoTest {
         reader.next()
         assertEquals(true, reader.eof())
 
-        reader = Reader("Hello\n*\nWorld!\nHello\n< Goodbye >")
+        reader = Io.Reader("Hello\n*\nWorld!\nHello\n< Goodbye >")
         assertEquals(5, reader.lines.size)
         var lines = reader.readTo("""\*""") ?: mutableListOf()
         assertEquals(1, lines.size)
@@ -43,7 +42,7 @@ class IoTest {
         assertEquals(" Goodbye ", lines[2])
         assertEquals(true, reader.eof())
 
-        reader = Reader("\n\nHello\nWorld!")
+        reader = Io.Reader("\n\nHello\nWorld!")
         assertEquals(4, reader.lines.size)
         reader.skipBlankLines()
         lines = reader.readTo("""^$""") ?: mutableListOf()
@@ -54,7 +53,7 @@ class IoTest {
 
     @Test
     fun writerTest() {
-        val writer = Writer()
+        val writer = Io.Writer()
         writer.write("Hello")
         assertEquals("Hello", writer.buffer[0])
         writer.write("World!")

@@ -1,5 +1,7 @@
 package org.rimumarkup
 
+object Io {
+
 class Reader(text: String) {
     // Split lines on newline boundaries.
     val lines = text.split(Regex("""\r\n|\r|\n"""))
@@ -67,3 +69,4 @@ class Writer {
 
 }
 
+}

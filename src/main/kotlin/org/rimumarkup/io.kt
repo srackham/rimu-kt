@@ -4,7 +4,8 @@ object Io {
 
     class Reader(text: String) {
         // Split lines on newline boundaries.
-        val lines = text.split(Regex("""\r\n|\r|\n"""))
+        // Lines are mutable so line macro values can be inserted into the reader.
+        val lines: MutableList<String> = text.split(Regex("""\r\n|\r|\n""")).toMutableList()
         var pos = 0       // Line index of current line.
         var cursor: String = ""
             get() = this.lines[this.pos]

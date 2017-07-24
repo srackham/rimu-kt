@@ -84,7 +84,7 @@ class RimucTest {
     fun exitCodeTwo() {
         exitRule.expectSystemExitWithStatus(2)
         // Throws java.io.FileNotFoundException.
-        main(arrayOf("missing-file-name"))
+        main(arrayOf("--no-rimurc", "missing-file-name"))
     }
 
     /*

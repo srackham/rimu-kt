@@ -174,7 +174,7 @@ object Spans {
             replacement = Utils.replaceSpecialChars(match.value.removeRange(0..0))
         } else {
             if (def.filter == null) {
-                replacement = Utils.replaceMatch(match, def.replacement)
+                replacement = Utils.replaceMatch(match.groupValues, def.replacement)
             } else {
                 replacement = (def.filter)(match, def)
             }

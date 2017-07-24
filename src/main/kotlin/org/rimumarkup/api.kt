@@ -41,7 +41,7 @@ object Api {
         while (!reader.eof()) {
             reader.skipBlankLines()
             if (reader.eof()) break
-//            if (LineBlocks.render(reader, writer)) continue
+            if (LineBlocks.render(reader, writer)) continue
 //            if (Lists.render(reader, writer)) continue
             if (DelimitedBlocks.render(reader, writer)) continue
             // This code should never be executed (normal paragraphs should match anything).

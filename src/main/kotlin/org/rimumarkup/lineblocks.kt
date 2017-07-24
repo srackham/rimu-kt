@@ -157,17 +157,17 @@ object LineBlocks {
                             return false
                         }
                         if (!Options.skipBlockAttributes()) {
-                            if (m.groupValues.size > 1) { // HTML element class names.
+                            if (m.groupValues[1].isNotBlank()) { // HTML element class names.
                                 BlockAttributes.classes += " ${m.groupValues[1].trim()}"
                                 BlockAttributes.classes = BlockAttributes.classes.trim()
                             }
-                            if (m.groupValues.size > 2) { // HTML element id.
+                            if (m.groupValues[2].isNotBlank()) { // HTML element id.
                                 BlockAttributes.attributes += " id=\"" + m.groupValues[2].trim().substring(1) + "\""
                             }
-                            if (m.groupValues.size > 3) { // CSS properties.
+                            if (m.groupValues[3].isNotBlank()) { // CSS properties.
                                 BlockAttributes.attributes += " style=" + m.groupValues[3]
                             }
-                            if (m.groupValues.size > 4) { // HTML attributes.
+                            if (m.groupValues[4].isNotBlank()) { // HTML attributes.
                                 BlockAttributes.attributes += " " + m.groupValues[4].substring(1..m.groupValues[4].length - 2).trim()
                             }
                             BlockAttributes.attributes = BlockAttributes.attributes.trim()

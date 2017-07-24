@@ -21,8 +21,12 @@ object Macros {
             val value: String = ""
     )
 
-    //TODO Stub
     fun setValue(name: String, value: String) {
+        //TODO Stub
+    }
 
+    fun render(text: String, inline: Boolean = true): String {
+        //TODO Stub
+        return text
     }
 }

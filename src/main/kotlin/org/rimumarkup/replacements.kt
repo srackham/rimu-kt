@@ -26,7 +26,7 @@ object Replacements {
                             return ""
                         }
                         // Default (non-filter) replacement processing.
-                        return Utils.replaceMatch(match, def.replacement, ExpansionOptions())
+                        return Utils.replaceMatch(match.groupValues, def.replacement, ExpansionOptions())
                     }
             ),
 

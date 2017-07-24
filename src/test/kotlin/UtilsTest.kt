@@ -62,18 +62,16 @@ class UtilsTest {
     @Test
     fun replaceMatchTest() {
         val match = Regex("""...(...)6(...)""").find("0123456*&*")
-        val actual = Utils.replaceMatch(match!!, "$1 $2 $$2", ExpansionOptions())
+        val actual = Utils.replaceMatch(match?.groupValues!!, "$1 $2 $$2", ExpansionOptions())
         assertEquals("345 *&amp;* <em>&amp;</em>", actual)
     }
 
     @Test
     fun injectHtmlAttributesTest() {
         BlockAttributes.classes = "foo bar"
-        var result = Utils.injectHtmlAttributes("<p>")
-        assertEquals("""<p class="foo bar">""", result)
-
         BlockAttributes.attributes = """title="Hello!""""
-        result = Utils.injectHtmlAttributes("<p>")
-        assertEquals("""<p title="Hello!">""", result)
+        BlockAttributes.options = ExpansionOptions()
+        var result = Utils.injectHtmlAttributes("""<p class="do">""")
+        assertEquals("""<p title="Hello!" class="foo bar do">""", result)
     }
 }

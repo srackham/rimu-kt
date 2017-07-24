@@ -1,7 +1,6 @@
 //TODO: Is this file necessary?
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.rimumarkup.Api
 import org.rimumarkup.Io

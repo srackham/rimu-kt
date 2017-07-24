@@ -106,10 +106,10 @@ object Utils {
                 .replace("<", "&lt;")
     }
 
-    // Replace pattern '$1' or '$$1', '$2' or '$$2'... in `replacement` with corresponding match groups
-// from `match`. If pattern starts with one '$' character add specials to `expansionOptions`,
+    // Replace pattern '$1' or '$$1', '$2' or '$$2'... in `replacement` with corresponding match match group values.
+// If pattern starts with one '$' character add specials to `expansionOptions`,
 // if it starts with two '$' characters add spans to `expansionOptions`.
-    fun replaceMatch(match: MatchResult,
+    fun replaceMatch(groupValues: List<String>,
                      replacement: String,
                      expansionOptions: ExpansionOptions = ExpansionOptions()
     ): String {
@@ -121,7 +121,7 @@ object Utils {
                 expansionOptions.specials = true
             }
             val i = mr.groupValues[2].toInt()  // match group number.
-            val text = match.groupValues[i]           // match group text.
+            val text = groupValues[i]           // match group text.
             return replaceInline(text, expansionOptions)
         })
     }
@@ -146,25 +146,25 @@ object Utils {
     // Inject HTML attributes from attrs into the opening tag and return result.
 // Consume HTML attributes unless the 'tag' argument is blank.
     fun injectHtmlAttributes(tag: String): String {
-        if (tag.isBlank()) {
-            return tag
-        }
         var result = tag
+        if (result.isBlank()) {
+            return result
+        }
         if (BlockAttributes.classes.isNotBlank()) {
-            if (tag.matches(Regex("""class="\S.*""""))) {
+            if (result.contains(Regex("""class="\S.*""""))) {
                 // Inject class names into existing class attribute.
-                result = tag.replace(Regex("""class="(\S.*?)""""), """class="${BlockAttributes.classes} $1"""")
+                result = result.replace(Regex("""class="(\S.*?)""""), """class="${BlockAttributes.classes} $1"""")
             } else {
                 // Prepend new class attribute to HTML attributes.
                 BlockAttributes.attributes = """class="${BlockAttributes.classes}" ${BlockAttributes.attributes}""".trim()
             }
         }
         if (BlockAttributes.attributes.isNotBlank()) {
-            val match = Regex("""^<([a-zA-Z]+|h[1-6])(?=[ >])""").find(tag)
+            val match = Regex("""^<([a-zA-Z]+|h[1-6])(?=[ >])""").find(result)
             if (match != null) {
                 // Inject attributes after tag name.
-                val before = tag.substring(0..match.groupValues[0].length - 1)
-                val after = tag.substring(match.groupValues[0].length)
+                val before = result.substring(0..match.groupValues[0].length - 1)
+                val after = result.substring(match.groupValues[0].length)
                 result = before + " " + BlockAttributes.attributes + after
             }
         }

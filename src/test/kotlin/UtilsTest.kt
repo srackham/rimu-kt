@@ -1,14 +1,17 @@
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.rimumarkup.Utils
-import org.rimumarkup.fileToString
-import org.rimumarkup.readResouce
-import org.rimumarkup.stringToFile
+import org.rimumarkup.*
 import java.nio.file.Paths
 
 class UtilsTest {
+
+    @Before
+    fun before() {
+        Api.init()
+    }
 
     @Rule
     @JvmField
@@ -33,4 +36,44 @@ class UtilsTest {
         assertEquals("&lt;&lt;Hello &amp; goodbye!&gt;&gt;", Utils.replaceSpecialChars("<<Hello & goodbye!>>"))
     }
 
+    @Test
+    fun expansionOptionsTest() {
+        var opts = ExpansionOptions(macros = true, specials = false)
+        opts.merge(ExpansionOptions(macros = false, container = true))
+        assertEquals(ExpansionOptions(
+                macros = false,
+                container = true,
+                skip = null,
+                spans = null,
+                specials = false),
+                opts)
+
+        opts = ExpansionOptions(macros = true, specials = false)
+        opts.parse("-macros +spans")
+        assertEquals(ExpansionOptions(
+                macros = false,
+                container = null,
+                skip = null,
+                spans = true,
+                specials = false),
+                opts)
+    }
+
+    @Test
+    fun replaceMatchTest() {
+        val match = Regex("""...(...)6(...)""").find("0123456*&*")
+        val actual = Utils.replaceMatch(match!!, "$1 $2 $$2", ExpansionOptions())
+        assertEquals("345 *&amp;* <em>&amp;</em>", actual)
+    }
+
+    @Test
+    fun injectHtmlAttributesTest(){
+        BlockAttributes.classes= "foo bar"
+        var result = Utils.injectHtmlAttributes("<p>")
+        assertEquals("""<p class="foo bar">""", result)
+
+        BlockAttributes.attributes= """title="Hello!""""
+        result = Utils.injectHtmlAttributes("<p>")
+        assertEquals("""<p title="Hello!">""", result)
+    }
 }

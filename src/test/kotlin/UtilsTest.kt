@@ -67,12 +67,12 @@ class UtilsTest {
     }
 
     @Test
-    fun injectHtmlAttributesTest(){
-        BlockAttributes.classes= "foo bar"
+    fun injectHtmlAttributesTest() {
+        BlockAttributes.classes = "foo bar"
         var result = Utils.injectHtmlAttributes("<p>")
         assertEquals("""<p class="foo bar">""", result)
 
-        BlockAttributes.attributes= """title="Hello!""""
+        BlockAttributes.attributes = """title="Hello!""""
         result = Utils.injectHtmlAttributes("<p>")
         assertEquals("""<p title="Hello!">""", result)
     }

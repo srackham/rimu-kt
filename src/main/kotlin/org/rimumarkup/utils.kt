@@ -9,12 +9,60 @@ import java.nio.file.Paths
 object BlockAttributes {
     var classes: String = ""     // Space separated HTML class names.
     var attributes: String = ""  // HTML element attributes (incorporates 'style' and 'id' attributes).
-    var options: Utils.ExpansionOptions = Utils.ExpansionOptions()
+    var options: ExpansionOptions = ExpansionOptions()
 
     fun init() {
         classes = ""
         attributes = ""
-        options = Utils.ExpansionOptions()
+        options = ExpansionOptions()
+    }
+}
+
+data class ExpansionOptions(
+        //TODO: What's this for?
+//        [key: string]: boolean | undefined
+
+        // Processing priority (highest to lowest): container, skip, spans and specials.
+        // If spans is true then both spans and specials are processed.
+        // They are assumed false if they are not explicitly defined.
+        // If a custom filter is specified their use depends on the filter.
+        var macros: Boolean? = null,
+        var container: Boolean? = null,
+        var skip: Boolean? = null,
+        var spans: Boolean? = null, // Span substitution also expands special characters.
+        var specials: Boolean? = null
+) {
+    fun merge(from: ExpansionOptions) {
+        this.macros = from.macros ?: this.macros
+        this.container = from.container ?: this.container
+        this.skip = from.skip ?: this.skip
+        this.spans = from.spans ?: this.spans
+        this.specials = from.specials ?: this.specials
+    }
+
+    // Parse block-options string into blockOptions.
+    fun parse(options: String) {
+        if (options.isNotBlank()) {
+            val opts = options.trim().split(Regex("""\s+"""))
+            for (opt in opts) {
+                if (Options.isSafeModeNz() && opt == "-specials") {
+                    Options.errorCallback("-specials block option not valid in safeMode")
+                    continue
+                }
+                if (Regex("""^[+-](macros|spans|specials|container|skip)$""").matches(opt)) {
+                    val value = opt[0] == '+'
+                    when (opt.substring(1)) {
+                        "macros" -> this.macros = value
+                        "spans" -> this.spans = value
+                        "specials" -> this.specials = value
+                        "container" -> this.container = value
+                        "skip" -> this.skip = value
+                    }
+                } else {
+                    Options.errorCallback("illegal block option: " + opt)
+                }
+            }
+        }
     }
 }
 
@@ -50,54 +98,6 @@ fun readResouce(fileName: String): String {
 
 // Utils "namespace" contains Rimu specific code ported from utils.js.
 object Utils {
-
-    data class ExpansionOptions(
-            //TODO: What's this for?
-//        [key: string]: boolean | undefined
-
-            // Processing priority (highest to lowest): container, skip, spans and specials.
-            // If spans is true then both spans and specials are processed.
-            // They are assumed false if they are not explicitly defined.
-            // If a custom filter is specified their use depends on the filter.
-            var macros: Boolean? = null,
-            var container: Boolean? = null,
-            var skip: Boolean? = null,
-            var spans: Boolean? = null, // Span substitution also expands special characters.
-            var specials: Boolean? = null
-    ) {
-        fun merge(from: ExpansionOptions) {
-            this.macros = from.macros ?: this.macros
-            this.container = from.container ?: this.container
-            this.skip = from.skip ?: this.skip
-            this.spans = from.spans ?: this.spans
-            this.specials = from.specials ?: this.specials
-        }
-
-        // Parse block-options string into blockOptions.
-        fun parse(optionsString: String) {
-            if (optionsString.isNotBlank()) {
-                val opts = optionsString.trim().split(Regex("""s+"""))
-                for (opt in opts) {
-                    if (Options.isSafeModeNz() && opt == "-specials") {
-                        Options.errorCallback("-specials block option not valid in safeMode")
-                        continue
-                    }
-                    if (Regex("""^[+-](macros|spans|specials|container|skip)$""").matches(opt)) {
-                        val value = opt[0] == '+'
-                        when (opt.substring(1)) {
-                            "macros" -> this.macros = value
-                            "spans" -> this.spans = value
-                            "specials" -> this.specials = value
-                            "container" -> this.container = value
-                            "skip" -> this.skip = value
-                        }
-                    } else {
-                        Options.errorCallback("illegal block option: " + opt)
-                    }
-                }
-            }
-        }
-    }
 
     // TODO: Make this a String extension function.
     fun replaceSpecialChars(s: String): String {

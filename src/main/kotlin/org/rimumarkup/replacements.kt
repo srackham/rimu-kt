@@ -26,7 +26,7 @@ object Replacements {
                             return ""
                         }
                         // Default (non-filter) replacement processing.
-                        return Utils.replaceMatch(match, def.replacement, Utils.ExpansionOptions())
+                        return Utils.replaceMatch(match, def.replacement, ExpansionOptions())
                     }
             ),
 
@@ -91,7 +91,7 @@ object Replacements {
                     match = Regex("""\\?(<!--(?:[^<>&]*)?-->|<\/?([a-z][a-z0-9]*)(?:\s+[^<>&]+)?>)/""", RegexOption.IGNORE_CASE),
                     replacement = "",
                     filter = fun(match: MatchResult, _: Definition): String {
-                        return Options.htmlSafeModeFilter(match.groupValues[1], match, Utils.ExpansionOptions()) // Matched HTML comment or inline tag.
+                        return Options.htmlSafeModeFilter(match.groupValues[1], match, ExpansionOptions()) // Matched HTML comment or inline tag.
                     }
             ),
 

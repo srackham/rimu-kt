@@ -1,7 +1,7 @@
 package org.rimumarkup
 
 typealias DelimiterFilter = (match: MatchResult, def: DelimitedBlocks.Definition) -> String
-typealias ContentFilter = (text: String, match: MatchResult, expansionOptions: Utils.ExpansionOptions) -> String
+typealias ContentFilter = (text: String, match: MatchResult, expansionOptions: ExpansionOptions) -> String
 
 object DelimitedBlocks {
 
@@ -33,7 +33,7 @@ object DelimitedBlocks {
             val verify: ((match: MatchResult) -> Boolean)? = null, // Additional match verification checks.
             val delimiterFilter: DelimiterFilter? = null, // Process opening delimiter. Return any delimiter content.
             val contentFilter: ContentFilter? = null,
-            val expansionOptions: Utils.ExpansionOptions
+            val expansionOptions: ExpansionOptions
     )
 
     val defs = mutableListOf<Definition>()  // Mutable definitions initialized by DEFAULT_DEFS.
@@ -47,7 +47,7 @@ object DelimitedBlocks {
                     closeMatch = Macros.MACRO_DEF_CLOSE, // $1 is last line of macro.
                     openTag = "",
                     closeTag = "",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = true
                     ),
                     delimiterFilter = delimiterTextFilter,
@@ -72,7 +72,7 @@ object DelimitedBlocks {
                     closeMatch = Regex("""^\*+\/$"""),
                     openTag = "",
                     closeTag = "",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             skip = true,
                             specials = true // Fall-back if skip is disabled.
                     )
@@ -84,7 +84,7 @@ object DelimitedBlocks {
                     closeMatch = null,
                     openTag = "<div>",
                     closeTag = "</div>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             container = true,
                             specials = true // Fall-back if container is disabled.
                     ),
@@ -97,7 +97,7 @@ object DelimitedBlocks {
                     closeMatch = null,
                     openTag = "<blockquote>",
                     closeTag = "</blockquote>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             container = true,
                             specials = true // Fall-back if container is disabled.
                     ),
@@ -110,7 +110,7 @@ object DelimitedBlocks {
                     closeMatch = null,
                     openTag = "<pre><code>",
                     closeTag = "</code></pre>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = false,
                             specials = true
                     ),
@@ -130,7 +130,7 @@ object DelimitedBlocks {
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "",
                     closeTag = "",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = true
                     ),
                     verify = fun(match: MatchResult): Boolean {
@@ -151,7 +151,7 @@ object DelimitedBlocks {
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "<pre><code>",
                     closeTag = "</code></pre>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = false,
                             specials = true
                     ),
@@ -176,7 +176,7 @@ object DelimitedBlocks {
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "<blockquote><p>",
                     closeTag = "</p></blockquote>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = true,
                             spans = true,
                             specials = true       // Fall-back if spans is disabled.
@@ -199,7 +199,7 @@ object DelimitedBlocks {
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "<p>",
                     closeTag = "</p>",
-                    expansionOptions = Utils.ExpansionOptions(
+                    expansionOptions = ExpansionOptions(
                             macros = true,
                             spans = true,
                             specials = true       // Fall-back if spans is disabled.
@@ -249,7 +249,7 @@ object DelimitedBlocks {
                     Options.errorCallback("unterminated delimited block: " + match.value)
                 } else lines.addAll(content)
                 // Calculate block expansion options.
-                val expansionOptions = Utils.ExpansionOptions()
+                val expansionOptions = ExpansionOptions()
 
                 // TODO: This won't work unless all properties are nullable because we need to be able to merge()
                 expansionOptions.merge(def.expansionOptions)
@@ -288,7 +288,7 @@ object DelimitedBlocks {
                     }
                 }
                 // Reset consumed Block Attributes expansion options.
-                BlockAttributes.options = Utils.ExpansionOptions()
+                BlockAttributes.options = ExpansionOptions()
                 return true
             }
         }

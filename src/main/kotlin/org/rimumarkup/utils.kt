@@ -18,6 +18,7 @@ object BlockAttributes {
     }
 }
 
+// TODO: Should be a Map of <OptionEnum, Boolean> e.g option[OptionEnum.MACROS] = true
 data class ExpansionOptions(
         //TODO: What's this for?
 //        [key: string]: boolean | undefined

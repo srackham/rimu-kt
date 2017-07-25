@@ -21,6 +21,13 @@ object Macros {
             val value: String = ""
     )
 
+    val defs = mutableListOf<Macro>()
+
+    // Reset definitions to defaults.
+    fun init(){
+        defs.clear()
+    }
+
     fun setValue(name: String, value: String) {
         //TODO Stub
     }

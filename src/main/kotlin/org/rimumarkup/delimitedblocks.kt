@@ -38,7 +38,7 @@ object DelimitedBlocks {
 
     val defs = mutableListOf<Definition>()  // Mutable definitions initialized by DEFAULT_DEFS.
 
-    val DEFAULT_DEFS = arrayOf<Definition>(
+    val DEFAULT_DEFS = arrayOf(
             // Delimited blocks cannot be escaped with a backslash.
 
 // Macro definition block.
@@ -230,13 +230,13 @@ object DelimitedBlocks {
                 }
                 if (def.verify != null) {
                     //TODO: Is this a Kotlin bug? I should not have to !! but if not get error "reference has nullable type ..."
-                    if (!def.verify!!(match)) {
+                    if (!(def.verify)(match)) {
                         continue
                     }
                 }
                 // Process opening delimiter.
                 //TODO: Is this a Kotlin bug? I should not have to !! but if not get error "reference has nullable type ..."
-                val delimiterText = if (def.delimiterFilter != null) def.delimiterFilter!!(match, def) else ""
+                val delimiterText = if (def.delimiterFilter != null) (def.delimiterFilter)(match, def) else ""
                 // Read block content into lines.
                 val lines = mutableListOf<String>()
                 if (delimiterText.isNotBlank()) {
@@ -258,7 +258,7 @@ object DelimitedBlocks {
                 if (!(expansionOptions.skip ?: false)) {
                     var text = lines.joinToString("\n")
                     if (def.contentFilter != null) {
-                        text = def.contentFilter!!(text, match, expansionOptions)   // TODO: Why do we need !! ?
+                        text = (def.contentFilter)(text, match, expansionOptions)   // TODO: Why do we need !! ?
                     }
                     var opentag = def.openTag
                     if (def.name === "html") {

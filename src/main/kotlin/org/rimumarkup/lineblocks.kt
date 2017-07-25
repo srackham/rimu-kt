@@ -133,7 +133,7 @@ object LineBlocks {
             Definition(
                     match = Regex("""^\\?<<#([a-zA-Z][\w\-]*)>>$"""),
                     replacement = "<div id=\"$1\"></div>",
-                    filter = fun(match: MatchResult, reader: Io.Reader, def): String {
+                    filter = fun(match: MatchResult, _, def): String {
                         if (Options.skipBlockAttributes()) {
                             return ""
                         } else {
@@ -205,7 +205,7 @@ object LineBlocks {
                     reader.cursor = reader.cursor.substring(1)
                     continue
                 }
-                if (def.verify != null && !def.verify!!(match)) {
+                if (def.verify != null && !(def.verify)(match)) {
                     continue
                 }
                 var text: String
@@ -216,7 +216,7 @@ object LineBlocks {
                     else
                         ""
                 } else {
-                    text = def.filter!!(match, reader, def)  // TODO: def.filter cannot be null here (compiler bug?)
+                    text = (def.filter)(match, reader, def)
                 }
                 if (text.isNotBlank()) {
                     text = Utils.injectHtmlAttributes(text)

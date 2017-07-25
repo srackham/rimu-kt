@@ -24,7 +24,7 @@ object Macros {
     val defs = mutableListOf<Macro>()
 
     // Reset definitions to defaults.
-    fun init(){
+    fun init() {
         defs.clear()
     }
 

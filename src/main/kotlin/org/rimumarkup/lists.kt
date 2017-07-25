@@ -15,14 +15,14 @@ object Lists {
     // Information about a matched list item element.
 //TODO: The nulls are only necessary to return a empty ItemState => attched block from matchItem()!!! Makes the code a mess of null negation!!
     data class ItemState(
+            val id: String, // List ID.
             val groupValues: List<String>,
-            val def: Definition,
-            val id: String  // List ID.
+            val def: Definition
     ) {
         companion object {
             // Special items.
-            val NO_MATCH = ItemState(listOf<String>(), defs[0], "")
-            val BLOCK_MATCH = ItemState(listOf<String>(), defs[0], "")
+            val NO_MATCH = ItemState("NO_MATCH", listOf<String>(), defs[0])
+            val BLOCK_MATCH = ItemState("BLOCK_MATCH", listOf<String>(), defs[0])
         }
     }
 
@@ -153,13 +153,14 @@ object Lists {
     fun readToNext(reader: Io.Reader, writer: Io.Writer): ItemState {
         // The reader should be at the line following the first line of the list
         // item (or EOF).
-        var next: ItemState?
+        var next: ItemState
         while (true) {
             if (reader.eof()) return ItemState.NO_MATCH
-            if (reader.cursor === "") {
+            if (reader.cursor == "") {
                 // Encountered blank line.
                 reader.next()
-                if (reader.cursor === "") {
+                if (reader.eof()) return ItemState.NO_MATCH
+                if (reader.cursor == "") {
                     // A second blank line terminates the list.
                     return ItemState.NO_MATCH
                 }
@@ -168,7 +169,7 @@ object Lists {
                 return matchItem(reader, listOf("indented", "quote-paragraph"))
             }
             next = matchItem(reader, listOf("comment", "code", "division", "html", "quote"))
-            if (next != ItemState.NO_MATCH) {
+            if (next !== ItemState.NO_MATCH) {
                 // Encountered list item or attached Delimited Block.
                 return next
             }

@@ -8,7 +8,10 @@ object Io {
         val lines: MutableList<String> = text.split(Regex("""\r\n|\r|\n""")).toMutableList()
         var pos = 0       // Line index of current line.
         var cursor: String = ""
-            get() = this.lines[this.pos]
+            get() {
+                assert(!this.eof())
+                return this.lines[this.pos]
+            }
 
         // Return true if the cursor has advanced over all input lines.
         fun eof(): Boolean {

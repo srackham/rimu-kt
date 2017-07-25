@@ -15,16 +15,25 @@ class ApiTest {
      */
     @Test
     fun renderTest() {
-        var input = """# Title
+        val input = """# Title
 Paragraph **bold** `code` _emphasised text_
 
 .test-class [title="Code"]
   Indented `paragraph`
+
+- Item 1
+""
+Quoted
+""
+- Item 2
+ . Nested 1
 """
-        var result = Api.render(input)
+        val result = Api.render(input)
         assertEquals("""<h1>Title</h1>
 <p>Paragraph <strong>bold</strong> <code>code</code> <em>emphasised text</em></p>
-<pre class="test-class" title="Code"><code>Indented `paragraph`</code></pre>""",
+<pre class="test-class" title="Code"><code>Indented `paragraph`</code></pre>
+<ul><li>Item 1<blockquote><p>Quoted</p></blockquote>
+</li><li>Item 2<ol><li>Nested 1</li></ol></li></ul>""",
                 result)
     }
 

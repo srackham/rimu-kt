@@ -10,7 +10,7 @@ object Replacements {
 
     val defs = mutableListOf<Definition>()  // Initialized by DEFAULT_DEFS.
 
-    val DEFAULT_DEFS = arrayOf<Definition>(
+    val DEFAULT_DEFS = arrayOf(
             // Begin match with \\? to allow the replacement to be escaped.
             // Global flag must be set on match re's so that the RegExp lastIndex property is set.
             // Replacements and special characters are expanded in replacement groups ($1..).

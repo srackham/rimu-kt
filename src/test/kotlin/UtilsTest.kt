@@ -71,7 +71,7 @@ class UtilsTest {
         BlockAttributes.classes = "foo bar"
         BlockAttributes.attributes = """title="Hello!""""
         BlockAttributes.options = ExpansionOptions()
-        var result = Utils.injectHtmlAttributes("""<p class="do">""")
+        val result = Utils.injectHtmlAttributes("""<p class="do">""")
         assertEquals("""<p title="Hello!" class="foo bar do">""", result)
     }
 }

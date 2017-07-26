@@ -24,7 +24,7 @@ object Spans {
     fun render(source: String): String {
         var result: String
         result = preReplacements(source)
-        var fragments = mutableListOf<Fragment>(Fragment(text = result, done = false))
+        var fragments = mutableListOf(Fragment(text = result, done = false))
         fragments = fragQuotes(fragments).toMutableList()
         fragSpecials(fragments)
         result = defrag(fragments)
@@ -114,7 +114,7 @@ object Spans {
     // Return text with replacements replaced with placeholders (see `postReplacements()`).
     fun preReplacements(text: String): String {
         savedReplacements.clear()
-        val fragments = fragReplacements(listOf<Fragment>(Fragment(text = text, done = false)))
+        val fragments = fragReplacements(listOf(Fragment(text = text, done = false)))
         // Reassemble text with replacement placeholders.
         return fragments.fold("", { result, fragment ->
             if (fragment.done) {

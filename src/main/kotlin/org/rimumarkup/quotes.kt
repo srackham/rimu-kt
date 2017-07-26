@@ -11,7 +11,7 @@ object Quotes {
 
     val defs = mutableListOf<Definition>()  // Mutable definitions initialized by DEFAULT_DEFS.
 
-    val DEFAULT_DEFS = arrayOf<Definition>(
+    val DEFAULT_DEFS = arrayOf(
             Definition(
                     quote = "**",
                     openTag = "<strong>",
@@ -75,9 +75,9 @@ object Quotes {
         // Quoted text cannot begin or end with whitespace.
         // Quoted can span multiple lines.
         // Quoted text cannot end with a backslash.
-        quotesRe = Regex("\\\\?(" + quotes + ")([^\\s\\\\]|\\S[\\s\\S]*?[^\\s\\\\])\\1")
+        quotesRe = Regex("\\\\?($quotes)([^\\s\\\\]|\\S[\\s\\S]*?[^\\s\\\\])\\1")
         // $1 is quote character(s).
-        unescapeRe = Regex("\\\\(" + quotes + ")")
+        unescapeRe = Regex("\\\\($quotes)")
     }
 
     // Return the quote definition corresponding to 'quote' character, return undefined if not found.

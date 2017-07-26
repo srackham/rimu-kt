@@ -6,7 +6,7 @@ object Macros {
     // DEPRECATED: Matches existential macro invocations.
     val MATCH_MACRO = Regex("""\{([\w\-]+)([!=|?](?:|.*?[^\\]))?}""", RegexOption.DOT_MATCHES_ALL)
     // Matches all macro invocations. $1 = name, $2 = params.
-    val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern,RegexOption.DOT_MATCHES_ALL)
+    val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern, RegexOption.DOT_MATCHES_ALL)
     // Matches a line starting with a macro invocation.
     val MACRO_LINE = Regex("^" + MATCH_MACRO.pattern + ".*$")
     // Match multi-line macro definition open delimiter. $1 is first line of macro.
@@ -79,7 +79,7 @@ object Macros {
             }
             params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
 //            when (params[0]) {
-                when (if (params.isBlank()) ' ' else params[0]) {
+            when (if (params.isBlank()) ' ' else params[0]) {
                 '|' -> {   // Parametrized macro.
                     val paramsList = params.substring(1).split('|')
                     // Substitute macro parameters.

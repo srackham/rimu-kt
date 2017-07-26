@@ -291,7 +291,7 @@ fun rimuc(args: Array<String>) {
     }
 
     for (infile in infiles) {
-        var text = if (infile.startsWith("resource:"))
+        val text = if (infile.startsWith("resource:"))
             readResouce(infile.removePrefix("resource:"))
         else if (infile == "/dev/stdin")
             System.`in`.readTextAndClose()

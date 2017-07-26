@@ -64,36 +64,6 @@ data class ExpansionOptions(
     }
 }
 
-fun InputStream.readTextAndClose(charset: Charset = Charsets.UTF_8): String {
-    return this.bufferedReader(charset).use { it.readText() }
-}
-
-fun OutputStream.writeTextAndClose(text: String, charset: Charset = Charsets.UTF_8) {
-    this.bufferedWriter(charset).use { it.write(text) }
-}
-
-fun fileToString(fileName: String): String {
-    return FileInputStream(fileName).readTextAndClose()
-}
-
-fun stringToFile(text: String, fileName: String) {
-    Files.deleteIfExists(Paths.get(fileName))
-    return FileOutputStream(fileName).writeTextAndClose(text)
-}
-
-/**
- * Read contents of resource file.
- * @throws [FileNotFoundException] if resource file is missing.
- */
-fun readResouce(fileName: String): String {
-    // The anonymous object provides a Java class to call getResouce() against.
-    val url = object {}::class.java.getResource(fileName)
-    if (url == null) {
-        throw FileNotFoundException("Missing resource file: $fileName")
-    }
-    return url.readText()
-}
-
 // Utils "namespace" contains Rimu specific code ported from utils.js.
 object Utils {
 
@@ -171,3 +141,72 @@ object Utils {
     }
 
 }
+
+
+// Mutablelist push/pop extension functions.
+
+/**
+ * Prepends [element] to start of queue.
+ */
+fun <E> MutableList<E>.pushFirst(element: E) {
+    this.add(0, element)
+}
+
+/**
+ * Removes and returns first element.
+ * @return first element.
+ * @throws [NoSuchElementException] if queue is empty.
+ */
+fun <E> MutableList<E>.popFirst(): E {
+    return this.removeAt(0)
+}
+
+/**
+ * Appends [element] to end of queue.
+ */
+fun <E> MutableList<E>.pushLast(element: E) {
+    this.add(element)
+}
+
+/**
+ * Removes and returns last element.
+ * @return last element.
+ * @throws [NoSuchElementException] if queue is empty.
+ */
+fun <E> MutableList<E>.popLast(): E {
+    return this.removeAt(this.size - 1)
+}
+
+
+// General purpose utility functions.
+
+fun InputStream.readTextAndClose(charset: Charset = Charsets.UTF_8): String {
+    return this.bufferedReader(charset).use { it.readText() }
+}
+
+fun OutputStream.writeTextAndClose(text: String, charset: Charset = Charsets.UTF_8) {
+    this.bufferedWriter(charset).use { it.write(text) }
+}
+
+fun fileToString(fileName: String): String {
+    return FileInputStream(fileName).readTextAndClose()
+}
+
+fun stringToFile(text: String, fileName: String) {
+    Files.deleteIfExists(Paths.get(fileName))
+    return FileOutputStream(fileName).writeTextAndClose(text)
+}
+
+/**
+ * Read contents of resource file.
+ * @throws [FileNotFoundException] if resource file is missing.
+ */
+fun readResouce(fileName: String): String {
+    // The anonymous object provides a Java class to call getResouce() against.
+    val url = object {}::class.java.getResource(fileName)
+    if (url == null) {
+        throw FileNotFoundException("Missing resource file: $fileName")
+    }
+    return url.readText()
+}
+

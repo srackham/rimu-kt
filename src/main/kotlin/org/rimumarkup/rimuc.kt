@@ -156,7 +156,7 @@ fun main(args: Array<String>) {
  */
 fun rimuc(args: Array<String>) {
 
-    val argsList = Deque(args.toMutableList())
+    val argsList = args.toMutableList()
 
     // Command option values.
     var safe_mode = 0

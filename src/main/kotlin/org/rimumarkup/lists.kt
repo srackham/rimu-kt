@@ -191,7 +191,7 @@ object Lists {
         for (def in defs) {
             val match = def.match.find(line)
             if (match != null) {
-                if (match.groupValues[0][0] == '\\') {
+                if (match.groupValues[0].startsWith('\\')) {
                     reader.cursor = reader.cursor.substring(1)   // Drop backslash.
                     return ItemState.NO_MATCH
                 }

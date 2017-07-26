@@ -116,7 +116,7 @@ object DelimitedBlocks {
                     ),
                     verify = fun(match): Boolean {
                         // The deprecated '-' delimiter does not support appended class names.
-                        return !(match.groupValues[1][0] == '-' && match.groupValues[2].trim() !== "")
+                        return !(match.groupValues[1][0] == '-' && match.groupValues[2].trim() != "")
                     },
                     delimiterFilter = classInjectionFilter
             ),
@@ -259,7 +259,7 @@ object DelimitedBlocks {
                         text = (def.contentFilter)(text, match, expansionOptions)   // TODO: Why do we need !! ?
                     }
                     var opentag = def.openTag
-                    if (def.name === "html") {
+                    if (def.name == "html") {
                         text = Utils.injectHtmlAttributes(text)
                     } else {
                         opentag = Utils.injectHtmlAttributes(opentag)
@@ -271,7 +271,7 @@ object DelimitedBlocks {
                         text = Utils.replaceInline(text, expansionOptions)
                     }
                     var closetag = def.closeTag
-                    if (def.name === "division" && opentag === "<div>") {
+                    if (def.name == "division" && opentag == "<div>") {
                         // Drop div tags if the opening div has no attributes.
                         opentag = ""
                         closetag = ""

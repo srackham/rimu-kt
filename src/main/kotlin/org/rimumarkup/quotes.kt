@@ -82,7 +82,6 @@ object Quotes {
 
     // Return the quote definition corresponding to 'quote' character, return undefined if not found.
     fun getDefinition(quote: String): Definition? {
-//    return defs.first {def -> def.quote === quote}
         for (def in defs) {
             if (def.quote == quote) return def
         }

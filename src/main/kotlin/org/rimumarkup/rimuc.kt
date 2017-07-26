@@ -286,7 +286,7 @@ fun rimuc(args: Array<String>) {
 
     var errors = 0
     val options = Options.RenderOptions()
-    if (html_replacement !== null) {
+    if (html_replacement != null) {
         options.htmlReplacement = html_replacement
     }
 

@@ -90,7 +90,7 @@ object Macros {
                     // 4th group: <default-param-value>
                     val PARAM_RE = Regex("""\\?(\$\$?)(\d+)(\\?:(|.*?[^\\])\$)?""", RegexOption.DOT_MATCHES_ALL)
                     value = PARAM_RE.replace(value, fun(mr: MatchResult): String {
-                        if (mr.value[0] == '\\') {  // Unescape escaped macro parameters.
+                        if (mr.value.startsWith('\\')) {  // Unescape escaped macro parameters.
                             return mr.value.substring(1)
                         }
                         val p1 = mr.groupValues[1]
@@ -100,7 +100,7 @@ object Macros {
                         // Unassigned parameters are replaced with a blank string.
                         var param = if (paramsList.size < p2) "" else paramsList[p2 - 1]
                         if (p3.isNotBlank()) {
-                            if (p3[0] == '\\') { // Unescape escaped default parameter.
+                            if (p3.startsWith('\\')) { // Unescape escaped default parameter.
                                 param += p3.substring(1)
                             } else {
                                 if (param == "") {

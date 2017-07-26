@@ -25,7 +25,7 @@ object LineBlocks {
                         }
                         // Stop if the macro value is the same as the invocation (to stop infinite recursion).
                         val value = Macros.render(match.groupValues[0], false)
-                        if (value === match.groupValues[0]) {
+                        if (value == match.groupValues[0]) {
                             return false
                         }
                         return true
@@ -62,7 +62,7 @@ object LineBlocks {
                                 quote = match.groupValues[1],
                                 openTag = Utils.replaceInline(match.groupValues[2], ExpansionOptions(macros = true)),
                                 closeTag = Utils.replaceInline(match.groupValues[4], ExpansionOptions(macros = true)),
-                                spans = match.groupValues[3] === "|"
+                                spans = match.groupValues[3] == "|"
                         ))
                         return ""
                     }
@@ -198,7 +198,7 @@ object LineBlocks {
         for (def in defs) {
             val match = def.match.find(reader.cursor)
             if (match != null) {
-                if (match.groupValues[0][0] == '\\') {
+                if (match.groupValues[0].startsWith('\\')) {
                     // Drop backslash escape and continue.
                     reader.cursor = reader.cursor.substring(1)
                     continue

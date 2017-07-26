@@ -68,7 +68,7 @@ object Spans {
             }
             quote = match.groupValues[1]
             // Check if quote is escaped.
-            if (match.value[0] == '\\') {
+            if (match.value.startsWith('\\')) {
                 // Restart search after escaped opening quote.
                 nextIndex = match.range.first + quote.length + 1
                 continue
@@ -169,7 +169,7 @@ object Spans {
         val result = mutableListOf<Fragment>()
         result.add(Fragment(text = before, done = false))
         val replacement: String
-        if (match.value[0] == '\\') {
+        if (match.value.startsWith('\\')) {
             // Remove leading backslash.
             replacement = Utils.replaceSpecialChars(match.value.removeRange(0..0))
         } else {

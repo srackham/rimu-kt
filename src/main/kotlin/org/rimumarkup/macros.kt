@@ -6,7 +6,7 @@ object Macros {
     // DEPRECATED: Matches existential macro invocations.
     val MATCH_MACRO = Regex("""\{([\w\-]+)([!=|?](?:|.*?[^\\]))?\}""", RegexOption.DOT_MATCHES_ALL)
     // Matches all macro invocations. $1 = name, $2 = params.
-    val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern)
+    val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern,RegexOption.DOT_MATCHES_ALL)
     // Matches a line starting with a macro invocation.
     val MACRO_LINE = Regex("^" + MATCH_MACRO.pattern + ".*$")
     // Match multi-line macro definition open delimiter. $1 is first line of macro.
@@ -14,7 +14,7 @@ object Macros {
     // Match multi-line macro definition open delimiter. $1 is last line of macro.
     val MACRO_DEF_CLOSE = Regex("""^(.*)'$""")
     // Match single-line macro definition. $1 = name, $2 = value.
-    val MACRO_DEF = Regex("""^\\?\{([\w\-]+\??)\}\s*=\s*'(.*)'$= """)
+    val MACRO_DEF = Regex("""^\\?\{([\w\-]+\??)\}\s*=\s*'(.*)'$""")
 
     data class Macro(
             val name: String = "",
@@ -61,12 +61,7 @@ object Macros {
             if (match.value.startsWith('\\')) {
                 return match.value.substring(1)
             }
-            val name = match.groupValues[0]
-            var params = match.groupValues[1]
-            if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
-                if (inline) Options.errorCallback("existential macro invocations are deprecated: " + match)
-                return match.value
-            }
+            val name = match.groupValues[1]
             var value = getValue(name)  // Macro value is null if macro is undefined.
             if (value == null) {
                 if (inline) {
@@ -74,8 +69,17 @@ object Macros {
                 }
                 return match.value
             }
+            var params = match.groupValues[2]
+//TODO makes more sense than when expression below
+//            if (params.isBlank())
+//                return value
+            if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
+                if (inline) Options.errorCallback("existential macro invocations are deprecated: " + match)
+                return match.value
+            }
             params = Regex("""\\\}""").replace(params, "}")   // Unescape escaped } characters.
-            when (params[0]) {
+//            when (params[0]) {
+                when (if (params.isBlank()) ' ' else params[0]) {
                 '|' -> {   // Parametrized macro.
                     val paramsList = params.substring(1).split('|')
                     // Substitute macro parameters.
@@ -85,17 +89,16 @@ object Macros {
                     // 3rd group: :[\]<default-param-value>$
                     // 4th group: <default-param-value>
                     val PARAM_RE = Regex("""\\?(\$\$?)(\d+)(\\?:(|.*?[^\\])\$)?""", RegexOption.DOT_MATCHES_ALL)
-                    value = PARAM_RE.replace(value, fun(match: MatchResult): String {
-                        if (match.value[0] == '\\') {  // Unescape escaped macro parameters.
-                            return match.value.substring(1)
+                    value = PARAM_RE.replace(value, fun(mr: MatchResult): String {
+                        if (mr.value[0] == '\\') {  // Unescape escaped macro parameters.
+                            return mr.value.substring(1)
                         }
-                        val p1 = match.groupValues[1]
-                        val p2 = match.groupValues[2]
-                        val p3 = match.groupValues[3]
-                        val p4 = match.groupValues[4]
-                        var param = paramsList[p2.toInt() - 1]
-//TODO I think non matching groups are assigned "" (unlike JS).
-//                    param = param == undefined ? "" : param  // Unassigned parameters are replaced with a blank string.
+                        val p1 = mr.groupValues[1]
+                        val p2 = mr.groupValues[2].toInt()
+                        val p3 = mr.groupValues[3]
+                        val p4 = mr.groupValues[4]
+                        // Unassigned parameters are replaced with a blank string.
+                        var param = if (paramsList.size < p2) "" else paramsList[p2 - 1]
                         if (p3.isNotBlank()) {
                             if (p3[0] == '\\') { // Unescape escaped default parameter.
                                 param += p3.substring(1)

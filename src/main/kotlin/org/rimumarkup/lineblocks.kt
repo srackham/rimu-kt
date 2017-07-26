@@ -14,9 +14,7 @@ object LineBlocks {
     )
 
     val defs = arrayOf<Definition>(
-            // Prefix match with backslash to allow escaping.
-
-// Expand lines prefixed with a macro invocation prior to all other processing.
+            // Expand lines prefixed with a macro invocation prior to all other processing.
             // macro name = $1, macro value = $2
             Definition(
                     match = Macros.MACRO_LINE,

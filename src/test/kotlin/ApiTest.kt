@@ -27,13 +27,19 @@ Quoted
 ""
 - Item 2
  . Nested 1
+
+{x} = '1${'$'}1${'$'}2'
+{x?} = '2'
+\{x}={x|}
+{x|2|3}
 """
         val result = Api.render(input)
         assertEquals("""<h1>Title</h1>
 <p>Paragraph <strong>bold</strong> <code>code</code> <em>emphasised text</em></p>
 <pre class="test-class" title="Code"><code>Indented `paragraph`</code></pre>
 <ul><li>Item 1<blockquote><p>Quoted</p></blockquote>
-</li><li>Item 2<ol><li>Nested 1</li></ol></li></ul>""",
+</li><li>Item 2<ol><li>Nested 1</li></ol></li></ul><p>{x}=1
+123</p>""",
                 result)
     }
 

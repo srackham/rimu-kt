@@ -229,7 +229,6 @@ object DelimitedBlocks {
                     continue
                 }
                 if (def.verify != null) {
-                    //TODO: Is this a Kotlin bug? I should not have to !! but if not get error "reference has nullable type ..."
                     if (!(def.verify)(match)) {
                         continue
                     }
@@ -251,7 +250,6 @@ object DelimitedBlocks {
                 // Calculate block expansion options.
                 val expansionOptions = ExpansionOptions()
 
-                // TODO: This won't work unless all properties are nullable because we need to be able to merge()
                 expansionOptions.merge(def.expansionOptions)
                 expansionOptions.merge(BlockAttributes.options)
                 // Translate block.
@@ -267,7 +265,6 @@ object DelimitedBlocks {
                         opentag = Utils.injectHtmlAttributes(opentag)
                     }
                     if (expansionOptions.container ?: false) {
-                        //TODO the delete drops the "container" key.
                         BlockAttributes.options.container = null  // Consume before recursion.
                         text = Api.render(text)
                     } else {

@@ -20,9 +20,6 @@ object BlockAttributes {
 
 // TODO: Should be a Map of <OptionEnum, Boolean> e.g option[OptionEnum.MACROS] = true
 data class ExpansionOptions(
-        //TODO: What's this for?
-//        [key: string]: boolean | undefined
-
         // Processing priority (highest to lowest): container, skip, spans and specials.
         // If spans is true then both spans and specials are processed.
         // They are assumed false if they are not explicitly defined.
@@ -108,8 +105,8 @@ object Utils {
     }
 
     // Replace pattern '$1' or '$$1', '$2' or '$$2'... in `replacement` with corresponding match match group values.
-// If pattern starts with one '$' character add specials to `expansionOptions`,
-// if it starts with two '$' characters add spans to `expansionOptions`.
+    // If pattern starts with one '$' character add specials to `expansionOptions`,
+    // if it starts with two '$' characters add spans to `expansionOptions`.
     fun replaceMatch(groupValues: List<String>,
                      replacement: String,
                      expansionOptions: ExpansionOptions = ExpansionOptions()
@@ -131,9 +128,7 @@ object Utils {
     fun replaceInline(text: String, expansionOptions: ExpansionOptions): String {
         var result = text
         if (expansionOptions.macros ?: false) {
-//TODO: Uncomment once implemented.            
-//            result = Macros.render(result)
-//            result = result === null ? '' : result
+            result = Macros.render(result)
         }
         // Spans also expand special characters.
         if (expansionOptions.spans ?: false) {
@@ -145,7 +140,7 @@ object Utils {
     }
 
     // Inject HTML attributes from attrs into the opening tag and return result.
-// Consume HTML attributes unless the 'tag' argument is blank.
+    // Consume HTML attributes unless the 'tag' argument is blank.
     fun injectHtmlAttributes(tag: String): String {
         var result = tag
         if (result.isBlank()) {

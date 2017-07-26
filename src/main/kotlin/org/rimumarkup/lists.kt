@@ -13,7 +13,6 @@ object Lists {
     )
 
     // Information about a matched list item element.
-//TODO: The nulls are only necessary to return a empty ItemState => attched block from matchItem()!!! Makes the code a mess of null negation!!
     data class ItemState(
             val id: String, // List ID.
             val groupValues: List<String>,

@@ -4,17 +4,17 @@ object Macros {
 
     // Matches macro invocation. $1 = name, $2 = params.
     // DEPRECATED: Matches existential macro invocations.
-    val MATCH_MACRO = Regex("""\{([\w\-]+)([!=|?](?:|.*?[^\\]))?\}""", RegexOption.DOT_MATCHES_ALL)
+    val MATCH_MACRO = Regex("""\{([\w\-]+)([!=|?](?:|.*?[^\\]))?}""", RegexOption.DOT_MATCHES_ALL)
     // Matches all macro invocations. $1 = name, $2 = params.
     val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern,RegexOption.DOT_MATCHES_ALL)
     // Matches a line starting with a macro invocation.
     val MACRO_LINE = Regex("^" + MATCH_MACRO.pattern + ".*$")
     // Match multi-line macro definition open delimiter. $1 is first line of macro.
-    val MACRO_DEF_OPEN = Regex("""^\\?\{[\w\-]+\??\}\s*=\s*'(.*)$""")
+    val MACRO_DEF_OPEN = Regex("""^\\?\{[\w\-]+\??}\s*=\s*'(.*)$""")
     // Match multi-line macro definition open delimiter. $1 is last line of macro.
     val MACRO_DEF_CLOSE = Regex("""^(.*)'$""")
     // Match single-line macro definition. $1 = name, $2 = value.
-    val MACRO_DEF = Regex("""^\\?\{([\w\-]+\??)\}\s*=\s*'(.*)'$""")
+    val MACRO_DEF = Regex("""^\\?\{([\w\-]+\??)}\s*=\s*'(.*)'$""")
 
     data class Macro(
             val name: String = "",
@@ -77,7 +77,7 @@ object Macros {
                 if (inline) Options.errorCallback("existential macro invocations are deprecated: " + match)
                 return match.value
             }
-            params = Regex("""\\\}""").replace(params, "}")   // Unescape escaped } characters.
+            params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
 //            when (params[0]) {
                 when (if (params.isBlank()) ' ' else params[0]) {
                 '|' -> {   // Parametrized macro.

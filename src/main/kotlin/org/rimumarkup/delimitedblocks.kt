@@ -56,7 +56,7 @@ object DelimitedBlocks {
                         if (Options.skipMacroDefs()) {
                             return ""   // Skip if a safe mode is set.
                         }
-                        val name = Regex("""^\{([\w\-]+\??)\}""").find(match.value)!!.groupValues[1]  // Extract macro name from opening delimiter.
+                        val name = Regex("""^\{([\w\-]+\??)}""").find(match.value)!!.groupValues[1]  // Extract macro name from opening delimiter.
                         var value = text
                         value = value.replace(Regex("""' *\\\n"""), "'\n")            // Unescape line-continuations.
                         value = value.replace(Regex("""(' *[\\]+)\\\n"""), "$1\n")     // Unescape escaped line-continuations.
@@ -68,8 +68,8 @@ object DelimitedBlocks {
             // Comment block.
             Definition(
                     name = "comment",
-                    openMatch = Regex("""^\\?\/\*+$"""),
-                    closeMatch = Regex("""^\*+\/$"""),
+                    openMatch = Regex("""^\\?/\*+$"""),
+                    closeMatch = Regex("""^\*+/$"""),
                     openTag = "",
                     closeTag = "",
                     expansionOptions = ExpansionOptions(
@@ -106,7 +106,7 @@ object DelimitedBlocks {
             // Code block.
             Definition(
                     name = "code",
-                    openMatch = Regex("""^\\?(\-{2,}|`{2,})([\w\s-]*)$"""), // $1 is delimiter text, $2 is optional class names.
+                    openMatch = Regex("""^\\?(-{2,}|`{2,})([\w\s-]*)$"""), // $1 is delimiter text, $2 is optional class names.
                     closeMatch = null,
                     openTag = "<pre><code>",
                     closeTag = "</code></pre>",
@@ -126,7 +126,7 @@ object DelimitedBlocks {
                     // Block starts with HTML comment, DOCTYPE directive or block-level HTML start or end tag.
                     // $1 is first line of block.
                     // $2 is the alphanumeric tag name.
-                    openMatch = Regex("""(?i)^(<!--.*|<!DOCTYPE(?:\s.*)?|<\/?([a-z][a-z0-9]*)(?:[\s>].*)?)$"""),
+                    openMatch = Regex("""(?i)^(<!--.*|<!DOCTYPE(?:\s.*)?|</?([a-z][a-z0-9]*)(?:[\s>].*)?)$"""),
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "",
                     closeTag = "",

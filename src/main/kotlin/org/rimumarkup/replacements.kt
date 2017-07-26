@@ -34,14 +34,14 @@ object Replacements {
             // src = $1, alt = $2
             Definition(
                     //                    match = Regex("""\\?<image:([^\s\|]+)\|([^]*?)>"""),
-                    match = Regex("""\\?<image:([^\s\|]+)\|(.*?)>""", RegexOption.DOT_MATCHES_ALL),
+                    match = Regex("""\\?<image:([^\s|]+)\|(.*?)>""", RegexOption.DOT_MATCHES_ALL),
                     replacement = """<img src="$1" alt="$2">"""
             ),
 
             // Image: <image:src>
             // src = $1, alt = $1
             Definition(
-                    match = Regex("""\\?<image:([^\s\|]+?)>"""),
+                    match = Regex("""\\?<image:([^\s|]+?)>"""),
                     replacement = """<img src="$1" alt="$1">"""
             ),
 
@@ -49,7 +49,7 @@ object Replacements {
             // alt = $1, url = $2
             Definition(
                     //                    match = Regex("""\\?!\[([^[]*?)\]\((\S+?)\)"""),
-                    match = Regex("""\\?!\[([^\[]*?)\]\((\S+?)\)"""),
+                    match = Regex("""\\?!\[([^\[]*?)]\((\S+?)\)"""),
                     replacement = """<img src="$2" alt="$1">"""
             ),
 
@@ -57,14 +57,14 @@ object Replacements {
             // address = $1, caption = $2
             Definition(
                     //                    match = Regex("""\\?<(\S+@[\w\.\-]+)\|([^]+?)>"""),
-                    match = Regex("""\\?<(\S+@[\w\.\-]+)\|(.+?)>""", RegexOption.DOT_MATCHES_ALL),
+                    match = Regex("""\\?<(\S+@[\w.\-]+)\|(.+?)>""", RegexOption.DOT_MATCHES_ALL),
                     replacement = """<a href="mailto:$1">$$2</a>"""
             ),
 
             // Email: <address>
             // address = $1, caption = $1
             Definition(
-                    match = Regex("""\\?<(\S+@[\w\.\-]+)>"""),
+                    match = Regex("""\\?<(\S+@[\w.\-]+)>"""),
                     replacement = """<a href="mailto:$1">$1</a>"""
             ),
 
@@ -72,7 +72,7 @@ object Replacements {
             // caption = $1, url = $2
             Definition(
                     //                    match = Regex("""\\?\[([^[]*?)\]\((\S+?)\)"""),
-                    match = Regex("""\\?\[([^\[]*?)\]\((\S+?)\)"""),
+                    match = Regex("""\\?\[([^\[]*?)]\((\S+?)\)"""),
                     replacement = """<a href="$2">$$1</a>"""
             ),
 
@@ -88,7 +88,7 @@ object Replacements {
             // Match HTML comment or HTML tag.
             // $1 = tag, $2 = tag name
             Definition(
-                    match = Regex("""\\?(<!--(?:[^<>&]*)?-->|<\/?([a-z][a-z0-9]*)(?:\s+[^<>&]+)?>)/""", RegexOption.IGNORE_CASE),
+                    match = Regex("""\\?(<!--(?:[^<>&]*)?-->|</?([a-z][a-z0-9]*)(?:\s+[^<>&]+)?>)/""", RegexOption.IGNORE_CASE),
                     replacement = "",
                     filter = fun(match: MatchResult, _: Definition): String {
                         return Options.htmlSafeModeFilter(match.groupValues[1], match, ExpansionOptions()) // Matched HTML comment or inline tag.
@@ -104,7 +104,7 @@ object Replacements {
 
             // Auto-encode (most) raw HTTP URLs as links.
             Definition(
-                    match = Regex("""\\?((?:http|https):\/\/[^\s"']*[A-Za-z0-9/#])"""),
+                    match = Regex("""\\?((?:http|https)://[^\s"']*[A-Za-z0-9/#])"""),
                     replacement = """<a href="$1">$1</a>"""
             ),
 

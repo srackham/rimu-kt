@@ -53,7 +53,7 @@ object LineBlocks {
             // Quote definition.
             // quote = $1, openTag = $2, separator = $3, closeTag = $4
             Definition(
-                    match = Regex("""^(\S{1,2})\s*=\s*'([^\|]*)(\|{1,2})(.*)'$"""),
+                    match = Regex("""^(\S{1,2})\s*=\s*'([^|]*)(\|{1,2})(.*)'$"""),
                     filter = fun(match: MatchResult, _, _): String {
                         if (Options.isSafeModeNz()) {
                             return ""   // Skip if a safe mode is set.
@@ -70,7 +70,7 @@ object LineBlocks {
             // Replacement definition.
             // pattern = $1, flags = $2, replacement = $3
             Definition(
-                    match = Regex("""^\\?\/(.+)\/([igm]*)\s*=\s*'(.*)'$"""),
+                    match = Regex("""^\\?/(.+)/([igm]*)\s*=\s*'(.*)'$"""),
                     filter = fun(match: MatchResult, _, _): String {
                         if (Options.isSafeModeNz()) {
                             return ""   // Skip if a safe mode is set.
@@ -111,18 +111,18 @@ object LineBlocks {
             ),
             // Comment line.
             Definition(
-                    match = Regex("""^\\?\/{2}(.*)$""")
+                    match = Regex("""^\\?/{2}(.*)$""")
             ),
             // Block image: <image:src|alt>
             // src = $1, alt = $2
             Definition(
-                    match = Regex("""^\\?<image:([^\s\|]+)\|(.+?)>$""", RegexOption.DOT_MATCHES_ALL),
+                    match = Regex("""^\\?<image:([^\s|]+)\|(.+?)>$""", RegexOption.DOT_MATCHES_ALL),
                     replacement = "<img src=\"$1\" alt=\"$2\">"
             ),
             // Block image: <image:src>
             // src = $1, alt = $1
             Definition(
-                    match = Regex("""^\\?<image:([^\s\|]+?)>$"""),
+                    match = Regex("""^\\?<image:([^\s|]+?)>$"""),
                     replacement = "<img src=\"$1\" alt=\"$1\">"
             ),
             // DEPRECATED as of 3.4.0.
@@ -150,7 +150,7 @@ object LineBlocks {
                         // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
                         var text = match.groupValues[0]
                         text = Utils.replaceInline(text, ExpansionOptions(macros = true))
-                        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)+)*(?:\s*)?(#[a-zA-Z][\w\-]*\s*)?(?:\s*)?(".+?")?(?:\s*)?(\[.+\])?(?:\s*)?([+-][ \w+-]+)?$""").find(text)
+                        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)+)*(?:\s*)?(#[a-zA-Z][\w\-]*\s*)?(?:\s*)?(".+?")?(?:\s*)?(\[.+])?(?:\s*)?([+-][ \w+-]+)?$""").find(text)
                         if (m == null) {
                             return false
                         }

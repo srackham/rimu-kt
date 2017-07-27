@@ -53,7 +53,7 @@ object Io {
         }
 
         fun skipBlankLines() {
-            while (this.cursor == "") {
+            while (!this.eof() && this.cursor == "") {
                 this.next()
             }
         }

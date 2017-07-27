@@ -131,7 +131,7 @@ object Macros {
         })
         // Delete lines marked for deletion by inclusion macros.
         if (result.indexOf('\u0000') >= 0) {
-            result = result.split('\n').filter { it.contains('\u0000') }.joinToString("\n")
+            result = result.split('\n').filter { !it.contains('\u0000') }.joinToString("\n")
         }
         return result
     }

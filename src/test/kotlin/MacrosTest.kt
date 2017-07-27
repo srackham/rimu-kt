@@ -25,10 +25,20 @@ class MacrosTest {
         val input = """{x} = '1$1$2'
 {x?} = '2'
 \{x}={x|}
-{x|2|3}"""
+{x|2|3}
+
+{y}='1'
+{y=}Drop this line!
+{y=1}Keep this line
+{y!}Keep this line
+{y!1}Drop this line!
+{undefined}"""
         val result = Api.render(input)
         assertEquals("""<p>{x}=1
-123</p>""", result)
+123</p>
+<p>Keep this line
+Keep this line
+{undefined}</p>""", result)
     }
 }
 

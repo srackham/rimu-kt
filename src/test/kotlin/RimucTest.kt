@@ -152,8 +152,6 @@ class RimucTest {
     }
 
     @Test
-    @Ignore
-            //TODO reenable once port is complete and the headers/footers can be compiled.
     fun compileToImplicitStyledOutputFile() {
         // If the --styled option is specified and a single input file then an output HTML file with the same file name is generated.
         val infile = tempFolderRule.newFile("test-file.rmu")

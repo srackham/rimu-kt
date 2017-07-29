@@ -18,6 +18,13 @@ import java.io.FileOutputStream
 import java.nio.file.Paths
 
 
+fun parseJsonText(jsonText: String): Any? {
+    val parser: Parser = Parser()
+    val stringBuilder: StringBuilder = StringBuilder(jsonText)
+    val result = parser.parse(stringBuilder)
+    return result
+}
+
 class RimucTest {
     @Rule
     @JvmField
@@ -76,13 +83,6 @@ class RimucTest {
         exceptionRule.expect(type)
         exceptionRule.expectMessage(message)
         rimucNoRimurc(args)
-    }
-
-    fun parseJsonText(jsonText: String): Any? {
-        val parser: Parser = Parser()
-        val stringBuilder: StringBuilder = StringBuilder(jsonText)
-        val result = parser.parse(stringBuilder)
-        return result
     }
 
     /*

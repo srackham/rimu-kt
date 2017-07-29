@@ -50,5 +50,9 @@ class SpansTest {
         input = "**[Link](http://example.com)**"
         output = Spans.render(input)
         assertEquals("<strong><a href=\"http://example.com\">Link</a></strong>", output)
+
+        input = "<br>"
+        output = Spans.render(input)
+        assertEquals("<br>", output)
     }
 }

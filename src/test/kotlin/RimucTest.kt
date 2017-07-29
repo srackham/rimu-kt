@@ -1,6 +1,9 @@
+import com.beust.klaxon.JsonArray
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
+import com.beust.klaxon.string
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
@@ -52,16 +55,34 @@ class RimucTest {
         rimuc(argsList.toTypedArray())
     }
 
-    fun compileStdin(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        stdinMock.provideLines(source)
+    fun compileString(input: String, args: Array<String>): String {
+        stdinMock.provideLines(input)
+        systemOutRule.clearLog()
         rimucNoRimurc(args)
-        assertEquals(message, expected, systemOutRule.log)
+        return systemOutRule.log
+    }
+
+    fun compileAssertEquals(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
+        val output = compileString(source, args)
+        assertEquals(message, expected, output)
+    }
+
+    fun compileAssertContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
+        val output = compileString(source, args)
+        assertTrue(message, output.contains(expected))
     }
 
     fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
         exceptionRule.expect(type)
         exceptionRule.expectMessage(message)
         rimucNoRimurc(args)
+    }
+
+    fun parseJsonText(jsonText: String): Any? {
+        val parser: Parser = Parser()
+        val stringBuilder: StringBuilder = StringBuilder(jsonText)
+        val result = parser.parse(stringBuilder)
+        return result
     }
 
     /*
@@ -94,8 +115,8 @@ class RimucTest {
     fun checkResourceExists() {
         // Throws exception if there is a missing resource file.
         for (style in arrayOf("classic", "flex", "v8")) {
-            readResouce("/$style-header.rmu")
-            readResouce("/$style-footer.rmu")
+            readResource("/$style-header.rmu")
+            readResource("/$style-footer.rmu")
         }
     }
 
@@ -125,7 +146,7 @@ class RimucTest {
 
     @Test
     fun compilations() {
-        compileStdin(
+        compileAssertEquals(
                 source = "Hello World!",
                 expected = "<p>Hello World!</p>",
                 message = "rimucNoRimurc basic test"
@@ -170,5 +191,34 @@ class RimucTest {
         FileOutputStream(infile).writeTextAndClose("<p>Hello World!</p>")
         rimucNoRimurc(arrayOf(infile.path))
         assertEquals("<p>Hello World!</p>", systemOutRule.log)
+    }
+
+    /**
+     * Execute test cases specified in JSON file rimuc-tests.json
+     */
+    @Test
+    fun rimucCompatibilityTests() {
+        val jsonText = readResource("/rimuc-tests.json")
+        @Suppress("UNCHECKED_CAST")
+        val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
+        for (test in tests) {
+            val description = test.string("description") ?: ""
+            val args = test.string("args") ?: ""
+            val input = test.string("input") ?: ""
+            val expectedOutput = test.string("expectedOutput") ?: ""
+            val predicate = test.string("predicate") ?: ""
+            val argsArray: Array<String>
+            if (args.isNotBlank()) {
+                argsArray = args.trim().split(Regex("""\s+"""))
+                        .map { it.removeSurrounding("\"") }
+                        .toTypedArray()
+            } else {
+                argsArray = arrayOf()   // Use empty array is there are no arguments.
+            }
+            when (predicate) {
+                "contains" -> compileAssertContains(description, argsArray, input, expectedOutput)
+                "equals" -> compileAssertEquals(description, argsArray, input, expectedOutput)
+            }
+        }
     }
 }

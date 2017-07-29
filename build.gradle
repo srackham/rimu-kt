@@ -27,6 +27,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testCompile group: "junit", name: "junit", version: "4.12"
     testCompile "com.github.stefanbirkner:system-rules:1.16.1"
+    testCompile "com.beust:klaxon:0.31"
 }
 
 dokka {

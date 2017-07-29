@@ -234,7 +234,7 @@ fun rimuc(args: Array<String>) {
                     popOptionValue(arg)
                 else
                     "true"
-                source += "{$arg}=\"$macro_value\"\n"
+                source += "{$arg}='$macro_value'\n"
             }
             "--styled-name" -> {
                 styled_name = popOptionValue(arg)
@@ -279,6 +279,7 @@ fun rimuc(args: Array<String>) {
     }
 
     var html = ""
+    Api.init()
     // Start by processing --prepend options source.
     if (source.isNotBlank()) {
         html = render(source) + '\n'
@@ -292,7 +293,7 @@ fun rimuc(args: Array<String>) {
 
     for (infile in infiles) {
         val text = if (infile.startsWith("resource:"))
-            readResouce(infile.removePrefix("resource:"))
+            readResource(infile.removePrefix("resource:"))
         else if (infile == "/dev/stdin")
             System.`in`.readTextAndClose()
         else

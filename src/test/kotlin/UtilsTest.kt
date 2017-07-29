@@ -19,7 +19,7 @@ class UtilsTest {
 
     @Test
     fun readResouceTest() {
-        val text = readResouce("/test.txt") // Throws exception if not found.
+        val text = readResource("/test.txt") // Throws exception if not found.
         assertEquals("Test resouce", text)
     }
 

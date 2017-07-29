@@ -201,7 +201,7 @@ fun stringToFile(text: String, fileName: String) {
  * Read contents of resource file.
  * @throws [FileNotFoundException] if resource file is missing.
  */
-fun readResouce(fileName: String): String {
+fun readResource(fileName: String): String {
     // The anonymous object provides a Java class to call getResouce() against.
     val url = object {}::class.java.getResource(fileName)
     if (url == null) {

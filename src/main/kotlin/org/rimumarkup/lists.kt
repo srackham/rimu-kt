@@ -19,14 +19,14 @@ object Lists {
             val def: Definition
     ) {
         companion object {
-            // Special items.
+            // Static identity items.
             val NO_MATCH = ItemState("NO_MATCH", listOf<String>(), defs[0])
             val BLOCK_MATCH = ItemState("BLOCK_MATCH", listOf<String>(), defs[0])
         }
     }
 
     val defs = arrayOf(
-            // Prefix match with backslash to allow escaping.
+            // Prefix match property with backslash to allow escaping.
 
             // Unordered lists.
             // $1 is list ID $2 is item text.

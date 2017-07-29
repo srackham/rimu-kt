@@ -88,7 +88,7 @@ object Replacements {
             // Match HTML comment or HTML tag.
             // $1 = tag, $2 = tag name
             Definition(
-                    match = Regex("""\\?(<!--(?:[^<>&]*)?-->|</?([a-z][a-z0-9]*)(?:\s+[^<>&]+)?>)/""", RegexOption.IGNORE_CASE),
+                    match = Regex("""\\?(<!--(?:[^<>&]*)?-->|</?([a-z][a-z0-9]*)(?:\s+[^<>&]+)?>)""", RegexOption.IGNORE_CASE),
                     replacement = "",
                     filter = fun(match: MatchResult, _: Definition): String {
                         return Options.htmlSafeModeFilter(match.groupValues[1], match, ExpansionOptions()) // Matched HTML comment or inline tag.

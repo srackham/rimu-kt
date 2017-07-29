@@ -1,6 +1,6 @@
 import com.beust.klaxon.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.Assert.*
 import org.rimumarkup.*
 
 /*
@@ -21,7 +21,7 @@ class RimuTest {
      * Execute test cases specified in JSON file rimu-tests.json
      */
     @Test
-    fun rimucCompatibilityTests() {
+    fun rimuCompatibilityTests() {
         val jsonText = readResource("/rimu-tests.json")
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
@@ -37,16 +37,16 @@ class RimuTest {
             renderOptions.htmlReplacement = options.string("htmlReplacement")
             renderOptions.reset = options.boolean("reset") ?: false
             var msg = ""
-            if (expectedCallback.isBlank()) {
-                renderOptions.callback = fun(message) { msg = "$message.type: $message.text" }
+            if (expectedCallback.isNotBlank()) {
+                renderOptions.callback = fun(message) { msg = "$message.type: $message.text" } // Capture the callback message.
             } else {
-                renderOptions.callback = catchLint
+                renderOptions.callback = catchLint  // Callback should not occur, this will throw an error.
             }
             Options.update(renderOptions)
             val result = Api.render(input)
             assertEquals(description, expectedOutput, result)
             if (expectedCallback.isNotBlank()) {
-                assertEquals(description, msg.substring(0,expectedOutput.length), result)
+                assertEquals(description, msg.substring(0, expectedCallback.length), expectedCallback)
             }
         }
     }

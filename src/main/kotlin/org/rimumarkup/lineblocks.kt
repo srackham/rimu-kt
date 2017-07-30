@@ -150,6 +150,9 @@ object LineBlocks {
                         // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
                         var text = match.groupValues[0]
                         text = Utils.replaceInline(text, ExpansionOptions(macros = true))
+                        // TODO: To mitigate freezing of next re.
+                        if (Regex("""^\\?\.(\w+)\s*=\s*'(.*)'$""").matches(text)) return false // Ignore API options.
+                        // TODO: This next re freezes on ".htmlReplacement = 'Foo'" see http://www.regular-expressions.info/catastrophic.html
                         val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)+)*(?:\s*)?(#[a-zA-Z][\w\-]*\s*)?(?:\s*)?(".+?")?(?:\s*)?(\[.+])?(?:\s*)?([+-][ \w+-]+)?$""").find(text)
                         if (m == null) {
                             return false
@@ -165,7 +168,7 @@ object LineBlocks {
                             if (m.groupValues[3].isNotBlank()) { // CSS properties.
                                 BlockAttributes.attributes += " style=" + m.groupValues[3]
                             }
-                            if (m.groupValues[4].isNotBlank()) { // HTML attributes.
+                            if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
                                 BlockAttributes.attributes += " " + m.groupValues[4].substring(1..m.groupValues[4].length - 2).trim()
                             }
                             BlockAttributes.attributes = BlockAttributes.attributes.trim()
@@ -230,11 +233,6 @@ object LineBlocks {
             }
         }
         return false
-    }
-
-    // Return line block definition or undefined if not found.
-    fun getDefinition(name: String): Definition {
-        return defs.first { def -> def.name == name }
     }
 
 }

@@ -62,7 +62,7 @@ object Quotes {
     // Reset definitions to defaults.
     fun init() {
         defs.clear()
-        defs.addAll(DEFAULT_DEFS)
+        DEFAULT_DEFS.mapTo(defs) { it.copy() }
         initializeRegExps()
     }
 
@@ -80,7 +80,7 @@ object Quotes {
         unescapeRe = Regex("\\\\($quotes)")
     }
 
-    // Return the quote definition corresponding to 'quote' character, return undefined if not found.
+    // Return the quote definition corresponding to 'quote' character, return null if not found.
     fun getDefinition(quote: String): Definition? {
         for (def in defs) {
             if (def.quote == quote) return def

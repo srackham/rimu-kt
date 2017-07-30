@@ -1,5 +1,6 @@
 import com.beust.klaxon.*
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.rimumarkup.*
 
@@ -25,9 +26,11 @@ class RimuTest {
         val jsonText = readResource("/rimu-tests.json")
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
+        var testNumber = 0
         for (test in tests) {
+            testNumber++
             val description = test.string("description") ?: ""
-            println(description)
+            println("$testNumber: $description")
             val input = test.string("input") ?: ""
             val expectedOutput = test.string("expectedOutput") ?: ""
             val expectedCallback = test.string("expectedCallback") ?: ""
@@ -38,7 +41,7 @@ class RimuTest {
             renderOptions.reset = options.boolean("reset") ?: false
             var msg = ""
             if (expectedCallback.isNotBlank()) {
-                renderOptions.callback = fun(message) { msg = "$message.type: $message.text" } // Capture the callback message.
+                renderOptions.callback = fun(message) { msg = "${message.type}: ${message.text}" } // Capture the callback message.
             } else {
                 renderOptions.callback = catchLint  // Callback should not occur, this will throw an error.
             }
@@ -46,7 +49,7 @@ class RimuTest {
             val result = Api.render(input)
             assertEquals(description, expectedOutput, result)
             if (expectedCallback.isNotBlank()) {
-                assertEquals(description, msg.substring(0, expectedCallback.length), expectedCallback)
+                assertTrue(description, msg.startsWith(expectedCallback))
             }
         }
     }

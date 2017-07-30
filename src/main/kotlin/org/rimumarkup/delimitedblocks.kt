@@ -162,7 +162,7 @@ object DelimitedBlocks {
                         var lines = text.split("\n")
                         lines = lines.map { line ->
                             // Strip first line indent width or up to first non-space character.
-                            var indent = Regex("""\S""").find(line)!!.range.first
+                            var indent = Regex("""\S|$""").find(line)!!.range.first
                             if (indent > first_indent) indent = first_indent
                             line.substring(indent)
                         }
@@ -211,11 +211,13 @@ object DelimitedBlocks {
     // Reset definitions to defaults.
     fun init() {
         defs.clear()
-        defs.addAll(DEFAULT_DEFS)
+        DEFAULT_DEFS.mapTo(defs) {
+            it.copy(expansionOptions = it.expansionOptions.copy())
+        }
     }
 
     // If the next element in the reader is a valid delimited block render it
-// and return true, else return false.
+    // and return true, else return false.
     fun render(reader: Io.Reader, writer: Io.Writer): Boolean {
         if (reader.eof()) throw RimucException("Unexpected EOF")
         for (def in defs) {
@@ -223,7 +225,7 @@ object DelimitedBlocks {
             //TODO if == null continue, it clearer and less indented.
             if (match != null) {
                 // Escape non-paragraphs.
-                if (match.value == "\\" && def.name != "paragraph") {
+                if (match.value[0] == '\\' && def.name != "paragraph") {
                     // Drop backslash escape and continue.
                     reader.cursor = reader.cursor.substring(1)
                     continue
@@ -292,13 +294,13 @@ object DelimitedBlocks {
         return false  // No matching delimited block found.
     }
 
-    // Return block definition or undefined if not found.
+    // Return block definition or null if not found.
     fun getDefinition(name: String): Definition? {
-        return defs.first { def -> def.name == name }
+        return defs.find { def -> def.name == name }
     }
 
     // Update existing named definition.
-// Value syntax: <open-tag>|<close-tag> block-options
+    // Value syntax: <open-tag>|<close-tag> block-options
     fun setDefinition(name: String, value: String) {
         val def = getDefinition(name)
         if (def == null) {
@@ -307,9 +309,18 @@ object DelimitedBlocks {
         }
         val match = Regex("""^(?:(<[a-zA-Z].*>)\|(<[a-zA-Z/].*>))?(?:\s*)?([+-][ \w+-]+)?$""").find(value.trim())
         if (match != null) {
-            if (match.groupValues.size > 1) def.openTag = match.groupValues[1]
-            if (match.groupValues.size > 2) def.closeTag = match.groupValues[2]
-            if (match.groupValues.size > 3) def.expansionOptions.parse(match.groupValues[3])
+            if (match.value.contains('|')) {
+                def.openTag = match.groupValues[1]
+                def.closeTag = match.groupValues[2]
+            }
+            if (match.groupValues[3].isNotBlank()) {
+                def.expansionOptions.parse(match.groupValues[3])
+            }
+
+// TODO delete
+//            if (match.groupValues.size > 1) def.openTag = match.groupValues[1]
+//            if (match.groupValues.size > 2) def.closeTag = match.groupValues[2]
+//            if (match.groupValues.size > 3) def.expansionOptions.parse(match.groupValues[3])
         }
     }
 

@@ -1,13 +1,38 @@
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.rimumarkup.Api
+import org.rimumarkup.DelimitedBlocks
+import org.rimumarkup.Quotes
+import org.rimumarkup.Replacements
 
 class ApiTest {
 
     @Before
     fun before() {
         Api.init()
+    }
+
+    /**
+     * Ensure definitions are reset by init().
+     */
+    @Test
+    fun initTest() {
+        val def1 = DelimitedBlocks.getDefinition("paragraph")!!
+        def1.expansionOptions.spans = false
+        DelimitedBlocks.init()
+        val def2 = DelimitedBlocks.getDefinition("paragraph")!!
+        assertTrue("DelimitedBlocks.init() shallow copy", def2 !== def1)
+        assertTrue("DelimitedBlocks.init() deep copy", def2.expansionOptions.spans == true)
+
+        Quotes.defs[0].openTag = "TEST"
+        Quotes.init()
+        assertTrue("Quotes.init() shallow copy", Quotes.defs[0].openTag != "TEST")
+
+        Replacements.defs[0].replacement = "TEST"
+        Replacements.init()
+        assertTrue("Replacements.init() shallow copy", Replacements.defs[0].replacement != "TEST")
     }
 
     /**

@@ -143,7 +143,7 @@ object Replacements {
     // Reset definitions to defaults.
     fun init() {
         defs.clear()
-        defs.addAll(DEFAULT_DEFS)
+        DEFAULT_DEFS.mapTo(defs) { it.copy() }
     }
 
     // Update existing or add new replacement definition.

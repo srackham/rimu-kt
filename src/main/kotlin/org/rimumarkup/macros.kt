@@ -61,20 +61,20 @@ object Macros {
             if (match.value.startsWith('\\')) {
                 return match.value.substring(1)
             }
-            val name = match.groupValues[1]
-            var value = getValue(name)  // Macro value is null if macro is undefined.
-            if (value == null) {
-                if (inline) {
-                    Options.errorCallback("undefined macro: ' + match + ': $text")
-                }
-                return match.value
-            }
             var params = match.groupValues[2]
 //TODO makes more sense than when expression below
 //            if (params.isBlank())
 //                return value
             if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
-                if (inline) Options.errorCallback("existential macro invocations are deprecated: " + match)
+                if (inline) Options.errorCallback("existential macro invocations are deprecated: ${match.value}")
+                return match.value
+            }
+            val name = match.groupValues[1]
+            var value = getValue(name)  // Macro value is null if macro is undefined.
+            if (value == null) {
+                if (inline) {
+                    Options.errorCallback("undefined macro: ${match.value}: $text")
+                }
                 return match.value
             }
             params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
@@ -105,7 +105,7 @@ object Macros {
                             } else {
                                 if (param == "") {
                                     param = p4                              // Assign default parameter value.
-                                    param = Regex("""\\\$""").replace(param, "$")     // Unescape escaped $ characters in the default value.
+                                    param = Regex("""\\\$""").replace(param, "\\$")     // Unescape escaped $ characters in the default value.
                                 }
                             }
                         }

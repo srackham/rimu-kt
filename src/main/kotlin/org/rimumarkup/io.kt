@@ -7,10 +7,14 @@ object Io {
         // Lines are mutable so line macro values can be inserted into the reader.
         val lines: MutableList<String> = text.split(Regex("""\r\n|\r|\n""")).toMutableList()
         var pos = 0       // Line index of current line.
-        var cursor: String = ""
+        var cursor: String
             get() {
                 assert(!this.eof())
                 return this.lines[this.pos]
+            }
+            set(value) {
+                assert(!this.eof())
+                this.lines[pos] = value
             }
 
         // Return true if the cursor has advanced over all input lines.

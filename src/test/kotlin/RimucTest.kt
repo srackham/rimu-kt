@@ -201,8 +201,11 @@ class RimucTest {
         val jsonText = readResource("/rimuc-tests.json")
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
+        var testNumber = 0
         for (test in tests) {
+            testNumber++
             val description = test.string("description") ?: ""
+            println(description)
             val args = test.string("args") ?: ""
             val input = test.string("input") ?: ""
             val expectedOutput = test.string("expectedOutput") ?: ""

@@ -18,7 +18,6 @@ object BlockAttributes {
     }
 }
 
-// TODO: Should be a Map of <OptionEnum, Boolean> e.g option[OptionEnum.MACROS] = true
 data class ExpansionOptions(
         // Processing priority (highest to lowest): container, skip, spans and specials.
         // If spans is true then both spans and specials are processed.

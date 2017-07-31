@@ -207,7 +207,7 @@ fun rimuc(args: Array<String>) {
                     die("missing --safe-mode argument")
                 }
                 safe_mode = popOptionValue(arg).toInt()
-                if (safe_mode < 0 || safe_mode > 15) {
+                if (safe_mode !in 0..15) {
                     die("illegal --safe-mode option value: $safe_mode")
                 }
             }

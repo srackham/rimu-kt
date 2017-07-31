@@ -4,15 +4,14 @@ object Options {
 
     // Global option values.
     // These are initialized when the Option object is instaniated.
-    // TODO: safeMode should be enum.
     var safeMode = 0
         set(value) {
-            if (safeMode < 0 || safeMode > 15) {
+            if (safeMode !in 0..15) {
                 throw IllegalArgumentException("Illegal safeMode value")
             }
             field = value
         }
-    var htmlReplacement = "<mark>replaced HTML</mark>"
+    var htmlReplacement = ""
     var callback: CallbackFunction = doNothing
 
     data class RenderOptions(

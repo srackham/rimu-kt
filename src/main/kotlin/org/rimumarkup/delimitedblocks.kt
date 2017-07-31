@@ -222,74 +222,72 @@ object DelimitedBlocks {
         if (reader.eof()) throw RimucException("Unexpected EOF")
         for (def in defs) {
             val match = def.openMatch.find(reader.cursor)
-            //TODO if == null continue, it clearer and less indented.
-            if (match != null) {
-                // Escape non-paragraphs.
-                if (match.value[0] == '\\' && def.name != "paragraph") {
-                    // Drop backslash escape and continue.
-                    reader.cursor = reader.cursor.substring(1)
+            if (match == null) {
+                continue
+            }
+            // Escape non-paragraphs.
+            if (match.value[0] == '\\' && def.name != "paragraph") {
+                // Drop backslash escape and continue.
+                reader.cursor = reader.cursor.substring(1)
+                continue
+            }
+            if (def.verify != null) {
+                if (!(def.verify)(match)) {
                     continue
                 }
-                if (def.verify != null) {
-                    if (!(def.verify)(match)) {
-                        continue
-                    }
-                }
-                // Process opening delimiter.
-                //TODO: Is this a Kotlin bug? I should not have to !! but if not get error "reference has nullable type ..."
-                val delimiterText = if (def.delimiterFilter != null) (def.delimiterFilter)(match, def) else ""
-                // Read block content into lines.
-                val lines = mutableListOf<String>()
-                if (delimiterText.isNotBlank()) {
-                    lines.add(delimiterText)
-                }
-                // Read content up to the closing delimiter.
-                reader.next()
-                val content = reader.readTo(def.closeMatch ?: def.openMatch)
-                if (content == null) {
-                    Options.errorCallback("unterminated delimited block: " + match.value)
-                } else lines.addAll(content)
-                // Calculate block expansion options.
-                val expansionOptions = ExpansionOptions()
-
-                expansionOptions.merge(def.expansionOptions)
-                expansionOptions.merge(BlockAttributes.options)
-                // Translate block.
-                if (!(expansionOptions.skip ?: false)) {
-                    var text = lines.joinToString("\n")
-                    if (def.contentFilter != null) {
-                        text = (def.contentFilter)(text, match, expansionOptions)   // TODO: Why do we need !! ?
-                    }
-                    var opentag = def.openTag
-                    if (def.name == "html") {
-                        text = Utils.injectHtmlAttributes(text)
-                    } else {
-                        opentag = Utils.injectHtmlAttributes(opentag)
-                    }
-                    if (expansionOptions.container ?: false) {
-                        BlockAttributes.options.container = null  // Consume before recursion.
-                        text = Api.render(text)
-                    } else {
-                        text = Utils.replaceInline(text, expansionOptions)
-                    }
-                    var closetag = def.closeTag
-                    if (def.name == "division" && opentag == "<div>") {
-                        // Drop div tags if the opening div has no attributes.
-                        opentag = ""
-                        closetag = ""
-                    }
-                    writer.write(opentag)
-                    writer.write(text)
-                    writer.write(closetag)
-                    if (!reader.eof() && (opentag + text + closetag).isNotBlank()) {
-                        // Add a trailing '\n' if we've written a non-blank line and there are more source lines left.
-                        writer.write("\n")
-                    }
-                }
-                // Reset consumed Block Attributes expansion options.
-                BlockAttributes.options = ExpansionOptions()
-                return true
             }
+            // Process opening delimiter.
+            val delimiterText = if (def.delimiterFilter != null) (def.delimiterFilter)(match, def) else ""
+            // Read block content into lines.
+            val lines = mutableListOf<String>()
+            if (delimiterText.isNotBlank()) {
+                lines.add(delimiterText)
+            }
+            // Read content up to the closing delimiter.
+            reader.next()
+            val content = reader.readTo(def.closeMatch ?: def.openMatch)
+            if (content == null) {
+                Options.errorCallback("unterminated delimited block: " + match.value)
+            } else lines.addAll(content)
+            // Calculate block expansion options.
+            val expansionOptions = ExpansionOptions()
+            expansionOptions.merge(def.expansionOptions)
+            expansionOptions.merge(BlockAttributes.options)
+            // Translate block.
+            if (!(expansionOptions.skip ?: false)) {
+                var text = lines.joinToString("\n")
+                if (def.contentFilter != null) {
+                    text = (def.contentFilter)(text, match, expansionOptions)
+                }
+                var opentag = def.openTag
+                if (def.name == "html") {
+                    text = Utils.injectHtmlAttributes(text)
+                } else {
+                    opentag = Utils.injectHtmlAttributes(opentag)
+                }
+                if (expansionOptions.container ?: false) {
+                    BlockAttributes.options.container = null  // Consume before recursion.
+                    text = Api.render(text)
+                } else {
+                    text = Utils.replaceInline(text, expansionOptions)
+                }
+                var closetag = def.closeTag
+                if (def.name == "division" && opentag == "<div>") {
+                    // Drop div tags if the opening div has no attributes.
+                    opentag = ""
+                    closetag = ""
+                }
+                writer.write(opentag)
+                writer.write(text)
+                writer.write(closetag)
+                if (!reader.eof() && (opentag + text + closetag).isNotBlank()) {
+                    // Add a trailing '\n' if we've written a non-blank line and there are more source lines left.
+                    writer.write("\n")
+                }
+            }
+            // Reset consumed Block Attributes expansion options.
+            BlockAttributes.options = ExpansionOptions()
+            return true
         }
         return false  // No matching delimited block found.
     }
@@ -316,11 +314,6 @@ object DelimitedBlocks {
             if (match.groupValues[3].isNotBlank()) {
                 def.expansionOptions.parse(match.groupValues[3])
             }
-
-// TODO delete
-//            if (match.groupValues.size > 1) def.openTag = match.groupValues[1]
-//            if (match.groupValues.size > 2) def.closeTag = match.groupValues[2]
-//            if (match.groupValues.size > 3) def.expansionOptions.parse(match.groupValues[3])
         }
     }
 

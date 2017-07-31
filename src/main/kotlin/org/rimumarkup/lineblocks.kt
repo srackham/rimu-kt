@@ -211,11 +211,7 @@ object LineBlocks {
                 }
                 var text: String
                 if (def.filter == null) {
-                    // TODO: the test is redundant because a "" replacement always yields ""
-                    text = if (def.replacement != "")
-                        Utils.replaceMatch(match.groupValues, def.replacement, ExpansionOptions(macros = true))
-                    else
-                        ""
+                    text = Utils.replaceMatch(match.groupValues, def.replacement, ExpansionOptions(macros = true))
                 } else {
                     text = (def.filter)(match, reader, def)
                 }

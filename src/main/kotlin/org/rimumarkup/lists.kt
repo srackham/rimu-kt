@@ -203,7 +203,7 @@ object Lists {
         }
         // Check if the line matches an allowed attached Delimited block.
         for (name in attachments) {
-            val def = DelimitedBlocks.getDefinition(name)!! // TODO: Should always match?
+            val def = DelimitedBlocks.getDefinition(name)!!
             if (def.openMatch.matches(line)) {
                 return ItemState.BLOCK_MATCH
             }

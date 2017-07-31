@@ -23,7 +23,6 @@ object Options {
     )
 
     // Reset options to default values.
-    // TODO: Is init() really necessary?
     fun init() {
         safeMode = 0
         htmlReplacement = "<mark>replaced HTML</mark>"

@@ -62,9 +62,6 @@ object Macros {
                 return match.value.substring(1)
             }
             var params = match.groupValues[2]
-//TODO makes more sense than when expression below
-//            if (params.isBlank())
-//                return value
             if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
                 if (inline) Options.errorCallback("existential macro invocations are deprecated: ${match.value}")
                 return match.value
@@ -77,9 +74,10 @@ object Macros {
                 }
                 return match.value
             }
+            if (params.isBlank())
+                return value
             params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
-//            when (params[0]) {
-            when (if (params.isBlank()) ' ' else params[0]) {
+            when (params[0]) {
                 '|' -> {   // Parametrized macro.
                     val paramsList = params.substring(1).split('|')
                     // Substitute macro parameters.

@@ -55,7 +55,6 @@ object Quotes {
                     spans = true
             ))
 
-    // TODO: this redundant initialization is ugly.
     var quotesRe = Regex("") // Searches for quoted text.
     var unescapeRe = Regex("")      // Searches for escaped quotes.
 
@@ -89,13 +88,11 @@ object Quotes {
     }
 
     // Strip backslashes from quote characters.
-//TODO: inline this function: only used once in spans.kt
     fun unescape(s: String): String {
         return s.replace(unescapeRe, "$1")
     }
 
     // Update existing or add new quote definition.
-    // TODO: rename to updateDefinition()
     fun setDefinition(def: Definition) {
         for (d in defs) {
             if (d.quote == def.quote) {

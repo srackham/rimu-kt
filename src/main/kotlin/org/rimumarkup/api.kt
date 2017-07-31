@@ -34,7 +34,6 @@ object Api {
     }
 
     // Render text with current Options state.
-    // TODO: This seems to be redundant, it's equivealent to public render(text) with default opts, so this object is Init.
     fun render(text: String): String {
         val reader = Io.Reader(text)
         val writer = Io.Writer()

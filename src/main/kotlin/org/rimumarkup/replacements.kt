@@ -147,7 +147,6 @@ object Replacements {
     }
 
     // Update existing or add new replacement definition.
-    // TODO: rename to updateDefinition()
     fun setDefinition(pattern: String, flags: String, replacement: String) {
         val reopts = mutableSetOf<RegexOption>()
         if (flags.contains("i"))

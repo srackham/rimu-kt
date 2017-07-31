@@ -32,7 +32,6 @@ object Io {
         // the $1 match group (if it exists).
         // Return null if an EOF is encountered.
         // Exit with the reader pointing to the line following the match.
-        // TODO: Maybe not return null, no lines would be the same?
         fun readTo(re: Regex): List<String>? {
             val result = mutableListOf<String>()
             var match: MatchResult? = null

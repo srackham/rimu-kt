@@ -150,10 +150,7 @@ object LineBlocks {
                         // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
                         var text = match.groupValues[0]
                         text = Utils.replaceInline(text, ExpansionOptions(macros = true))
-                        // TODO: To mitigate freezing of next re.
-                        if (Regex("""^\\?\.(\w+)\s*=\s*'(.*)'$""").matches(text)) return false // Ignore API options.
-                        // TODO: This next re freezes on ".htmlReplacement = 'Foo'" see http://www.regular-expressions.info/catastrophic.html
-                        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)+)*(?:\s*)?(#[a-zA-Z][\w\-]*\s*)?(?:\s*)?(".+?")?(?:\s*)?(\[.+])?(?:\s*)?([+-][ \w+-]+)?$""").find(text)
+                        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)++)*+(?:\s+)?(#[a-zA-Z][\w\-]*\s*)?+(?:\s+)?(".+?")?+(?:\s+)?(\[.+])?+(?:\s+)?([+-][ \w+-]+)?+$""").find(text)
                         if (m == null) {
                             return false
                         }

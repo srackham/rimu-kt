@@ -166,7 +166,7 @@ object LineBlocks {
                                 BlockAttributes.attributes += " style=" + m.groupValues[3]
                             }
                             if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
-                                BlockAttributes.attributes += " " + m.groupValues[4].substring(1..m.groupValues[4].length - 2).trim()
+                                BlockAttributes.attributes += " " + m.groupValues[4].trim().removeSurrounding("[","]")
                             }
                             BlockAttributes.attributes = BlockAttributes.attributes.trim()
                             BlockAttributes.options.parse(m.groupValues[5])
@@ -192,7 +192,7 @@ object LineBlocks {
     )
 
     // If the next element in the reader is a valid line block render it
-// and return true, else return false.
+    // and return true, else return false.
     fun render(reader: Io.Reader, writer: Io.Writer): Boolean {
         if (reader.eof()) throw RimucException("Premature EOF")
         for (def in defs) {

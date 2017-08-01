@@ -8,7 +8,7 @@ object DelimitedBlocks {
     val MATCH_INLINE_TAG = Regex("""(?i)^(a|abbr|acronym|address|b|bdi|bdo|big|blockquote|br|cite|code|del|dfn|em|i|img|ins|kbd|mark|q|s|samp|small|span|strike|strong|sub|sup|time|tt|u|var|wbr)$""")
 
     // delimiterFilter for code, division and quote blocks.
-// Inject $2 into block class attribute, set close delimiter to $1.
+    // Inject $2 into block class attribute, set close delimiter to $1.
     val classInjectionFilter: DelimiterFilter = fun(match: MatchResult, def: Definition): String {
         val name = match.groupValues[2].trim()
         if (name.isNotBlank()) {
@@ -41,7 +41,7 @@ object DelimitedBlocks {
     val DEFAULT_DEFS = arrayOf(
             // Delimited blocks cannot be escaped with a backslash.
 
-// Macro definition block.
+            // Macro definition block.
             Definition(
                     openMatch = Macros.MACRO_DEF_OPEN, // $1 is first line of macro.
                     closeMatch = Macros.MACRO_DEF_CLOSE, // $1 is last line of macro.

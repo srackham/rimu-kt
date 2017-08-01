@@ -17,7 +17,7 @@ object Options {
     data class RenderOptions(
             var safeMode: Int? = null,
             var htmlReplacement: String? = null,
-            var reset: Boolean = false, //TODO default to null
+            var reset: Boolean = false,
             var callback: CallbackFunction? = null
     )
 

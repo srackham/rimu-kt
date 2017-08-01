@@ -1,21 +1,4 @@
-@file:JvmName("rimu")
-
 package org.rimumarkup
-
-typealias CallbackFunction = (message: CallbackMessage) -> Unit
-
-data class CallbackMessage(val type: String, val text: String)
-
-val doNothing: CallbackFunction = fun(_: CallbackMessage) = Unit   // Default render() callback.
-
-/**
- * Public API to translate Rimu Markup to HTML.
- * @throws [Exception]
- */
-fun render(text: String, opts: Options.RenderOptions = Options.RenderOptions()): String {
-    Options.update(opts)
-    return Api.render(text)
-}
 
 object Api {
 

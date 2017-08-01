@@ -166,7 +166,7 @@ object LineBlocks {
                                 BlockAttributes.attributes += " style=" + m.groupValues[3]
                             }
                             if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
-                                BlockAttributes.attributes += " " + m.groupValues[4].trim().removeSurrounding("[","]")
+                                BlockAttributes.attributes += " " + m.groupValues[4].trim().removeSurrounding("[", "]")
                             }
                             BlockAttributes.attributes = BlockAttributes.attributes.trim()
                             BlockAttributes.options.parse(m.groupValues[5])

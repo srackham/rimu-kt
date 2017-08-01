@@ -35,7 +35,7 @@ class RimuTest {
             val expectedOutput = test.string("expectedOutput") ?: ""
             val expectedCallback = test.string("expectedCallback") ?: ""
             val options = test.obj("options") as JsonObject
-            val renderOptions = Options.RenderOptions()
+            val renderOptions = RenderOptions()
             renderOptions.safeMode = options.int("safeMode")
             renderOptions.htmlReplacement = options.string("htmlReplacement")
             renderOptions.reset = options.boolean("reset") ?: false

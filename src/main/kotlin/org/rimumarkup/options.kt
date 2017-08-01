@@ -12,20 +12,13 @@ object Options {
             field = value
         }
     var htmlReplacement = ""
-    var callback: CallbackFunction = doNothing
-
-    data class RenderOptions(
-            var safeMode: Int? = null,
-            var htmlReplacement: String? = null,
-            var reset: Boolean = false,
-            var callback: CallbackFunction? = null
-    )
+    var callback: CallbackFunction = DO_NOTHING
 
     // Reset options to default values.
     fun init() {
         safeMode = 0
         htmlReplacement = "<mark>replaced HTML</mark>"
-        callback = doNothing
+        callback = DO_NOTHING
     }
 
     // Return true if safeMode is non-zero.

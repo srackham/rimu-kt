@@ -1,4 +1,6 @@
+import org.junit.Before;
 import org.junit.Test;
+import org.rimumarkup.CallbackMessage;
 import org.rimumarkup.RenderOptions;
 import org.rimumarkup.Rimu;
 
@@ -9,18 +11,18 @@ import static org.junit.Assert.assertEquals;
  */
 public class JavaExamplesTest {
 
-    @Test
-    public final void simpleExampleTest() {
+    @Before
+    public void before() {
+        // Initialize Rimu to default state.
         RenderOptions options = new RenderOptions();
         options.reset = true;
-        String result = Rimu.render("Hello *Rimu*!", options);
-        assertEquals("<p>Hello <em>Rimu</em>!</p>", result);
+        Rimu.render("", options);
     }
 
     @Test
-    public final void optionsExampleTest() {
-        String result = Rimu.render("Hello <br>", new RenderOptions(2, "XXX", false, null));
-        assertEquals("<p>Hello XXX</p>", result);
+    public final void simpleExampleTest() {
+        String result = Rimu.render("Hello *Rimu*!");
+        assertEquals("<p>Hello <em>Rimu</em>!</p>", result);
     }
 
     private String callbackMessage;
@@ -29,14 +31,14 @@ public class JavaExamplesTest {
     public final void callabckExampleTest() {
         RenderOptions options = new RenderOptions();
         // Capture the callback message.
-        options.callback = (message) -> {
+        options.callback = (CallbackMessage message) -> {
             // NOTE: Java does not support closures and Java lambdas cannot assign variables in the method scope at runtime,
             // which is why callbackMessage is outside this method.
             callbackMessage = message.type + ": " + message.text;
             return null;
         };
-        String result = Rimu.render("{undefined-macro}", options);
-        assertEquals("<p>{undefined-macro}</p>", result);
-        assertEquals("error: undefined macro: {undefined-macro}: {undefined-macro}", callbackMessage);
+        String result = Rimu.render("Unknown {x}", options);
+        assertEquals("<p>Unknown {x}</p>", result);
+        assertEquals("error: undefined macro: {x}: Unknown {x}", callbackMessage);
     }
 }

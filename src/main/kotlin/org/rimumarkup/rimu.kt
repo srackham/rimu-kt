@@ -33,7 +33,9 @@ data class RenderOptions(
  */
 @JvmOverloads
 fun render(text: String, options: RenderOptions = RenderOptions()): String {
-    Api // Force one-time Api object initialization.
+    // Force object instantiation before Options.update().
+    // Otherwise the ensuing Api.render() will instanitate Api and the Api init{} block will reset Options.
+    Api // Ensure Api is instantiated.
     Options.update(options)
     return Api.render(text)
 }

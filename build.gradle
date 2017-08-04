@@ -16,6 +16,7 @@ apply plugin: "kotlin"
 
 mainClassName = "org.rimumarkup.RimucKt"
 applicationName = "rimu-kt"
+version = "0.5.0"
 
 repositories {
     jcenter()

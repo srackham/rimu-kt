@@ -35,6 +35,24 @@ startScripts {
     applicationName = "rimuc-kt"
 }
 
+// Create a sources JAR file when the project is built.
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier "sources"
+    // TODO: Exclude resource files from source archive.
+    from sourceSets.main.allSource
+}
+
+// Add sources JAR to archives.
+artifacts {
+    archives sourcesJar
+}
+
+// Exclude distributions from uploaded archives.
+configurations.archives.with {
+    artifacts.remove artifacts.find { it.archiveTask.is distTar }
+    artifacts.remove artifacts.find { it.archiveTask.is distZip }
+}
+
 // Publish this project to local Maven repository with uploadArchives task.
 group = "org.rimumarkup"
 uploadArchives {
@@ -43,14 +61,4 @@ uploadArchives {
             repository url: "file:./maven"
         }
     }
-}
-
-// Create a sources JAR file when the project is built.
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier "sources"
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
 }

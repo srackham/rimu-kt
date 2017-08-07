@@ -48,6 +48,13 @@ dependencies {
 }
 ```
 
+Example code:
+
+- [Kotlin
+  examples](https://github.com/srackham/rimu-kt/blob/master/src/test/kotlin/KotlinExamplesTest.kt).
+- [Java
+  examples](https://github.com/srackham/rimu-kt/blob/master/src/test/java/JavaExamplesTest.java).
+
 ### rimuc compiler command
 The `rimu-kt` binary distribution can be downloaded from
 [Bintray](https://bintray.com/srackham/generic/rimu-kt#files). Unzip

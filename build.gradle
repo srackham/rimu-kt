@@ -33,11 +33,16 @@ dependencies {
     testCompile "com.beust:klaxon:0.31"
 }
 
-// Create a sources JAR file when the project is built.
+startScripts {
+    // Set name of executable Rimu compile command in binary distribution.
+    applicationName = "rimuc"
+}
+
+// Create a sources JAR file.
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier "sources"
     from sourceSets.main.allSource
-    exclude '*.rmu'     // Exclude resource files.
+    exclude '**/*.rmu'     // Exclude resource files.
 }
 
 publishing {

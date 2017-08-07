@@ -60,7 +60,7 @@ localProperties.load(new FileInputStream("./local.properties"))
 // Used by bintrayUpload task publishes Maven library to Bintray.
 // See https://github.com/bintray/gradle-bintray-plugin
 bintray {
-    dryRun = true
+    dryRun = false
     publish = false
     override = false
     user = localProperties['bintray.user']

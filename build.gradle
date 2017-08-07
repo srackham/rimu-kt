@@ -36,8 +36,8 @@ dependencies {
 // Create a sources JAR file when the project is built.
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier "sources"
-    // TODO: Exclude resource files from source archive.
     from sourceSets.main.allSource
+    exclude '*.rmu'     // Exclude resource files.
 }
 
 publishing {

@@ -7,6 +7,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
     }
 }
 
@@ -14,6 +15,8 @@ apply plugin: "application"
 apply plugin: "java"
 apply plugin: "kotlin"
 apply plugin: "maven"
+apply plugin: "maven-publish"
+apply plugin: "com.jfrog.bintray"
 
 mainClassName = "org.rimumarkup.RimucKt"
 applicationName = "rimu-kt"
@@ -62,3 +65,44 @@ uploadArchives {
         }
     }
 }
+
+publishing {
+    publications {
+        library(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+//            groupId project.group
+//            artifactId project.applicationName
+//            version project.version
+        }
+    }
+}
+
+Properties localProperties = new Properties()
+localProperties.load(new FileInputStream("./local.properties"))
+
+// Used by bintrayUpload task publishes Maven library to Bintray.
+// See https://github.com/bintray/gradle-bintray-plugin
+bintray {
+    dryRun = false
+    publish = false
+    override = false
+    user = localProperties['bintray.user']
+    key = localProperties['bintray.apikey']
+    publications = ['library']
+    pkg {
+        repo = 'maven'
+        name = applicationName
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/srackham/rimu-kt'
+        websiteUrl = 'http://rimumarkup.org'
+        issueTrackerUrl = 'https://github.com/srackham/rimu/issues'
+        desc = 'Rimu Markup for the JVM.'
+        labels = ['rimu', 'markup', 'asciidoc', 'markdown']
+        publicDownloadNumbers = false
+        version {
+            name = project.version
+        }
+    }
+}
+

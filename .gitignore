@@ -5,6 +5,7 @@
 # Gradle
 .gradle/
 build/
+local.properties
 
 # Other
 TODO.md

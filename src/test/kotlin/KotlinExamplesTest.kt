@@ -24,7 +24,6 @@ class KotlinExamplesTest() {
     }
 
     @Test
-    @Ignore
     fun callbackExampleTest() {
         val options = RenderOptions()
         var callbackMessage = ""

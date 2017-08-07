@@ -266,8 +266,8 @@ fun rimuc(args: Array<String>) {
     }
     if (styled) {
         // Envelope source files with header and footer resource file names.
-        infiles.pushFirst("resource:/${styled_name}-header.rmu")
-        infiles.pushLast("resource:/${styled_name}-footer.rmu")
+        infiles.pushFirst("resource:${styled_name}-header.rmu")
+        infiles.pushLast("resource:${styled_name}-footer.rmu")
     }
 
     // Include .rimurc file if it exists.

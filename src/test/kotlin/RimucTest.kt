@@ -115,8 +115,8 @@ class RimucTest {
     fun checkResourceExists() {
         // Throws exception if there is a missing resource file.
         for (style in arrayOf("classic", "flex", "v8")) {
-            readResource("/$style-header.rmu")
-            readResource("/$style-footer.rmu")
+            readResource("$style-header.rmu")
+            readResource("$style-footer.rmu")
         }
     }
 

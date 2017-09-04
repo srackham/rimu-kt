@@ -101,7 +101,7 @@ object LineBlocks {
             // Headers.
             // $1 is ID, $2 is header text.
             Definition(
-                    match = Regex("""^\\?((?:[#=]){1,6})\s+(.+?)(?:\s+(?:[#=]){1,6})?$"""),
+                    match = Regex("""^\\?((?:[#=]){1,6})\s+(.+?)(?:\s+\1)?$"""),
                     replacement = "<h$1>$$2</h$1>",
                     filter = fun(match: MatchResult, _, def): String {
                         // Replace $1 with header number e.g. "###" -> "3"

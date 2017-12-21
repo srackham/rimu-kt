@@ -7,8 +7,11 @@ in Kotlin.
 
 ## Features
 
-- Functionally identical to the canonical [JavaScript
-  version](https://github.com/srackham/rimu).
+- Functionally identical to the [JavaScript
+  implementation](https://github.com/srackham/rimu).
+- The version numbers (starting at 9.1.3) correspond to the
+  [JavaScript implementation](https://github.com/srackham/rimu)
+  version numbers.
 - Includes functionally identical
   [rimuc](http://rimumarkup.org/reference.html#rimuc-command)
   command-line compiler.
@@ -44,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.rimumarkup:rimu-kt:0.6.0"
+    compile "org.rimumarkup:rimu-kt:9.1.3"
 }
 ```
 

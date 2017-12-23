@@ -26,6 +26,9 @@ object Macros {
     // Reset definitions to defaults.
     fun init() {
         defs.clear()
+        // Initialize predefined macros.
+        setValue("--", "")
+        setValue("--header-ids", "")
     }
 
     // Return named macro value or null if it doesn't exist.

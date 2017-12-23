@@ -2,8 +2,7 @@ import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import com.beust.klaxon.string
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
@@ -74,11 +73,19 @@ class RimucTest {
         assertEquals(message, expected, output)
     }
 
+    fun compileAssertNotEquals(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
+        val output = compileString(source, args)
+        assertNotEquals(message, expected, output)
+    }
     fun compileAssertContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
         val output = compileString(source, args)
         assertTrue(message, output.contains(expected))
     }
 
+    fun compileAssertNotContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
+        val output = compileString(source, args)
+        assertFalse(message, output.contains(expected))
+    }
     fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
         exceptionRule.expect(type)
         exceptionRule.expectMessage(message)
@@ -220,7 +227,9 @@ class RimucTest {
             }
             when (predicate) {
                 "contains" -> compileAssertContains(description, argsArray, input, expectedOutput)
+                "!contains" -> compileAssertNotContains(description, argsArray, input, expectedOutput)
                 "equals" -> compileAssertEquals(description, argsArray, input, expectedOutput)
+                "!equals" -> compileAssertNotEquals(description, argsArray, input, expectedOutput)
             }
         }
     }

@@ -70,6 +70,7 @@ object BlockAttributes {
             }
         }
         if (id.isNotBlank()) {
+            ids.pushFirst(id)
             attrs += """ id="${id}""""
         }
         if (css.isNotBlank()) {
@@ -94,6 +95,21 @@ object BlockAttributes {
         css = ""
         attributes = ""
         return result
+    }
+
+    fun slugify(text: String): String {
+        var slug = text.replace(Regex(""""\s+"""), "-") // Replace spaces with dashes.
+                .replace(Regex("""[^\w-]"""), "")       // Retain alphanumeric, '-' and '_' characters.
+                .toLowerCase()
+        if (slug.isBlank()) slug = "x"
+        if (ids.contains(slug)) { // Another element already has that id.
+            var i = 2
+            while (ids.contains(slug + "-" + i)) {
+                i++
+            }
+            slug += "-" + i
+        }
+        return slug;
     }
 
 }

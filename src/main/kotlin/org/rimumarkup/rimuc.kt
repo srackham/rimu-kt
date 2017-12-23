@@ -140,7 +140,7 @@ class RimucException(message: String) : Exception(message)
 fun main(args: Array<String>) {
     try {
         rimuc(args)
-    } catch(e: RimucException) {
+    } catch (e: RimucException) {
         System.err.println(e.message)
         System.exit(1)
     } catch (e: Exception) {

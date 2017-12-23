@@ -146,32 +146,7 @@ object LineBlocks {
                     name = "attributes",
                     match = Regex("""^\\?\.[a-zA-Z#"\[+-].*$"""), // A loose match because Block Attributes can contain macro references.
                     verify = fun(match: MatchResult): Boolean {
-                        // Parse Block Attributes.
-                        // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
-                        var text = match.groupValues[0]
-                        text = Utils.replaceInline(text, ExpansionOptions(macros = true))
-                        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)++)*+(?:\s+)?(#[a-zA-Z][\w\-]*\s*)?+(?:\s+)?(".+?")?+(?:\s+)?(\[.+])?+(?:\s+)?([+-][ \w+-]+)?+$""").find(text)
-                        if (m == null) {
-                            return false
-                        }
-                        if (!Options.skipBlockAttributes()) {
-                            if (m.groupValues[1].isNotBlank()) { // HTML element class names.
-                                BlockAttributes.classes += " ${m.groupValues[1].trim()}"
-                                BlockAttributes.classes = BlockAttributes.classes.trim()
-                            }
-                            if (m.groupValues[2].isNotBlank()) { // HTML element id.
-                                BlockAttributes.attributes += " id=\"" + m.groupValues[2].trim().substring(1) + "\""
-                            }
-                            if (m.groupValues[3].isNotBlank()) { // CSS properties.
-                                BlockAttributes.attributes += " style=" + m.groupValues[3]
-                            }
-                            if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
-                                BlockAttributes.attributes += " " + m.groupValues[4].trim().removeSurrounding("[", "]")
-                            }
-                            BlockAttributes.attributes = BlockAttributes.attributes.trim()
-                            BlockAttributes.options.parse(m.groupValues[5])
-                        }
-                        return true
+                        return BlockAttributes.parse(match)
                     }
             ),
             // API Option.
@@ -213,7 +188,7 @@ object LineBlocks {
                     text = (def.filter)(match, reader, def)
                 }
                 if (text.isNotBlank()) {
-                    text = Utils.injectHtmlAttributes(text)
+                    text = BlockAttributes.injectHtmlAttributes(text)
                     writer.write(text)
                     reader.next()
                     if (!reader.eof()) {

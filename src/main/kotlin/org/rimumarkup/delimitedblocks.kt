@@ -261,9 +261,9 @@ object DelimitedBlocks {
                 }
                 var opentag = def.openTag
                 if (def.name == "html") {
-                    text = Utils.injectHtmlAttributes(text)
+                    text = BlockAttributes.injectHtmlAttributes(text)
                 } else {
-                    opentag = Utils.injectHtmlAttributes(opentag)
+                    opentag = BlockAttributes.injectHtmlAttributes(opentag)
                 }
                 if (expansionOptions.container ?: false) {
                     BlockAttributes.options.container = null  // Consume before recursion.

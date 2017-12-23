@@ -8,14 +8,94 @@ import java.nio.file.Paths
 // Global Block Attributes state singleton.
 object BlockAttributes {
     var classes: String = ""     // Space separated HTML class names.
-    var attributes: String = ""  // HTML element attributes (incorporates 'style' and 'id' attributes).
+    var id: String = ""          // HTML element id.
+    var css: String = ""         // HTML CSS styles.
+    var attributes: String = ""  // Other HTML element attributes.
     var options: ExpansionOptions = ExpansionOptions()
+
+    val ids = mutableListOf<String>() // List of allocated HTML ids.
 
     fun init() {
         classes = ""
+        id = ""
+        css = ""
         attributes = ""
         options = ExpansionOptions()
+        ids.clear()
     }
+
+    fun parse(match: MatchResult): Boolean {
+        // Parse Block Attributes.
+        // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
+        var text = match.groupValues[0]
+        text = Utils.replaceInline(text, ExpansionOptions(macros = true))
+        val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)++)*+(?:\s+)?(#[a-zA-Z][\w\-]*\s*)?+(?:\s+)?(?:"(.+?)")?+(?:\s+)?(\[.+])?+(?:\s+)?([+-][ \w+-]+)?+$""").find(text)
+        if (m == null) {
+            return false
+        }
+        if (!Options.skipBlockAttributes()) {
+            if (m.groupValues[1].isNotBlank()) { // HTML element class names.
+                classes += " ${m.groupValues[1].trim()}"
+                classes = classes.trim()
+            }
+            if (m.groupValues[2].isNotBlank()) { // HTML element id.
+                id = m.groupValues[2].trim().substring(1)
+            }
+            if (m.groupValues[3].isNotBlank()) { // CSS properties.
+                css = m.groupValues[3]
+            }
+            if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
+                attributes += " " + m.groupValues[4].trim().removeSurrounding("[", "]")
+                attributes = attributes.trim()
+            }
+            options.parse(m.groupValues[5])
+        }
+        return true
+    }
+
+    // Inject HTML attributes into the HTML `tag` and return result.
+    // Consume HTML attributes unless the 'tag' argument is blank.
+    fun injectHtmlAttributes(tag: String): String {
+        var result = tag
+        if (result.isBlank()) {
+            return result
+        }
+        var attrs = ""
+        if (classes.isNotBlank()) {
+            if (result.contains(Regex("""class="\S.*""""))) {
+                // Inject class names into existing class attribute.
+                result = result.replace(Regex("""class="(\S.*?)""""), """class="${classes} $1"""")
+            } else {
+                attrs = """class="${classes}""""
+            }
+        }
+        if (id.isNotBlank()) {
+            attrs += """ id="${id}""""
+        }
+        if (css.isNotBlank()) {
+            attrs += """ style="${css}""""
+        }
+        if (attributes.isNotBlank()) {
+            attrs += """ ${attributes}"""
+        }
+        attrs = attrs.trim()
+        if (attrs.isNotBlank()) {
+            val match = Regex("""^<([a-zA-Z]+|h[1-6])(?=[ >])""").find(result)
+            if (match != null) {
+                // Inject attributes after tag name.
+                val before = result.substring(0..match.groupValues[0].length - 1)
+                val after = result.substring(match.groupValues[0].length)
+                result = before + " " + attrs + after
+            }
+        }
+        // Consume the attributes.
+        classes = ""
+        id = ""
+        css = ""
+        attributes = ""
+        return result
+    }
+
 }
 
 data class ExpansionOptions(
@@ -105,37 +185,6 @@ object Utils {
         } else if (expansionOptions.specials ?: false) {
             result = replaceSpecialChars(result)
         }
-        return result
-    }
-
-    // Inject HTML attributes from attrs into the opening tag and return result.
-    // Consume HTML attributes unless the 'tag' argument is blank.
-    fun injectHtmlAttributes(tag: String): String {
-        var result = tag
-        if (result.isBlank()) {
-            return result
-        }
-        if (BlockAttributes.classes.isNotBlank()) {
-            if (result.contains(Regex("""class="\S.*""""))) {
-                // Inject class names into existing class attribute.
-                result = result.replace(Regex("""class="(\S.*?)""""), """class="${BlockAttributes.classes} $1"""")
-            } else {
-                // Prepend new class attribute to HTML attributes.
-                BlockAttributes.attributes = """class="${BlockAttributes.classes}" ${BlockAttributes.attributes}""".trim()
-            }
-        }
-        if (BlockAttributes.attributes.isNotBlank()) {
-            val match = Regex("""^<([a-zA-Z]+|h[1-6])(?=[ >])""").find(result)
-            if (match != null) {
-                // Inject attributes after tag name.
-                val before = result.substring(0..match.groupValues[0].length - 1)
-                val after = result.substring(match.groupValues[0].length)
-                result = before + " " + BlockAttributes.attributes + after
-            }
-        }
-        // Consume the attributes.
-        BlockAttributes.classes = ""
-        BlockAttributes.attributes = ""
         return result
     }
 

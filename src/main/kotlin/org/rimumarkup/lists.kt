@@ -76,7 +76,7 @@ object Lists {
 
     fun renderList(startItem: ItemState, reader: Io.Reader, writer: Io.Writer): ItemState {
         ids.add(startItem.id)
-        writer.write(Utils.injectHtmlAttributes(startItem.def.listOpenTag))
+        writer.write(BlockAttributes.injectHtmlAttributes(startItem.def.listOpenTag))
         var currentItem = startItem
         var nextItem: ItemState
         while (true) {

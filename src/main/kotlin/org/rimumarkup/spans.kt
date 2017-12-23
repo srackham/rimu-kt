@@ -33,8 +33,7 @@ object Spans {
 
     // Converts fragments to a string.
     fun defrag(fragments: List<Fragment>): String {
-        return fragments.fold("") {
-            result, fragment ->
+        return fragments.fold("") { result, fragment ->
             result + fragment.text
         }
     }

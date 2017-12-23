@@ -53,7 +53,7 @@ object Options {
                 "reset" -> if (value.toBoolean()) Api.init()
                 else -> throw IllegalArgumentException()
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             throw IllegalArgumentException("Illegal API option: '$name=$value'")
         }
     }

@@ -133,31 +133,17 @@
         "predicate": "contains"
     },
     {
-        "description": "dynamic header ids",
-        "args": "--styled",
-        "input": "",
-        "expectedOutput": "function setHeadingId(heading)",
-        "predicate": "contains"
-    },
-    {
-        "description": "flex dynamic header ids",
-        "args": "--styled --styled-name flex",
-        "input": "",
-        "expectedOutput": "function setHeadingId(heading)",
-        "predicate": "contains"
-    },
-    {
         "description": "static header ids",
         "args": "--styled --header-ids",
         "input": "",
-        "expectedOutput": "function setHeadingId(heading)",
+        "expectedOutput": "function setHeaderId(heading)",
         "predicate": "!contains"
     },
     {
         "description": "flex static header ids",
         "args": "--styled --header-ids --styled-name flex",
         "input": "",
-        "expectedOutput": "function setHeadingId(heading)",
+        "expectedOutput": "function setHeaderId(heading)",
         "predicate": "!contains"
     },
     {
@@ -173,5 +159,47 @@
         "input": "",
         "expectedOutput": "window.onload = function()",
         "predicate": "!contains"
+    },
+    {
+        "description": "rimuc --help",
+        "args": "--help",
+        "input": "",
+        "expectedOutput": "\nNAME\n  rimuc",
+        "predicate": "startsWith"
+    },
+    {
+        "description": "rimuc --styled",
+        "args": "--styled",
+        "input": "",
+        "expectedOutput": "<!DOCTYPE HTML>",
+        "predicate": "startsWith"
+    },
+    {
+        "description": "rimuc --sidebar-toc --custom-toc",
+        "args": "--styled --sidebar-toc --custom-toc",
+        "input": "",
+        "expectedOutput": "<div id=\"toc\"",
+        "predicate": "!contains"
+    },
+    {
+        "description": "rimuc --lint",
+        "args": "--lint",
+        "input": "{x}",
+        "expectedOutput": "1",
+        "predicate": "exitCode"
+    },
+    {
+        "description": "header links",
+        "args": "--styled --header-links",
+        "input": "",
+        "expectedOutput": "function setHeaderLink(heading)",
+        "predicate": "contains"
+    },
+    {
+        "description": "flex header links",
+        "args": "--styled --header-links --styled-name flex",
+        "input": "",
+        "expectedOutput": "function setHeaderLink(heading)",
+        "predicate": "contains"
     }
 ]

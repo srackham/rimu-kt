@@ -47,7 +47,7 @@ OPTIONS
     Include an HTML header and footer for styling the HTML output
     document. If only one source file is specified and the --output
     option is not specified then the output is written to a
-    same-named file with an .html extension.
+    same-named file with an .html extension. Enable --header-ids.
 
   --safe-mode NUMBER
     Non-zero safe modes ignore: Definition elements; API option elements;
@@ -65,7 +65,8 @@ OPTIONS
     Defaults to '<mark>replaced HTML</mark>'.
 
   --theme THEME, --lang LANG, --title TITLE, --highlightjs, --mathjax,
-  --sidebar-toc, --dropdown-toc, --custom-toc, --section-numbers, --header-ids
+  --sidebar-toc, --dropdown-toc, --custom-toc, --section-numbers,
+  --header-ids, --header-links
     Shortcuts for the following prepended macro definitions:
     --prepend "{--theme}='THEME'"
     --prepend "{--lang}='LANG'"
@@ -77,6 +78,7 @@ OPTIONS
     --prepend "{--custom-toc}='true'"
     --prepend "{--section-numbers}='true'"
     --prepend "{--header-ids}='true'"
+    --prepend "{--header-links}='true'"
 
   --styled-name NAME
     Specify the --styled option header and footer files:
@@ -88,8 +90,8 @@ PREDEFINED MACROS
   Macro name         Description
   _______________________________________________________________
   --                 Blank macro (empty string).
-  --header-ids       Set to a non-blank value to generate header
-                     id attributes.
+  --header-ids       Set to a non-blank value to generate h1, h2
+                     and h3 header id attributes.
   _______________________________________________________________
 
 STYLING MACROS AND CLASSES
@@ -111,6 +113,8 @@ STYLING MACROS AND CLASSES
   --custom-toc       Set to a non-blank value if a custom table
                      of contents is used.
   --section-numbers  Apply h2 and h3 section numbering.
+  --header-links     Set to a non-blank value to generate h2 and
+                     h3 header header links.
   _______________________________________________________________
   These macros must be defined prior to processing (using rimuc
   options or in .rimurc).
@@ -148,7 +152,9 @@ fun main(args: Array<String>) {
     try {
         rimuc(args)
     } catch (e: RimucException) {
-        System.err.println(e.message)
+        if (!e.message.isNullOrBlank()) {
+            System.err.println(e.message)
+        }
         System.exit(1)
     } catch (e: Exception) {
         System.err.println("${e::class.java.name}: ${e.message}")
@@ -176,7 +182,7 @@ fun rimuc(args: Array<String>) {
     var outfile = ""
 
     // Helpers.
-    fun die(message: String) {
+    fun die(message: String = "") {
         throw RimucException(message)
     }
 
@@ -223,6 +229,7 @@ fun rimuc(args: Array<String>) {
                 html_replacement = popOptionValue(arg)
             }
             "--styled", "-s" -> {
+                source += "{--header-ids}='true'\n"
                 styled = true
 
             }
@@ -237,7 +244,8 @@ fun rimuc(args: Array<String>) {
             "--sidebar-toc",
             "--dropdown-toc",
             "--custom-toc",
-            "--header-ids" -> {
+            "--header-ids",
+            "--header-links" -> {
                 val macro_value = if (arrayOf("--lang", "--title", "--theme").contains(arg))
                     popOptionValue(arg)
                 else
@@ -333,6 +341,6 @@ fun rimuc(args: Array<String>) {
         stringToFile(html, outfile)
     }
     if (errors != 0) {
-        System.exit(1)
+        die()
     }
 }

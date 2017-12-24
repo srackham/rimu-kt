@@ -98,8 +98,9 @@ object BlockAttributes {
     }
 
     fun slugify(text: String): String {
-        var slug = text.replace(Regex(""""\s+"""), "-") // Replace spaces with dashes.
-                .replace(Regex("""[^\w-]"""), "")       // Retain alphanumeric, '-' and '_' characters.
+        var slug = text.replace(Regex("""\W+"""), "-") // Replace non-alphanumeric characters with dashes.
+                .replace(Regex("""-+"""), "-")          // Replace multiple dashes with single dash.
+                .replace(Regex("""(^-)|(-$)"""), "")    // Trim leading and trailing dashes.
                 .toLowerCase()
         if (slug.isBlank()) slug = "x"
         if (ids.contains(slug)) { // Another element already has that id.

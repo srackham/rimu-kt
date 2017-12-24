@@ -64,7 +64,9 @@ class RimucTest {
     fun compileString(input: String, args: Array<String>): String {
         stdinMock.provideLines(input)
         systemOutRule.clearLog()
+//        systemErrRule.clearLog()
         rimucNoRimurc(args)
+//        return systemOutRule.log + systemErrRule.log
         return systemOutRule.log
     }
 
@@ -77,6 +79,7 @@ class RimucTest {
         val output = compileString(source, args)
         assertNotEquals(message, expected, output)
     }
+
     fun compileAssertContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
         val output = compileString(source, args)
         assertTrue(message, output.contains(expected))
@@ -86,6 +89,18 @@ class RimucTest {
         val output = compileString(source, args)
         assertFalse(message, output.contains(expected))
     }
+
+    fun compileAssertStartsWith(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
+        val output = compileString(source, args)
+        assertTrue(message, output.startsWith(expected))
+    }
+
+// TODO Not yet used.
+//    fun compileAssertExitCode(message: String, args: Array<String> = arrayOf(), source: String, status: Int) {
+//        exitRule.expectSystemExitWithStatus(status)
+//        compileString(source, args)
+//    }
+
     fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
         exceptionRule.expect(type)
         exceptionRule.expectMessage(message)
@@ -217,6 +232,7 @@ class RimucTest {
             val input = test.string("input") ?: ""
             val expectedOutput = test.string("expectedOutput") ?: ""
             val predicate = test.string("predicate") ?: ""
+//            val exitCode = test.int("exitCode") ?: 0
             val argsArray: Array<String>
             if (args.isNotBlank()) {
                 argsArray = args.trim().split(Regex("""\s+"""))
@@ -230,6 +246,9 @@ class RimucTest {
                 "!contains" -> compileAssertNotContains(description, argsArray, input, expectedOutput)
                 "equals" -> compileAssertEquals(description, argsArray, input, expectedOutput)
                 "!equals" -> compileAssertNotEquals(description, argsArray, input, expectedOutput)
+                "startsWith" -> compileAssertStartsWith(description, argsArray, input, expectedOutput)
+                "exitCode" -> null // TODO Not yet implemented
+                else -> throw IllegalArgumentException("""illegal test predicate: ${predicate}""")
             }
         }
     }

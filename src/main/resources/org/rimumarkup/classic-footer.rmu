@@ -11,36 +11,27 @@
 
 .+skip
 {--has-toc!}.-skip
-{--header-ids=}.-skip
+{--header-links!}.-skip
 <script>
 window.onload = function() {
   var headings = [].slice.call(document.body.querySelectorAll('#article > h1, #article > h2, #article > h3'));
   headings.forEach(function(heading) {
-{--header-ids=}    setHeadingId(heading);
+{--header-links!}    setHeaderLink(heading);
 {--has-toc!}    appendTocEntry(heading);
   });
 }
 </script>
 
-{--header-ids!}.+skip
+{--header-links=}.+skip
 <script>
-function setHeadingId(heading) {
+function setHeaderLink(heading) {
   var id = heading.getAttribute('id');
-  if (!id) {
-    id = slugify(heading.textContent);
-    heading.setAttribute('id', id);
+  if (id) {
+    var link = document.createElement('a');
+    link.classList.add('header-link');
+    link.setAttribute('href', '#' + id);
+    heading.appendChild(link);
   }
-}
-function slugify(text) {
-  var slug = text.replace(/\s+/g, '-') // Replace spaces with dashes.
-      .replace(/[^\w-]/g, '')          // Retain alphanumeric, '-' and '_' characters.
-      .toLowerCase()
-  if (!slug) slug = 'x';
-  if (document.getElementById(slug)) { // Another element already has that id.
-    var i = 2, prefix = slug;
-    while (document.getElementById(slug = prefix + '-' + i++)) {}
-  }
-  return slug;
 }
 </script>
 

@@ -106,11 +106,10 @@ object LineBlocks {
                     filter = fun(match: MatchResult, _, def): String {
                         // Replace $1 with header number e.g. "###" -> "3"
                         val groupValues = match.groupValues.mapIndexed { index, s -> if (index == 1) s.length.toString() else s }.toMutableList()
-                        groupValues[2] = Macros.render(match.groupValues[2])
                         if (!Macros.getValue("--header-ids").isNullOrBlank() && BlockAttributes.id == "") {
                             BlockAttributes.id = BlockAttributes.slugify(groupValues[2])
                         }
-                        return Utils.replaceMatch(groupValues, def.replacement)
+                        return Utils.replaceMatch(groupValues, def.replacement, ExpansionOptions(macros = true))
                     }
             ),
             // Comment line.

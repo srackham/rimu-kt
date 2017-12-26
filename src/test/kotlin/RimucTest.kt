@@ -15,8 +15,8 @@ import java.nio.file.Paths
 
 
 fun parseJsonText(jsonText: String): Any? {
-    val parser: Parser = Parser()
-    val stringBuilder: StringBuilder = StringBuilder(jsonText)
+    val parser = Parser()
+    val stringBuilder = StringBuilder(jsonText)
     val result = parser.parse(stringBuilder)
     return result
 }
@@ -51,50 +51,14 @@ class RimucTest {
     /*
         Helper functions.
      */
-    fun rimucNoRimurc(args: Array<String>) {
+    private fun rimucNoRimurc(args: Array<String>) {
         // Do not include the .rimurc file.
         val argsList = arrayListOf("--no-rimurc")
         argsList.addAll(args)
         rimuc(argsList.toTypedArray())
     }
 
-    fun compileString(input: String, args: Array<String>): String {
-        stdinMock.provideLines(input)
-        systemOutRule.clearLog()
-        systemErrRule.clearLog()
-        rimucNoRimurc(args)
-        return systemOutRule.log + systemErrRule.log
-    }
-
-    fun compileAssertContains(testDescriptor: TestDescriptor) {
-        val output = compileString(testDescriptor.input, testDescriptor.args)
-        assertTrue(testDescriptor.description, output.contains(testDescriptor.expectedOutput))
-    }
-
-    fun compileAssertEquals(testDescriptor: TestDescriptor) {
-        if (testDescriptor.exitCode != 0) {
-            exceptionRule.expect(RimucException::class.java)
-        }
-        val output = compileString(testDescriptor.input, testDescriptor.args)
-        assertEquals(testDescriptor.description, testDescriptor.expectedOutput, output)
-    }
-
-    fun compileAssertNotEquals(testDescriptor: TestDescriptor) {
-        val output = compileString(testDescriptor.input, testDescriptor.args)
-        assertNotEquals(testDescriptor.description, testDescriptor.expectedOutput, output)
-    }
-
-    fun compileAssertNotContains(testDescriptor: TestDescriptor) {
-        val output = compileString(testDescriptor.input, testDescriptor.args)
-        assertFalse(testDescriptor.description, output.contains(testDescriptor.expectedOutput))
-    }
-
-    fun compileAssertStartsWith(testDescriptor: TestDescriptor) {
-        val output = compileString(testDescriptor.input, testDescriptor.args)
-        assertTrue(testDescriptor.description, output.startsWith(testDescriptor.expectedOutput))
-    }
-
-    fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
+    private fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
         exceptionRule.expect(type)
         exceptionRule.expectMessage(message)
         rimucNoRimurc(args)
@@ -160,15 +124,6 @@ class RimucTest {
     }
 
     @Test
-    fun compilations() {
-        compileAssertEquals(
-                TestDescriptor(input = "Hello World!",
-                        expectedOutput = "<p>Hello World!</p>",
-                        description = "rimucNoRimurc basic test")
-        )
-    }
-
-    @Test
     fun compileFromFiles() {
         // Write two temporary input files to be compiled.
         val file1 = tempFolderRule.newFile("test-file-1")
@@ -211,23 +166,18 @@ class RimucTest {
     /**
      * Execute test cases specified in JSON file rimuc-tests.json
      */
-    data class TestDescriptor(val description: String,
-                              val input: String,
-                              val expectedOutput: String,
-                              val args: Array<String> = arrayOf(),
-                              val predicate: String = "",
-                              val exitCode: Int = 0)
-
     @Test
     fun rimucCompatibilityTests() {
         val jsonText = readResource("/rimuc-tests.json")
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
-        var testNumber = 0
-        for (test in tests) {
-            testNumber++
+        for ((index, test) in tests.withIndex()) {
             val description = test.string("description") ?: ""
-            println(description)
+            System.err.println("$index: $description")
+            val input = test.string("input") ?: ""
+            val expectedOutput = test.string("expectedOutput") ?: ""
+            val predicate = test.string("predicate") ?: ""
+            val exitCode = test.int("exitCode") ?: 0
             // Convert args String to Array<String>.
             val args = test.string("args") ?: ""
             val argsArray: Array<String>
@@ -238,19 +188,33 @@ class RimucTest {
             } else {
                 argsArray = arrayOf()   // Use empty array is there are no arguments.
             }
-            val testDescriptor = TestDescriptor(description = description,
-                    args = argsArray,
-                    input = test.string("input") ?: "",
-                    expectedOutput = test.string("expectedOutput") ?: "",
-                    predicate = test.string("predicate") ?: "",
-                    exitCode = test.int("exitCode") ?: 0)
-            when (testDescriptor.predicate) {
-                "contains" -> compileAssertContains(testDescriptor)
-                "!contains" -> compileAssertNotContains(testDescriptor)
-                "equals" -> compileAssertEquals(testDescriptor)
-                "!equals" -> compileAssertNotEquals(testDescriptor)
-                "startsWith" -> compileAssertStartsWith(testDescriptor)
-                else -> throw IllegalArgumentException("""illegal test predicate: ${testDescriptor.predicate}""")
+            stdinMock.provideLines(input)
+            systemOutRule.clearLog()
+            systemErrRule.clearLog()
+            var exceptionThrown = false
+            try {
+                rimucNoRimurc(argsArray)
+            } catch (e: RimucException) {
+                exceptionThrown = true
+            }
+            if (exitCode != 0) {
+                assertTrue(description, exceptionThrown)
+            } else {
+                assertFalse(description, exceptionThrown)
+            }
+            val output = systemOutRule.log + systemErrRule.log
+            when (predicate) {
+                "contains" ->
+                    assertTrue(description, output.contains(expectedOutput))
+                "!contains" ->
+                    assertFalse(description, output.contains(expectedOutput))
+                "equals" ->
+                    assertEquals(description, expectedOutput, output)
+                "!equals" ->
+                    assertNotEquals(description, expectedOutput, output)
+                "startsWith" ->
+                    assertTrue(description, output.startsWith(expectedOutput))
+                else -> throw IllegalArgumentException("""${description}: illegal predicate: ${predicate}""")
             }
         }
     }

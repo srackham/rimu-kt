@@ -14,7 +14,7 @@ import org.rimumarkup.*
 
 class RimuTest {
 
-    val catchLint: CallbackFunction = fun(message: CallbackMessage) {
+    private val catchLint: CallbackFunction = fun(message: CallbackMessage) {
         throw AssertionError("unexpected callback: ${message.type}: ${message.text}")
     }
 
@@ -26,11 +26,9 @@ class RimuTest {
         val jsonText = readResource("/rimu-tests.json")
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
-        var testNumber = 0
-        for (test in tests) {
-            testNumber++
+        for ((index, test) in tests.withIndex()) {
             val description = test.string("description") ?: ""
-            println("$testNumber: $description")
+            System.err.println("$index: $description")
             val input = test.string("input") ?: ""
             val expectedOutput = test.string("expectedOutput") ?: ""
             val expectedCallback = test.string("expectedCallback") ?: ""

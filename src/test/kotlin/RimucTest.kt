@@ -1,7 +1,4 @@
-import com.beust.klaxon.JsonArray
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Parser
-import com.beust.klaxon.string
+import com.beust.klaxon.*
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -64,42 +61,38 @@ class RimucTest {
     fun compileString(input: String, args: Array<String>): String {
         stdinMock.provideLines(input)
         systemOutRule.clearLog()
-//        systemErrRule.clearLog()
+        systemErrRule.clearLog()
         rimucNoRimurc(args)
-//        return systemOutRule.log + systemErrRule.log
-        return systemOutRule.log
+        return systemOutRule.log + systemErrRule.log
     }
 
-    fun compileAssertEquals(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        val output = compileString(source, args)
-        assertEquals(message, expected, output)
+    fun compileAssertContains(testDescriptor: TestDescriptor) {
+        val output = compileString(testDescriptor.input, testDescriptor.args)
+        assertTrue(testDescriptor.description, output.contains(testDescriptor.expectedOutput))
     }
 
-    fun compileAssertNotEquals(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        val output = compileString(source, args)
-        assertNotEquals(message, expected, output)
+    fun compileAssertEquals(testDescriptor: TestDescriptor) {
+        if (testDescriptor.exitCode != 0) {
+            exceptionRule.expect(RimucException::class.java)
+        }
+        val output = compileString(testDescriptor.input, testDescriptor.args)
+        assertEquals(testDescriptor.description, testDescriptor.expectedOutput, output)
     }
 
-    fun compileAssertContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        val output = compileString(source, args)
-        assertTrue(message, output.contains(expected))
+    fun compileAssertNotEquals(testDescriptor: TestDescriptor) {
+        val output = compileString(testDescriptor.input, testDescriptor.args)
+        assertNotEquals(testDescriptor.description, testDescriptor.expectedOutput, output)
     }
 
-    fun compileAssertNotContains(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        val output = compileString(source, args)
-        assertFalse(message, output.contains(expected))
+    fun compileAssertNotContains(testDescriptor: TestDescriptor) {
+        val output = compileString(testDescriptor.input, testDescriptor.args)
+        assertFalse(testDescriptor.description, output.contains(testDescriptor.expectedOutput))
     }
 
-    fun compileAssertStartsWith(message: String, args: Array<String> = arrayOf(), source: String, expected: String) {
-        val output = compileString(source, args)
-        assertTrue(message, output.startsWith(expected))
+    fun compileAssertStartsWith(testDescriptor: TestDescriptor) {
+        val output = compileString(testDescriptor.input, testDescriptor.args)
+        assertTrue(testDescriptor.description, output.startsWith(testDescriptor.expectedOutput))
     }
-
-// TODO Not yet used.
-//    fun compileAssertExitCode(message: String, args: Array<String> = arrayOf(), source: String, status: Int) {
-//        exitRule.expectSystemExitWithStatus(status)
-//        compileString(source, args)
-//    }
 
     fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
         exceptionRule.expect(type)
@@ -169,9 +162,9 @@ class RimucTest {
     @Test
     fun compilations() {
         compileAssertEquals(
-                source = "Hello World!",
-                expected = "<p>Hello World!</p>",
-                message = "rimucNoRimurc basic test"
+                TestDescriptor(input = "Hello World!",
+                        expectedOutput = "<p>Hello World!</p>",
+                        description = "rimucNoRimurc basic test")
         )
     }
 
@@ -218,6 +211,13 @@ class RimucTest {
     /**
      * Execute test cases specified in JSON file rimuc-tests.json
      */
+    data class TestDescriptor(val description: String,
+                              val input: String,
+                              val expectedOutput: String,
+                              val args: Array<String> = arrayOf(),
+                              val predicate: String = "",
+                              val exitCode: Int = 0)
+
     @Test
     fun rimucCompatibilityTests() {
         val jsonText = readResource("/rimuc-tests.json")
@@ -228,11 +228,8 @@ class RimucTest {
             testNumber++
             val description = test.string("description") ?: ""
             println(description)
+            // Convert args String to Array<String>.
             val args = test.string("args") ?: ""
-            val input = test.string("input") ?: ""
-            val expectedOutput = test.string("expectedOutput") ?: ""
-            val predicate = test.string("predicate") ?: ""
-//            val exitCode = test.int("exitCode") ?: 0
             val argsArray: Array<String>
             if (args.isNotBlank()) {
                 argsArray = args.trim().split(Regex("""\s+"""))
@@ -241,14 +238,19 @@ class RimucTest {
             } else {
                 argsArray = arrayOf()   // Use empty array is there are no arguments.
             }
-            when (predicate) {
-                "contains" -> compileAssertContains(description, argsArray, input, expectedOutput)
-                "!contains" -> compileAssertNotContains(description, argsArray, input, expectedOutput)
-                "equals" -> compileAssertEquals(description, argsArray, input, expectedOutput)
-                "!equals" -> compileAssertNotEquals(description, argsArray, input, expectedOutput)
-                "startsWith" -> compileAssertStartsWith(description, argsArray, input, expectedOutput)
-                "exitCode" -> null // TODO Not yet implemented
-                else -> throw IllegalArgumentException("""illegal test predicate: ${predicate}""")
+            val testDescriptor = TestDescriptor(description = description,
+                    args = argsArray,
+                    input = test.string("input") ?: "",
+                    expectedOutput = test.string("expectedOutput") ?: "",
+                    predicate = test.string("predicate") ?: "",
+                    exitCode = test.int("exitCode") ?: 0)
+            when (testDescriptor.predicate) {
+                "contains" -> compileAssertContains(testDescriptor)
+                "!contains" -> compileAssertNotContains(testDescriptor)
+                "equals" -> compileAssertEquals(testDescriptor)
+                "!equals" -> compileAssertNotEquals(testDescriptor)
+                "startsWith" -> compileAssertStartsWith(testDescriptor)
+                else -> throw IllegalArgumentException("""illegal test predicate: ${testDescriptor.predicate}""")
             }
         }
     }

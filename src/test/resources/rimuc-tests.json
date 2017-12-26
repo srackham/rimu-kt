@@ -182,11 +182,12 @@
         "predicate": "!contains"
     },
     {
-        "description": "rimuc --lint",
+        "description": "rimuc --lint (DEPRECATED OPTION)",
         "args": "--lint",
         "input": "{x}",
-        "expectedOutput": "1",
-        "predicate": "exitCode"
+        "expectedOutput": "<p>{x}</p>error: /dev/stdin: undefined macro: {x}: {x}\n",
+        "exitCode": 1,
+        "predicate": "equals"
     },
     {
         "description": "header links",

@@ -42,7 +42,9 @@ object BlockAttributes {
                 id = m.groupValues[2].trim().substring(1)
             }
             if (m.groupValues[3].isNotBlank()) { // CSS properties.
-                css = m.groupValues[3]
+                if (css.length > 0 && !css.endsWith(';')) css += ';'
+                css += " " + m.groupValues[3].trim()
+                css = css.trim()
             }
             if (m.groupValues[4].isNotBlank() && !Options.isSafeModeNz()) { // HTML attributes.
                 attributes += " " + m.groupValues[4].trim().removeSurrounding("[", "]")
@@ -62,19 +64,33 @@ object BlockAttributes {
         }
         var attrs = ""
         if (classes.isNotBlank()) {
-            if (result.contains(Regex("""class="\S.*""""))) {
+            if (result.contains(Regex("""class=".*?"""", RegexOption.IGNORE_CASE))) {
                 // Inject class names into existing class attribute.
-                result = result.replace(Regex("""class="(\S.*?)""""), """class="${classes} $1"""")
+                result = result.replace(Regex("""class="(.*?)"""", RegexOption.IGNORE_CASE), """class="${classes} $1"""")
             } else {
                 attrs = """class="${classes}""""
             }
         }
         if (id.isNotBlank()) {
-            ids.pushFirst(id)
-            attrs += """ id="${id}""""
+            id = id.toLowerCase()
+            if (ids.contains(id) || result.contains(Regex("""id=".*?"""", RegexOption.IGNORE_CASE))) {
+                Options.errorCallback("""duplicate 'id' attribute: ${id}""")
+            } else {
+                ids.pushFirst(id)
+                attrs += """ id="${id}""""
+            }
         }
         if (css.isNotBlank()) {
-            attrs += """ style="${css}""""
+            if (result.contains(Regex("""style=".*?"""", RegexOption.IGNORE_CASE))) {
+                // Inject CSS styles into existing style attribute.
+                result = result.replace(Regex("""style="(.*?)"""", RegexOption.IGNORE_CASE), { match ->
+                    var g1 = match.groupValues[1].trim()
+                    if (!g1.endsWith(';')) g1 += ';'
+                    """style="${g1} ${css}""""
+                })
+            } else {
+                attrs += """ style="${css}""""
+            }
         }
         if (attributes.isNotBlank()) {
             attrs += """ ${attributes}"""
@@ -110,7 +126,7 @@ object BlockAttributes {
             }
             slug += "-" + i
         }
-        return slug;
+        return slug
     }
 
 }

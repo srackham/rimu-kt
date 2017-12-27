@@ -27,8 +27,8 @@ object Macros {
     fun init() {
         defs.clear()
         // Initialize predefined macros.
-        setValue("--", "")
-        setValue("--header-ids", "")
+        defs.add(Macro(name = "--", value = ""))
+        defs.add(Macro(name = "--header-ids", value = ""))
     }
 
     // Return named macro value or null if it doesn't exist.
@@ -44,6 +44,10 @@ object Macros {
     // Set named macro value or add it if it doesn't exist.
     // If the name ends with '?' then don't set the macro if it already exists.
     fun setValue(name: String, value: String) {
+        if (name == "--" && value !== "") {
+            Options.errorCallback("the predefined blank '--' macro cannot be redefined")
+            return
+        }
         for (def in defs) {
             if (def.name == name) {
                 if (!name.endsWith('?')) {
@@ -59,6 +63,8 @@ object Macros {
     }
 
     // Render all macro invocations in text string.
+    // The `inline` argument is used to ensure macro errors are not reported
+    // multiple times from block and inline contexts.
     fun render(text: String, inline: Boolean = true): String {
         var result = MATCH_MACROS.replace(text, fun(match: MatchResult): String {
             if (match.value.startsWith('\\')) {
@@ -119,7 +125,15 @@ object Macros {
                 }
                 '!', '=' -> { // Inclusion macro.
                     val pattern = params.substring(1)
-                    var skip = !Regex("^$pattern$").matches(value)
+                    var skip: Boolean
+                    try {
+                        skip = !Regex("^$pattern$").matches(value)
+                    } catch (e: java.util.regex.PatternSyntaxException) {
+                        if (inline) {
+                            Options.errorCallback("illegal macro regular expression: " + pattern + ": " + text)
+                        }
+                        return match.value
+                    }
                     if (params[0] == '!') {
                         skip = !skip
                     }

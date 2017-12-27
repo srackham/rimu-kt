@@ -1,24 +1,27 @@
 /*
-  Used by rimuc.js --styled option.
+  Used by rimuc `--layout sequel` option.
 */
 
-// Close article div.
+// Close main and article divs.
+</div>
 </div>
 
 {--highlightjs!}<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>
 
 {--mathjax!}<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
-.+skip
-{--has-toc!}.-skip
-{--header-links!}.-skip
+{--no-toc!}.+skip
 <script>
 window.onload = function() {
+  document.getElementById('sidebar').appendChild(document.getElementById('toc')); // Ensure custom TOC is child of sidebar.
   var headings = [].slice.call(document.body.querySelectorAll('#article > h1, #article > h2, #article > h3'));
   headings.forEach(function(heading) {
 {--header-links!}    setHeaderLink(heading);
-{--has-toc!}    appendTocEntry(heading);
+    appendTocEntry(heading);
   });
+  if (isSmallScreen()) {
+    toggleToc();  // Hide TOC.
+  }
 }
 </script>
 
@@ -35,7 +38,7 @@ function setHeaderLink(heading) {
 }
 </script>
 
-{--has-toc=}.+skip
+{--no-toc!}.+skip
 <script>
 function appendTocEntry(heading) {
   var id = heading.getAttribute('id');
@@ -56,29 +59,30 @@ function appendTocEntry(heading) {
 }
 </script>
 
-{--dropdown-toc=}.+skip
+{--no-toc!}.+skip
 <script>
-// matches() polyfill for old browsers.
-if (!Element.prototype.matches) {
-  var p = Element.prototype;
-  if (p.webkitMatchesSelector) // Chrome <34, SF<7.1, iOS<8
-    p.matches = p.webkitMatchesSelector;
-  if (p.msMatchesSelector) // IE9/10/11 & Edge
-    p.matches = p.msMatchesSelector;
-  if (p.mozMatchesSelector) // FF<34
-    p.matches = p.mozMatchesSelector;
-}
-window.onclick = function(event) {
-  var body = document.getElementsByTagName('body')[0];
-  if (event.target.matches('#toc-button, #toc a')) {
-    // Toggle TOC if TOC button or TOC link is clicked.
-    body.classList.toggle('show-toc');
+  document.onclick = function (event) {
+    if (event.target.matches('#toc-button') || event.target.matches('#toc a') && isSmallScreen()) {
+{--!} Toggle TOC if nav bar or small-screen TOC link is clicked.
+      toggleToc();
+    }
   }
-  else if (!event.target.matches('#toc, #toc *')) {
-    // Hide TOC if clicked outside TOC.
-    body.classList.remove('show-toc');
+  function toggleToc() {
+    document.body.classList.toggle('hide-toc');
   }
-}
+  function isSmallScreen() {
+    return window.matchMedia('{--small-screen}').matches;
+  }
+  // matches() polyfill for old browsers.
+  if (!Element.prototype.matches) {
+    var p = Element.prototype;
+    if (p.webkitMatchesSelector) // Chrome <34, SF<7.1, iOS<8
+      p.matches = p.webkitMatchesSelector;
+    if (p.msMatchesSelector) // IE9/10/11 & Edge
+      p.matches = p.msMatchesSelector;
+    if (p.mozMatchesSelector) // FF<34
+      p.matches = p.mozMatchesSelector;
+  }
 </script>
 
 </body>

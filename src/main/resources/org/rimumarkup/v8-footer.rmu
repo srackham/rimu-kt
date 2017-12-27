@@ -1,5 +1,6 @@
 /*
-  Used by rimuc.js --styled option.
+  Used by rimuc `--layout v8` option.
+  DEPRECATED: This layout is no longer maintained, for Rimu version 8 compatibility.
 */
 
 // Close contents div.
@@ -7,7 +8,7 @@
 
 {--highlightjs!}<script src="http://yandex.st/highlightjs/7.3/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script>
 
-{--mathjax!}<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+{--mathjax!}<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 <script>
 window.onload = function() {

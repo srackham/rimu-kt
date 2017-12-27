@@ -1,5 +1,5 @@
 /*
-  Used by rimuc `--layout classic` option.
+  Used by rimuc `--layout sequel` option.
 */
 
 /*
@@ -21,13 +21,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">'
 
-// Classic layout specific.
-{--dropdown-toc?} = ''
-
 /*
   Legend theme.
 */
 {--theme!.*\blegend\b.*}.+skip
+// Default to this theme if none of the built-in themes is specified.
+{--theme!.*\b(legend|vintage|graystone)\b.*}.-skip
 ..
 {--sans-font?} = 'Helvetica, Arial, sans-serif'
 {--serif-font?} = 'Georgia, Times, serif'
@@ -48,8 +47,6 @@
   Vintage theme.
 */
 {--theme!.*\bvintage\b.*}.+skip
-// Default to this theme if none of the built-in themes is specified.
-{--theme!.*\b(legend|vintage|graystone)\b.*}.-skip
 ..
 {--sans-font?} = 'Helvetica, Arial, sans-serif'
 {--serif-font?} = 'Georgia, Times, serif'
@@ -87,31 +84,6 @@
 ..
 
 /*
-  Private layout parameters.
-*/
-// Accomodate the new default TOC generation and --no-toc option.
-// DEPRECATED --sidebar-toc: Used internally but external definition tolerated for backward comaptibility.
-{--dropdown-toc!}.+skip
-..
-{--sidebar-toc?} = 'yes'
-..
-{--dropdown-toc=}.+skip
-..
-{--sidebar-toc?} = ''
-..
-// DEPRECATED --toc: If --toc is non-blank make --sidebar-toc non-blank.
-{--toc?} = ''
-{--sidebar-toc} = '{--toc}{--sidebar-toc}'
-// Ensures no TOC.
-{--no-toc=}.+skip
-..
-{--dropdown-toc} = ''
-{--sidebar-toc} = ''
-..
-// Non-blank if a TOC was specified.
-{--has-toc} = '{--dropdown-toc}{--sidebar-toc}'
-
-/*
   HTML header
 */
 <!DOCTYPE HTML>
@@ -121,10 +93,8 @@
 <title>{--title}</title>
 {--highlightjs!}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
 
-
 /*
   Layout independent styles
-  -------------------------
 */
 <style>
   * {
@@ -143,19 +113,19 @@
     margin: 10px 0;
     color: {--primary-color};
   }
-  h1 { font-size: 2.2em; line-height: 40px;}
-  h2 { font-size: 1.5em; }
-  h3 { font-size: 1.2em; }
-  h4 { font-size: 1.1em; }
-  h5 { font-size: 1.0em; }
-  h6 { font-size: 0.9em; }
+  h1 { font-size: 2.2rem; line-height: 40px;}
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.2rem; }
+  h4 { font-size: 1.1rem; }
+  h5 { font-size: 1.0rem; }
+  h6 { font-size: 0.9rem; }
   h2, h3, h4, h5, h6 {
     line-height: normal;
-    margin-top: 1.0em;
-    margin-bottom: 0.2em;
+    margin-top: 1.0rem;
+    margin-bottom: 0.2rem;
   }
   h2 {
-    margin-top: 1.5em;
+    margin-top: 1.5rem;
     border-bottom: 1px solid {--border-color};
   }
   img {
@@ -163,6 +133,7 @@
   }
   table {
     border-collapse: collapse;
+    table-layout: fixed;
     width: 100%;
   }
   td, th {
@@ -175,7 +146,7 @@
     border: 1px solid {--border-color};
   }
   a, a:hover {
-    color: {--primary-color};
+    color: {--link-color};
   }
   a {
     text-decoration: none;
@@ -185,8 +156,8 @@
   }
   p, pre, li, dt, dd, blockquote p {
     line-height: 1.45;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
   ul, ol {
     padding: 0;
@@ -197,7 +168,7 @@
     font-style: italic;
   }
   dd {
-    margin-left: 1.0em;
+    margin-left: 1.0rem;
     margin-top: 0;
   }
   blockquote {
@@ -237,11 +208,12 @@
     border: none;
     white-space: pre;
   }
+{--!} So hyphenated words like `--word-wrap` are not broken (there is no CSS property that will break on white space only).
   *:not(pre) > code {
     white-space: nowrap;
   }
   .dl-horizontal > dd {
-    margin-top: 1.0em;
+    margin-top: 1.0rem;
   }
   pre > code {
     background-color: inherit;
@@ -259,9 +231,9 @@
   }
   div.verse p, p.verse {
     font-family: {--serif-font};
-    white-space: pre;
-    margin-top: 0.75em;
-    margin-bottom: 0.75em;
+    white-space: pre-wrap;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
   }
   {--!} Apply sidebar class to Normal Paragraphs and Division blocks.
   .sidebar {
@@ -272,7 +244,7 @@
     margin: 1.5em 0;
   }
   div.sidebar *:first-child {
-    margin-top: 0.2em;
+    margin-top: 0.2rem;
   }
   {--!} Force page break before the element.
   .page-break {
@@ -298,7 +270,7 @@
   }
   {--!} DEPRECATED: Use `preserve-breaks` instead.
   .line-breaks {
-    white-space: pre;
+    white-space: pre-wrap;
   }
   {--!} Horizontal labeled list.
   .dl-horizontal:before, .dl-horizontal:after {
@@ -316,12 +288,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: left;
-    margin-top: 1.0em;
+    margin-top: 1.0rem;
     width: 25%;
   }
   .dl-horizontal > dd {
     margin-left: 25%;
-    padding-left: 1.0em;
+    padding-left: 1.0rem;
   }
   {--!} List item counters.
   dl {
@@ -382,28 +354,28 @@
   }
 </style>
 
-// Common to --sidebar-toc and --dropdown-toc.
-{--has-toc=}.+skip
+// TOC styling.
+{--no-toc!}.+skip
 <style>
-  #toc {
-    padding-left: 1em;
-  }
   #toc h2 {
     font-size: 125%;
+    padding-left: 1rem;
     margin-top:1.0rem;
     margin-left: 0;
   }
   #toc .h1 {
     font-size: 110%;
     font-weight: bold;
-    margin-top: 0.5em;
-    margin-bottom: 0.4em;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.4rem;
   }
   #toc .h2 {
-    margin-top: 0.4em;
+    padding-left: 1rem;
+    margin-top: 0.4rem;
   }
   #toc .h3 {
-    margin-left: 1.5em;
+    padding-left: 2.5rem;
     font-size: 90%;
   }
   #toc div[class^="h"]:nth-child(even) {
@@ -411,6 +383,9 @@
   }
   #auto-toc {
     width: 100%;
+  }
+  #toc a, #toc a:hover {
+    color: {--primary-color};
   }
 </style>
 
@@ -441,101 +416,111 @@
 
 /*
   Layout styles
-  -------------
 */
+{--no-toc!}.+skip
 <style>
-  body {
-    margin: 1em;
-    max-width: {--max-text-width};
+  #nav {
+    z-index: 3;
+    position: fixed;
+    left: 0;
+    height: 100%;
+    width: 40px;
+    background-color: {--primary-color};
+    color: white;
   }
-</style>
-
-{--sidebar-toc=}.+skip
-<style>
-  body {
-    padding-left: 21em;
-  }
-  #toc {
+  #sidebar {
+    z-index: 2;
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
-    width: 18em;
-    border-right: 1px solid #cccccc;
-    overflow-y: auto;
-    overflow-x: hidden;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
+    margin-left: 40px;
+    width: 300px;
+    overflow: auto;
+    border-right: 1px solid #ccc;
+    background: #eee;
   }
-  @media print {
-    body {
-      padding-left: 1em;
-    }
+  body.hide-toc #sidebar {
+    display: none !important;
   }
-  @media only screen and {--small-screen} {
-    {--!}  Sidebar TOC hidden as it does not work on small screens.
-    body {
-      padding-left: 0;
-    }
-    #toc {
-      display: none !important;
-    }
-  }
-</style>
-
-{--dropdown-toc=}.+skip
-<style>
-  .show-toc #toc {
-    display: block !important;
-  }
-  #toc-button {
-    position: fixed;
-    top: 22px;
-    left: 15px;
+  #main {
     z-index: 1;
-    cursor: pointer;
-    color: silver;
-    font-size: 3.2em;
+    min-height: 100%;
+    max-width: {--max-text-width};
+    margin-left: 341px;
+    padding-left: 40px;
+    padding-right: 60px;
   }
-  #toc {
-    display: none;
-    position: fixed;
-    top: 55px;
-    left: 15px;
-    right: 10%;
-    z-index: 1;
-    max-width: 30em;
-    max-height: 80%;
-    overflow-y: auto;
-    background-color: {--primary-background};
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
-  }
-  #article {
+  body.hide-toc #main {
     margin-left: 40px;
   }
-  @media print {
-    #article {
-      margin-left: 0;
-    }
+  #article {
+    padding-top: 1px;
+    padding-bottom: 10px;
   }
-  @media only screen and {--small-screen} {
-    {--!}  Reposition TOC and TOC button.
-    #toc {
-      top: 60px;
-      left: 5px;
-    }
-    #toc-button {
-      top: 20px;
-      left: 5px;
-    }
+  #toc-button {
+    cursor: pointer;
+    color: white;
+    font-size: 48px;
+    line-height: 40px;
+    font-family: Arial, sans-serif;
+    display: inline-block;
+    padding-left: 5px;
   }
-</style>
-
-// Format (non-layout) related styles.
-<style>
   @media only screen and {--small-screen} {
     body {
       font-size: 20px;
-      margin: 5px;
+    }
+    body:not(.hide-toc) {
+{--!} Hide body Y scroll bar when #main content is hidden.
+      overflow: hidden;
+    }
+    body:not(.hide-toc) #sidebar {
+      width: 100%;
+    }
+    #main {
+      margin-left: 40px;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    body:not(.hide-toc) #main {
+      visibility: hidden;
+    }
+    #toc {
+      margin-right: 40px;
+    }
+    * {
+      overflow-wrap: break-word;
+    }
+  }
+</style>
+
+{--no-toc=}.+skip
+<style>
+  #main {
+    min-height: 100%;
+    max-width: {--max-text-width};
+    padding-left: 40px;
+    padding-right: 60px;
+  }
+  @media only screen and {--small-screen} {
+    body {
+      font-size: 20px;
+    }
+    #main {
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    * {
+      overflow-wrap: break-word;
+    }
+  }
+</style>
+
+<style>
+  @media print {
+    #main {
+      margin-left: 0;
     }
   }
 </style>
@@ -553,16 +538,23 @@
 </head>
 <body>
 
-// Include dropdown TOC button.
-{--dropdown-toc=}.+skip
-<div id="toc-button" class="no-print">&#8801;</div>
+{--no-toc!}.+skip
+<div id="nav" class="no-print">
+    <span id="toc-button">&#8801;</span>
+</div>
 
-// Include TOC unless a custom TOC is specified.
-.+skip
-{--has-toc!}.-skip
+{--no-toc!}.+skip
+<div id="sidebar" class="no-print">
+
+// Include TOC unless no TOC or custom TOC is specified.
+{--no-toc!}.+skip
 {--custom-toc!}.+skip
 <div id="toc" class="no-print">
   <div id="auto-toc"></div>
 </div>
 
+{--no-toc!}.+skip
+</div>
+
+<div id="main">
 <div id="article">

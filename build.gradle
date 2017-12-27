@@ -57,7 +57,9 @@ publishing {
 }
 
 Properties localProperties = new Properties()
-localProperties.load(new FileInputStream("./local.properties"))
+if (new File("./local.properties").isFile()) {
+    localProperties.load(new FileInputStream("./local.properties"))
+}
 
 // Used by bintrayUpload task publishes Maven library to Bintray.
 // See https://github.com/bintray/gradle-bintray-plugin

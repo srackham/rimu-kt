@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.rimumarkup:rimu-kt:9.1.3"
+    compile "org.rimumarkup:rimu-kt:9.3.0"
 }
 ```
 

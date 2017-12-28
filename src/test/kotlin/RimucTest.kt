@@ -172,49 +172,59 @@ class RimucTest {
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
         for ((index, test) in tests.withIndex()) {
-            val description = test.string("description") ?: ""
-            System.err.println("$index: $description")
-            val input = test.string("input") ?: ""
-            val expectedOutput = test.string("expectedOutput") ?: ""
-            val predicate = test.string("predicate") ?: ""
-            val exitCode = test.int("exitCode") ?: 0
-            // Convert args String to Array<String>.
-            val args = test.string("args") ?: ""
-            val argsArray: Array<String>
-            if (args.isNotBlank()) {
-                argsArray = args.trim().split(Regex("""\s+"""))
-                        .map { it.removeSurrounding("\"") }
-                        .toTypedArray()
-            } else {
-                argsArray = arrayOf()   // Use empty array is there are no arguments.
-            }
-            stdinMock.provideLines(input)
-            systemOutRule.clearLog()
-            systemErrRule.clearLog()
-            var exceptionThrown = false
-            try {
-                rimucNoRimurc(argsArray)
-            } catch (e: RimucException) {
-                exceptionThrown = true
-            }
-            if (exitCode != 0) {
-                assertTrue(description, exceptionThrown)
-            } else {
-                assertFalse(description, exceptionThrown)
-            }
-            val output = systemOutRule.log + systemErrRule.log
-            when (predicate) {
-                "contains" ->
-                    assertTrue(description, output.contains(expectedOutput))
-                "!contains" ->
-                    assertFalse(description, output.contains(expectedOutput))
-                "equals" ->
-                    assertEquals(description, expectedOutput, output)
-                "!equals" ->
-                    assertNotEquals(description, expectedOutput, output)
-                "startsWith" ->
-                    assertTrue(description, output.startsWith(expectedOutput))
-                else -> throw IllegalArgumentException("""${description}: illegal predicate: ${predicate}""")
+            for (layout in listOf<String>("", "classic", "flex", "sequel")) {
+                val layouts = test.boolean("layouts") ?: false
+                // Skip if not a layouts test and we have a layout, or if it is a layouts test but no layout is specified.
+                if (!layouts && layout.isNotBlank() || layouts && layout.isBlank()) {
+                    continue
+                }
+                val description = test.string("description") ?: ""
+                System.err.println("$index: $description")
+                val input = test.string("input") ?: ""
+                val expectedOutput = test.string("expectedOutput") ?: ""
+                val predicate = test.string("predicate") ?: ""
+                val exitCode = test.int("exitCode") ?: 0
+                // Convert args String to Array<String>.
+                var args = test.string("args") ?: ""
+                if (layout.isNotBlank()) {
+                    args = """--layout $layout $args"""
+                }
+                val argsArray: Array<String>
+                if (args.isNotBlank()) {
+                    argsArray = args.trim().split(Regex("""\s+"""))
+                            .map { it.removeSurrounding("\"") }
+                            .toTypedArray()
+                } else {
+                    argsArray = arrayOf()   // Use empty array is there are no arguments.
+                }
+                stdinMock.provideLines(input)
+                systemOutRule.clearLog()
+                systemErrRule.clearLog()
+                var exceptionThrown = false
+                try {
+                    rimucNoRimurc(argsArray)
+                } catch (e: RimucException) {
+                    exceptionThrown = true
+                }
+                val output = systemOutRule.log + systemErrRule.log
+                if (exitCode != 0) {
+                    assertTrue(description, exceptionThrown)
+                } else {
+                    assertFalse(description, exceptionThrown)
+                }
+                when (predicate) {
+                    "contains" ->
+                        assertTrue(description, output.contains(expectedOutput))
+                    "!contains" ->
+                        assertFalse(description, output.contains(expectedOutput))
+                    "equals" ->
+                        assertEquals(description, expectedOutput, output)
+                    "!equals" ->
+                        assertNotEquals(description, expectedOutput, output)
+                    "startsWith" ->
+                        assertTrue(description, output.startsWith(expectedOutput))
+                    else -> throw IllegalArgumentException("""${description}: illegal predicate: ${predicate}""")
+                }
             }
         }
     }

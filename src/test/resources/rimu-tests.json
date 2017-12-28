@@ -54,7 +54,7 @@
     }
   },
   {
-    "description": "code quotes ending with backslashs",
+    "description": "code quotes ending with backslashes",
     "input": "`foo bar\\` `foo bar\\\\` `foo bar\\\\\\`",
     "expectedOutput": "<p><code>foo bar\\</code> <code>foo bar\\\\</code> <code>foo bar\\\\\\</code></p>",
     "expectedCallback": "",
@@ -63,7 +63,7 @@
     }
   },
   {
-    "description": "code quotes with backslashs",
+    "description": "code quotes with backslashes",
     "input": "`\\a\\b\\ c\\d \\e\\`",
     "expectedOutput": "<p><code>\\a\\b\\ c\\d \\e\\</code></p>",
     "expectedCallback": "",
@@ -828,9 +828,9 @@
     }
   },
   {
-    "description": "list item with attached quote block",
-    "input": "- Item 1\n\"\"\nA\nparagraph\n\"\"",
-    "expectedOutput": "<ul><li>Item 1<blockquote><p>A\nparagraph</p></blockquote></li></ul>",
+    "description": "list item with attached quote block followed by child list",
+    "input": "- Item 1\n\"\"\nA\nparagraph\n\"\"\n. Uno",
+    "expectedOutput": "<ul><li>Item 1<blockquote><p>A\nparagraph</p></blockquote>\n<ol><li>Uno</li></ol></li></ul>",
     "expectedCallback": "",
     "options": {
       "reset": true
@@ -882,9 +882,27 @@
     }
   },
   {
-    "description": "list terminated by two blank lines",
+    "description": "list terminated by two blank lines after list item",
     "input": "- List 1\n\n\n* List 2",
     "expectedOutput": "<ul><li>List 1</li></ul><ul><li>List 2</li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list terminated by two blank lines after item attached block",
+    "input": "- Item 1\n\"\"\nA\nparagraph\n\"\"\n\n\n- Item 2",
+    "expectedOutput": "<ul><li>Item 1<blockquote><p>A\nparagraph</p></blockquote>\n</li></ul><ul><li>Item 2</li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list is not terminated by single blank line after item attached block",
+    "input": "- Item 1\n\"\"\nA\nparagraph\n\"\"\n\n- Item 2",
+    "expectedOutput": "<ul><li>Item 1<blockquote><p>A\nparagraph</p></blockquote>\n</li><li>Item 2</li></ul>",
     "expectedCallback": "",
     "options": {
       "reset": true
@@ -1257,8 +1275,8 @@
   },
   {
     "description": "parametrized macro: default parameters",
-    "input": "{v}='Hello $1:World$!'\n{v} {v|} {v|Mars}",
-    "expectedOutput": "<p>Hello $1:World$! Hello World! Hello Mars!</p>",
+    "input": "{v}='Hello $1:cruel$ $2:World$!'\n{v} {v|} {v||Mars} {v|happy|Mercury}",
+    "expectedOutput": "<p>Hello $1:cruel$ $2:World$! Hello cruel World! Hello cruel Mars! Hello happy Mercury!</p>",
     "expectedCallback": "",
     "options": {
       "reset": true
@@ -2133,7 +2151,7 @@
     "description": "callback api: undefined macro",
     "input": "{undefined}",
     "expectedOutput": "<p>{undefined}</p>",
-    "expectedCallback": "error: undefined macro",
+    "expectedCallback": "error: undefined macro: {undefined}: {undefined}",
     "options": {
       "reset": true
     }
@@ -2142,7 +2160,7 @@
     "description": "callback api: undefined inclusion macro",
     "input": "{undefined=}",
     "expectedOutput": "<p>{undefined=}</p>",
-    "expectedCallback": "error: undefined macro",
+    "expectedCallback": "error: undefined macro: {undefined=}: {undefined=}",
     "options": {
       "reset": true
     }
@@ -2151,7 +2169,7 @@
     "description": "callback api: unterminated delimited block",
     "input": "..\nLorum ipsum",
     "expectedOutput": "",
-    "expectedCallback": "error: unterminated delimited block",
+    "expectedCallback": "error: unterminated delimited block: ..",
     "options": {
       "reset": true
     }
@@ -2169,7 +2187,7 @@
     "description": "callback api: illegal delimited block name",
     "input": "|foobar| = '<p>|</p>'",
     "expectedOutput": "",
-    "expectedCallback": "error: illegal delimited block name: foobar",
+    "expectedCallback": "error: illegal delimited block name: foobar: |foobar|='<p>|</p>'",
     "options": {
       "reset": true
     }
@@ -2187,7 +2205,7 @@
     "description": "callback api: illegal API option",
     "input": ".zafeMode='2'",
     "expectedOutput": "",
-    "expectedCallback": "error: illegal API option: zafeMode",
+    "expectedCallback": "error: illegal API option: zafeMode: .zafeMode='2'",
     "options": {
       "reset": true
     }
@@ -2257,8 +2275,8 @@
   },
   {
     "description": "duplicate attribute 'id' in tag",
-    "input": ".#ID1\n<p id=\"id1\">foobar</p>",
-    "expectedOutput": "<p id=\"id1\">foobar</p>",
+    "input": ".#id1\n<p id=\"ID1\">foobar</p>",
+    "expectedOutput": "<p id=\"ID1\">foobar</p>",
     "expectedCallback": "error: duplicate 'id' attribute: id1",
     "options": {
       "reset": true
@@ -2267,8 +2285,188 @@
   {
     "description": "duplicate attribute 'id' in block attributes",
     "input": ".#id1\nfoo\n\n.#ID1\n<p>bar</p>",
-    "expectedOutput": "<p id=\"id1\">foo</p>\n<p>bar</p>",
+    "expectedOutput": "<p id=\"id1\">foo</p>\n<p id=\"id1\">bar</p>",
     "expectedCallback": "error: duplicate 'id' attribute: id1",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "line block macro expression value definition",
+    "input": "{foo} = `(parseInt(40) + parseInt(2)) + 'px'`\n{foo}",
+    "expectedOutput": "<p>42px</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "multi-line macro expression value definition",
+    "input": "{foo} = `(parseInt(40) + parseInt(2)) \n+ 'px'`\n{foo}",
+    "expectedOutput": "<p>42px</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "delimited block macro expression line continuation",
+    "input": "{foo} = `(parseInt(40) + parseInt(2)) + ` \\\npx``\n{foo}",
+    "expectedOutput": "<p>42\npx</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "delimited block macro expression escaped line continuation",
+    "input": "{foo} = `(parseInt(40) + parseInt(2)) + ` \\\\\npx``\n{foo}",
+    "expectedOutput": "<p>42 px</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "illegal macro expression",
+    "input": "{foo} = `1 + x`",
+    "expectedOutput": "",
+    "expectedCallback": "error: illegal macro expression: x is not defined: 1 + x",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "escape closing brace in macro 'pattern' parameter",
+    "input": "{foo} = 'xx'\n{foo=x{2\\}}foo",
+    "expectedOutput": "<p>foo</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Simple macros are only expanded once",
+    "input": ".-macros\n{m1}='{m2}='$1'\\\n{m3}='{m2|foo}'\\\n'\n{m1}\n{m3}",
+    "expectedOutput": "<p>foo</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Line Macro does not emit duplicate undefined macro error",
+    "input": "{x} and {y}",
+    "expectedOutput": "<p>{x} and {y}</p>",
+    "expectedCallback": "error: undefined macro: {x}: {x} and {y}\nerror: undefined macro: {y}: {x} and {y}",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Block Attributes on Fenced Block attached to list item",
+    "input": "- Item one.\n.#id\n..\nFoobar.\n..",
+    "expectedOutput": "<ul><li>Item one.<div id=\"id\"><p>Foobar.</p></div></li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Block Attributes on Quote Paragraph attached to list item",
+    "input": "- Item one.\n.#id\n\n> Foobar.",
+    "expectedOutput": "<ul><li>Item one.<blockquote id=\"id\"><p> Foobar.</p></blockquote></li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Multiple Block Attributes on Fenced Block attached to list item",
+    "input": "- Item one.\n.class\n.#id\n..\nFoobar.\n..",
+    "expectedOutput": "<ul><li>Item one.<div class=\"class\" id=\"id\"><p>Foobar.</p></div></li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Block Attributes can appear anywhere in list item",
+    "input": "- Item\n.#id\none.\n..\nFoobar.\n..",
+    "expectedOutput": "<ul><li>Item\none.<div id=\"id\"><p>Foobar.</p></div></li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Escaped Block Attributes on Fenced Block attached to list item",
+    "input": "- Item one.\n\\.#id\n\"\"\nFoobar.\n\"\"",
+    "expectedOutput": "<ul><li>Item one.\n.#id<blockquote><p>Foobar.</p></blockquote></li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Block Attributes applied to bullet list items",
+    "input": "- Item one.\n.#id1\n- Item two.\n\n.#id2\n- Item three.",
+    "expectedOutput": "<ul><li>Item one.</li><li id=\"id1\">Item two.</li><li id=\"id2\">Item three.</li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Block Attributes applied labelled list terms",
+    "input": ".#id1\nOne:: Item one.\n\n.#id2\n.class\nTwo:: Item two.",
+    "expectedOutput": "<dl id=\"id1\"><dt>One</dt><dd>Item one.</dd><dt class=\"class\" id=\"id2\">Two</dt><dd>Item two.</dd></dl>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list item with escaped attached Division Block",
+    "input": "- Item 1\n\\..\nA\nparagraph\n\\..\n- Item 2",
+    "expectedOutput": "<ul><li>Item 1\n..\nA\nparagraph\n..</li><li>Item 2</li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list item with escaped attached Quote Block",
+    "input": "- Item 1\n\\\"\"\n- Item 2",
+    "expectedOutput": "<ul><li>Item 1\n\"\"</li><li>Item 2</li></ul>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list item with escaped Block Attributes preceding attached Division Block",
+    "input": ". One\n\\.id2\n..\nFoo\n..\n. Two",
+    "expectedOutput": "<ol><li>One\n.id2<p>Foo</p>\n</li><li>Two</li></ol>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list item with attached Quote paragraph followed by another Quote paragraph",
+    "input": "- Item 1\n\n> Quote 1\n\n> Quote 2",
+    "expectedOutput": "<ul><li>Item 1<blockquote><p> Quote 1</p></blockquote>\n</li></ul><blockquote><p> Quote 2</p></blockquote>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "list item with attached Quote block followed by another Quote block",
+    "input": "- Item 1\n\"\"\nQuote 1\n\"\"\n\"\"\nQuote 2\n\"\"",
+    "expectedOutput": "<ul><li>Item 1<blockquote><p>Quote 1</p></blockquote>\n</li></ul><blockquote><p>Quote 2</p></blockquote>",
+    "expectedCallback": "",
     "options": {
       "reset": true
     }

@@ -13,15 +13,14 @@ object Lists {
     )
 
     // Information about a matched list item element.
-    data class ItemState(
+    data class ItemInfo(
             val id: String, // List ID.
             val groupValues: List<String>,
             val def: Definition
     ) {
         companion object {
             // Static identity items.
-            val NO_MATCH = ItemState("NO_MATCH", listOf<String>(), defs[0])
-            val BLOCK_MATCH = ItemState("BLOCK_MATCH", listOf<String>(), defs[0])
+            val NO_MATCH = ItemInfo("NO_MATCH", listOf<String>(), defs[0])
         }
     }
 
@@ -62,26 +61,27 @@ object Lists {
     var ids = mutableListOf<String>()       // Stack of open list IDs.
 
     fun render(reader: Io.Reader, writer: Io.Writer): Boolean {
-        if (reader.eof()) throw RimucException("Premature EOF")
-        val startItem: ItemState = matchItem(reader)
-        if (startItem === ItemState.NO_MATCH) {
+        if (reader.eof()) Options.panic("premature eof")
+        val startItem: ItemInfo = matchItem(reader)
+        if (startItem === ItemInfo.NO_MATCH) {
             return false
         }
         ids.clear()
         renderList(startItem, reader, writer)
         // ids should now be empty.
         assert(ids.isEmpty())
+        if (ids.size != 0) Options.panic("list stack failure")
         return true
     }
 
-    fun renderList(startItem: ItemState, reader: Io.Reader, writer: Io.Writer): ItemState {
+    fun renderList(startItem: ItemInfo, reader: Io.Reader, writer: Io.Writer): ItemInfo {
         ids.add(startItem.id)
         writer.write(BlockAttributes.injectHtmlAttributes(startItem.def.listOpenTag))
         var currentItem = startItem
-        var nextItem: ItemState
+        var nextItem: ItemInfo
         while (true) {
             nextItem = renderListItem(currentItem, reader, writer)
-            if (nextItem === ItemState.NO_MATCH || nextItem.id != currentItem.id) {
+            if (nextItem === ItemInfo.NO_MATCH || nextItem.id != currentItem.id) {
                 // End of list or next item belongs to ancestor.
                 writer.write(currentItem.def.listCloseTag)
                 ids.removeAt(ids.size - 1)   // pop.
@@ -91,124 +91,116 @@ object Lists {
         }
     }
 
-    fun renderListItem(startItem: ItemState, reader: Io.Reader, writer: Io.Writer): ItemState {
-        val def = startItem.def
-        val groupValues = startItem.groupValues
+    // Render the current list item, return the next list item or null if there are no more items.
+    fun renderListItem(item: ItemInfo, reader: Io.Reader, writer: Io.Writer): ItemInfo {
+        val def = item.def
+        val groupValues = item.groupValues
         var text: String
         if (groupValues.size == 4) { // 3 match groups => definition list.
-            writer.write(def.termOpenTag as String)
+            writer.write(BlockAttributes.injectHtmlAttributes(def.termOpenTag as String))
             text = Utils.replaceInline(groupValues[1], ExpansionOptions(macros = true, spans = true))
             writer.write(text)
             writer.write(def.termCloseTag as String)
+            writer.write(def.itemOpenTag)
+        } else {
+            writer.write(BlockAttributes.injectHtmlAttributes(def.itemOpenTag))
         }
-        writer.write(def.itemOpenTag)
-        // Process of item text.
-        val lines = Io.Writer()
-        lines.write(groupValues[groupValues.size - 1] + "\n") // Item text from first line.
+        // Process of item text from first line.
+        val item_lines = Io.Writer()
+        text = groupValues.last()
+        item_lines.write(text + "\n")
+        // Process remainder of list item i.e. item text, optional attached block, optional child list.
         reader.next()
-        var nextItem: ItemState
-        nextItem = readToNext(reader, lines)
-        text = lines.toString().trim()
-        text = Utils.replaceInline(text, ExpansionOptions(macros = true, spans = true))
-        writer.write(text)
+        val attached_lines = Io.Writer()
+        var blank_lines: Int
+        var attached_done = false
+        var next_item: ItemInfo
         while (true) {
-            if (nextItem === ItemState.NO_MATCH) {
-                // EOF or non-list related item.
-                writer.write(def.itemCloseTag)
-                return ItemState.NO_MATCH
-            } else if (nextItem === ItemState.BLOCK_MATCH) {
-                // Delimited block.
+            blank_lines = consumeBlockAttributes(reader, attached_lines)
+            if (blank_lines >= 2 || blank_lines == -1) {
+                // EOF or two or more blank lines terminates list.
+                next_item = ItemInfo.NO_MATCH
+                break
+            }
+            next_item = matchItem(reader)
+            if (next_item !== ItemInfo.NO_MATCH) {
+                if (ids.contains(next_item.id)) {
+                    // Next item belongs to current list or a parent list.
+                } else {
+                    // Render child list.
+                    next_item = renderList(next_item, reader, attached_lines)
+                }
+                break
+            }
+            if (attached_done)
+                break // Multiple attached blocks are not permitted.
+            if (blank_lines == 0) {
                 val savedIds = ids
                 ids = mutableListOf<String>()
-                DelimitedBlocks.render(reader, writer)
-                ids = savedIds
-                reader.skipBlankLines()
-                if (reader.eof()) {
-                    writer.write(def.itemCloseTag)
-                    return ItemState.NO_MATCH
+                if (DelimitedBlocks.render(reader, attached_lines, listOf("comment", "code", "division", "html", "quote"))) {
+                    attached_done = true
                 } else {
-                    nextItem = matchItem(reader)
+                    // Item body line.
+                    item_lines.write(reader.cursor + "\n")
+                    reader.next()
                 }
-            } else {
-                // List item.
-                if (ids.indexOf(nextItem.id) != -1) {
-                    // Item belongs to current list or an ancestor list.
-                    writer.write(def.itemCloseTag)
-                    return nextItem
+                ids = savedIds
+            } else if (blank_lines == 1) {
+                if (DelimitedBlocks.render(reader, attached_lines, listOf("indented", "quote-paragraph"))) {
+                    attached_done = true
                 } else {
-                    // Render new child list.
-                    nextItem = renderList(nextItem, reader, writer)
-                    writer.write(def.itemCloseTag)
-                    return nextItem
+                    break
                 }
             }
         }
-        // Unreachable code, should never arrive here.
+        // Write item text.
+        text = item_lines.toString().trim()
+        text = Utils.replaceInline(text, ExpansionOptions(macros = true, spans = true))
+        writer.write(text)
+        // Write attachment and child list.
+        writer.buffer.addAll(attached_lines.buffer)
+        // Close list item.
+        writer.write(def.itemCloseTag)
+        return next_item
     }
 
-    // Write the list item text from the reader to the writer. Return
-    // 'next' containing the next element's match and identity or null if
-    // there are no more list releated elements.
-    fun readToNext(reader: Io.Reader, writer: Io.Writer): ItemState {
-        // The reader should be at the line following the first line of the list
-        // item (or EOF).
-        var next: ItemState
+    // Consume blank lines and Block Attributes.
+    // Return number of blank lines read or -1 if EOF.
+    fun consumeBlockAttributes(reader: Io.Reader, writer: Io.Writer): Int {
+        var blanks = 0
         while (true) {
-            if (reader.eof()) return ItemState.NO_MATCH
-            if (reader.cursor == "") {
-                // Encountered blank line.
-                reader.next()
-                if (reader.eof()) return ItemState.NO_MATCH
-                if (reader.cursor == "") {
-                    // A second blank line terminates the list.
-                    return ItemState.NO_MATCH
-                }
-                if (reader.eof()) return ItemState.NO_MATCH
-                // A single blank line separates list item from ensuing text.
-                return matchItem(reader, listOf("indented", "quote-paragraph"))
-            }
-            next = matchItem(reader, listOf("comment", "code", "division", "html", "quote"))
-            if (next !== ItemState.NO_MATCH) {
-                // Encountered list item or attached Delimited Block.
-                return next
-            }
-            // Current line is list item text so write it to the output and move to the next input line.
-            writer.write(reader.cursor)
-            writer.write("\n")
+            if (reader.eof())
+                return -1
+            if (LineBlocks.render(reader, writer, listOf("attributes")))
+                continue
+            if (reader.cursor != "")
+                return blanks
+            blanks++
             reader.next()
         }
     }
 
     // Check if the line at the reader cursor matches a list related element.
-    // 'attachments' specifies the names of allowed Delimited Block elements (in addition to list items).
-    // If it matches a list item return ItemState.
-    // If it matches an attached Delimiter Block return ItemState.BLOCK_MATCH.
-    // If it does not match a list related element return ItemState.NO_MATCH.
-    fun matchItem(reader: Io.Reader, attachments: List<String> = listOf<String>()): ItemState {
+    // Unescape escaped list items in reader.
+    // If it does not match a list related element return ItemInfo.NO_MATCH.
+    fun matchItem(reader: Io.Reader): ItemInfo {
         // Check if the line matches a List definition.
-        val line = reader.cursor
+        if (reader.eof()) return ItemInfo.NO_MATCH
         // Check if the line matches a list item.
         for (def in defs) {
-            val match = def.match.find(line)
+            val match = def.match.find(reader.cursor)
             if (match != null) {
                 if (match.groupValues[0].startsWith('\\')) {
                     reader.cursor = reader.cursor.substring(1)   // Drop backslash.
-                    return ItemState.NO_MATCH
+                    return ItemInfo.NO_MATCH
                 }
-                return ItemState(groupValues = match.groupValues,
+                return ItemInfo(groupValues = match.groupValues,
                         def = def,
                         id = match.groupValues[match.groupValues.size - 2] // The second to last match group is the list ID.
                 )
             }
         }
-        // Check if the line matches an allowed attached Delimited block.
-        for (name in attachments) {
-            val def = DelimitedBlocks.getDefinition(name)!!
-            if (def.openMatch.matches(line)) {
-                return ItemState.BLOCK_MATCH
-            }
-        }
-        return ItemState.NO_MATCH
+        return ItemInfo.NO_MATCH
     }
 
 }

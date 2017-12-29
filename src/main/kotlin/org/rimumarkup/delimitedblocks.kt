@@ -23,6 +23,18 @@ object DelimitedBlocks {
         return match.groupValues[1]
     }
 
+    // contentFilter for multi-line macro definitions.
+    val macroDefContentFilter = fun(text: String, match: MatchResult, expansionOptions: ExpansionOptions): String {
+        val quote = match.value[match.value.length - match.groupValues[1].length - 1]      // The leading macro value quote character.
+        val name = Regex("""^\{([\w\-]+\??)}""").find(match.value)!!.groupValues[1] // Extract macro name from opening delimiter.
+        var value = text
+        value = value.replace(Regex("""' *\\\n"""), "'\n")               // Unescape line-continuations.
+        value = value.replace(Regex("""(' *[\\]+)\\\n"""), "$1\n")       // Unescape escaped line-continuations.
+        value = Utils.replaceInline(value, expansionOptions)                               // Expand macro invocations.
+        Macros.setValue(name, value, quote.toString())
+        return ""
+    }
+
     // Multi-line block element definition.
     data class Definition(
             val name: String = "", // Optional unique identifier.
@@ -41,29 +53,29 @@ object DelimitedBlocks {
     val DEFAULT_DEFS = arrayOf(
             // Delimited blocks cannot be escaped with a backslash.
 
-            // Macro definition block.
+            // Multi-line macro literal value definition.
             Definition(
-                    openMatch = Macros.MACRO_DEF_OPEN, // $1 is first line of macro.
-                    closeMatch = Macros.MACRO_DEF_CLOSE, // $1 is last line of macro.
+                    openMatch = Macros.LITERAL_DEF_OPEN, // $1 is first line of macro.
+                    closeMatch = Macros.LITERAL_DEF_CLOSE,
                     openTag = "",
                     closeTag = "",
                     expansionOptions = ExpansionOptions(
                             macros = true
                     ),
                     delimiterFilter = delimiterTextFilter,
-                    contentFilter = fun(text, match, expansionOptions): String {
-                        // Process macro definition.
-                        if (Options.skipMacroDefs()) {
-                            return ""   // Skip if a safe mode is set.
-                        }
-                        val name = Regex("""^\{([\w\-]+\??)}""").find(match.value)!!.groupValues[1]  // Extract macro name from opening delimiter.
-                        var value = text
-                        value = value.replace(Regex("""' *\\\n"""), "'\n")            // Unescape line-continuations.
-                        value = value.replace(Regex("""(' *[\\]+)\\\n"""), "$1\n")     // Unescape escaped line-continuations.
-                        value = Utils.replaceInline(value, expansionOptions) // Expand macro invocations.
-                        Macros.setValue(name, value)
-                        return ""
-                    }
+                    contentFilter = macroDefContentFilter
+            ),
+            // Multi-line macro expression value definition.
+            Definition(
+                    openMatch = Macros.EXPRESSION_DEF_OPEN, // $1 is first line of macro.
+                    closeMatch = Macros.EXPRESSION_DEF_CLOSE,
+                    openTag = "",
+                    closeTag = "",
+                    expansionOptions = ExpansionOptions(
+                            macros = true
+                    ),
+                    delimiterFilter = delimiterTextFilter,
+                    contentFilter = macroDefContentFilter
             ),
             // Comment block.
             Definition(
@@ -159,14 +171,13 @@ object DelimitedBlocks {
                     contentFilter = fun(text: String, _, _): String {
                         // Strip indent from start of each line.
                         val first_indent = Regex("""\S""").find(text)!!.range.first
-                        var lines = text.split("\n")
-                        lines = lines.map { line ->
-                            // Strip first line indent width or up to first non-space character.
-                            var indent = Regex("""\S|$""").find(line)!!.range.first
-                            if (indent > first_indent) indent = first_indent
-                            line.substring(indent)
-                        }
-                        return lines.joinToString("\n")
+                        return text.split("\n")
+                                .map { line ->
+                                    // Strip first line indent width or up to first non-space character.
+                                    var indent = Regex("""\S|$""").find(line)!!.range.first
+                                    if (indent > first_indent) indent = first_indent
+                                    line.substring(indent)
+                                }.joinToString("\n")
                     }
             ),
             // Quote paragraph.
@@ -184,12 +195,11 @@ object DelimitedBlocks {
                     delimiterFilter = delimiterTextFilter,
                     contentFilter = fun(text: String, _, _): String {
                         // Strip leading > from start of each line and unescape escaped leading >.
-                        var lines = text.split("\n")
-                        lines = lines.map { line ->
-                            line.replace(Regex("""^>"""), "")
-                                    .replace(Regex("""^\\>"""), ">")
-                        }
-                        return lines.joinToString("\n")
+                        return text.split("\n")
+                                .map { line ->
+                                    line.replace(Regex("""^>"""), "")
+                                            .replace(Regex("""^\\>"""), ">")
+                                }.joinToString("\n")
                     }
             ),
             // Paragraph (lowest priority, cannot be escaped).
@@ -218,9 +228,10 @@ object DelimitedBlocks {
 
     // If the next element in the reader is a valid delimited block render it
     // and return true, else return false.
-    fun render(reader: Io.Reader, writer: Io.Writer): Boolean {
-        if (reader.eof()) throw RimucException("Unexpected EOF")
+    fun render(reader: Io.Reader, writer: Io.Writer, allowed: List<String> = listOf()): Boolean {
+        if (reader.eof()) Options.panic("premature eof")
         for (def in defs) {
+            if (allowed.size > 0 && !allowed.contains(def.name)) continue
             val match = def.openMatch.find(reader.cursor)
             if (match == null) {
                 continue

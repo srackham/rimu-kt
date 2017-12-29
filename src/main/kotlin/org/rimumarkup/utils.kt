@@ -73,10 +73,13 @@ object BlockAttributes {
         }
         if (id.isNotBlank()) {
             id = id.toLowerCase()
-            if (ids.contains(id) || result.contains(Regex("""id=".*?"""", RegexOption.IGNORE_CASE))) {
+            val has_id = result.contains(Regex("""id=".*?"""", RegexOption.IGNORE_CASE))
+            if (has_id || ids.contains(id)) {
                 Options.errorCallback("""duplicate 'id' attribute: ${id}""")
             } else {
                 ids.pushFirst(id)
+            }
+            if (!has_id) {
                 attrs += """ id="${id}""""
             }
         }
@@ -179,7 +182,6 @@ data class ExpansionOptions(
 // Utils "namespace" contains Rimu specific code ported from utils.js.
 object Utils {
 
-    // TODO: Make this a String extension function.
     fun replaceSpecialChars(s: String): String {
         return s.replace("&", "&amp;")
                 .replace(">", "&gt;")

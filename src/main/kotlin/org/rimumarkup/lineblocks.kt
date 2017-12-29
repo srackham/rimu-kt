@@ -1,40 +1,40 @@
 package org.rimumarkup
 
 typealias LineBlockFilter = (match: MatchResult, reader: Io.Reader, def: LineBlocks.Definition) -> String
-typealias LineBlockVerify = (match: MatchResult) -> Boolean   // Additional match verification checks.
+typealias LineBlockVerify = (match: MatchResult, reader: Io.Reader) -> Boolean   // Additional match verification checks.
 
 object LineBlocks {
 
     data class Definition(
+            val match: Regex,
+            val replacement: String = "",
             val name: String = "", // Optional unique identifier.
             val filter: LineBlockFilter? = null,
-            val verify: LineBlockVerify? = null, // Additional match verification checks.
-            val match: Regex,
-            val replacement: String = ""
+            val verify: LineBlockVerify? = null // Additional match verification checks.
     )
 
     val defs = arrayOf(
             // Expand lines prefixed with a macro invocation prior to all other processing.
             // macro name = $1, macro value = $2
             Definition(
-                    match = Macros.MACRO_LINE,
-                    verify = fun(match: MatchResult): Boolean {
-                        // Do not process macro definitions.
-                        if (Macros.MACRO_DEF_OPEN.matches(match.groupValues[0])) {
+                    match = Macros.MATCH_LINE,
+                    verify = fun(match: MatchResult, reader: Io.Reader): Boolean {
+                        if (Macros.LITERAL_DEF_OPEN.matches(match.groupValues[0]) || Macros.EXPRESSION_DEF_OPEN.matches(match.groupValues[0])) {
+                            // Do not process macro definitions.
                             return false
                         }
-                        // Stop if the macro value is the same as the invocation (to stop infinite recursion).
-                        val value = Macros.render(match.groupValues[0], false)
-                        if (value == match.groupValues[0]) {
+                        // Silent because any macro expansion errors will be subsequently addressed downstream.
+                        val value = Macros.render(match.groupValues[0], true)
+                        if (value.startsWith(match.groupValues[1])) {
+                            // The leading macro invocation expansion failed or returned itself.
+                            // This stops infinite recursion.
                             return false
                         }
+                        reader.lines.addAll(reader.pos + 1, value.split("\n"))
                         return true
                     },
                     filter = fun(match: MatchResult, reader: Io.Reader, _): String {
-                        // Insert the macro value into the reader just ahead of the cursor.
-                        val value = Macros.render(match.groupValues[0], false)
-                        reader.lines.addAll(reader.pos + 1, value.split("\n"))
-                        return ""
+                        return "" // Already processed in the `verify` function.
                     }
             ),
             // Delimited Block definition.
@@ -86,15 +86,13 @@ object LineBlocks {
             // Macro definition.
             // name = $1, value = $2
             Definition(
-                    match = Macros.MACRO_DEF,
+                    match = Macros.LINE_DEF,
                     filter = fun(match: MatchResult, _, _): String {
-                        if (Options.skipMacroDefs()) {
-                            return ""   // Skip if a safe mode is set.
-                        }
                         val name = match.groupValues[1]
-                        var value = match.groupValues[2]
+                        val quote = match.groupValues[2]
+                        var value = match.groupValues[3]
                         value = Utils.replaceInline(value, ExpansionOptions(macros = true))
-                        Macros.setValue(name, value)
+                        Macros.setValue(name, value, quote)
                         return ""
                     }
             ),
@@ -148,7 +146,7 @@ object LineBlocks {
             Definition(
                     name = "attributes",
                     match = Regex("""^\\?\.[a-zA-Z#"\[+-].*$"""), // A loose match because Block Attributes can contain macro references.
-                    verify = fun(match: MatchResult): Boolean {
+                    verify = fun(match: MatchResult, _): Boolean {
                         return BlockAttributes.parse(match)
                     }
             ),
@@ -171,9 +169,10 @@ object LineBlocks {
 
     // If the next element in the reader is a valid line block render it
     // and return true, else return false.
-    fun render(reader: Io.Reader, writer: Io.Writer): Boolean {
-        if (reader.eof()) throw RimucException("Premature EOF")
+    fun render(reader: Io.Reader, writer: Io.Writer, allowed: List<String> = listOf()): Boolean {
+        if (reader.eof()) Options.panic("premature eof")
         for (def in defs) {
+            if (allowed.size > 0 && !allowed.contains(def.name)) continue
             val match = def.match.find(reader.cursor)
             if (match != null) {
                 if (match.groupValues[0].startsWith('\\')) {
@@ -181,7 +180,7 @@ object LineBlocks {
                     reader.cursor = reader.cursor.substring(1)
                     continue
                 }
-                if (def.verify != null && !(def.verify)(match)) {
+                if (def.verify != null && !(def.verify)(match, reader)) {
                     continue
                 }
                 var text: String

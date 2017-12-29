@@ -230,7 +230,7 @@ fun rimuc(args: Array<String>) {
             }
             "--styled", "-s" -> {   // Deprecated in Rimu 10.0.0
                 source += "{--header-ids}='true'\n"
-                if (layout === "") {
+                if (layout == "") {
                     layout = "classic"
                 }
             }

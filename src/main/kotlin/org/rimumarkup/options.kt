@@ -78,4 +78,10 @@ object Options {
         callback(CallbackMessage(type = "error", text = message))
     }
 
+    // Called when an unexpected program error occurs.
+    fun panic(message: String) {
+        val msg = "panic: " + message
+        System.err.println(msg)
+        errorCallback(msg)
+    }
 }

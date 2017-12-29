@@ -2,19 +2,17 @@ package org.rimumarkup
 
 object Macros {
 
-    // Matches macro invocation. $1 = name, $2 = params.
-    // DEPRECATED: Matches existential macro invocations.
-    val MATCH_MACRO = Regex("""\{([\w\-]+)([!=|?](?:|.*?[^\\]))?}""", RegexOption.DOT_MATCHES_ALL)
-    // Matches all macro invocations. $1 = name, $2 = params.
-    val MATCH_MACROS = Regex("\\\\?" + MATCH_MACRO.pattern, RegexOption.DOT_MATCHES_ALL)
-    // Matches a line starting with a macro invocation.
-    val MACRO_LINE = Regex("^" + MATCH_MACRO.pattern + ".*$")
-    // Match multi-line macro definition open delimiter. $1 is first line of macro.
-    val MACRO_DEF_OPEN = Regex("""^\\?\{[\w\-]+\??}\s*=\s*'(.*)$""")
-    // Match multi-line macro definition open delimiter. $1 is last line of macro.
-    val MACRO_DEF_CLOSE = Regex("""^(.*)'$""")
-    // Match single-line macro definition. $1 = name, $2 = value.
-    val MACRO_DEF = Regex("""^\\?\{([\w\-]+\??)}\s*=\s*'(.*)'$""")
+    // Matches a line starting with a macro invocation. $1 = macro invocation.
+    val MATCH_LINE = Regex("""^(\{(?:[\w\-]+)(?:[!=|?](?:|.*?[^\\]))?}).*$""")
+    // Match single-line macro definition. $1 = name, $2 = delimiter, $3 = value.
+    val LINE_DEF = Regex("""^\\?\{([\w\-]+\??)}\s*=\s*(['`])(.*)\2$""")
+    // Match multi-line macro definition literal value open delimiter. $1 is first line of macro.
+    val LITERAL_DEF_OPEN = Regex("""^\\?\{[\w\-]+\??}\s*=\s*'(.*)$""")
+    val LITERAL_DEF_CLOSE = Regex("""^(.*)'$""")
+    // Match multi-line macro definition expression value open delimiter. $1 is first line of macro.
+    val EXPRESSION_DEF_OPEN = Regex("""^\\?\{[\w\-]+\??}\s*=\s*`(.*)$""")
+    val EXPRESSION_DEF_CLOSE = Regex("""^(.*)`$""")
+
 
     data class Macro(
             val name: String = "",
@@ -43,10 +41,17 @@ object Macros {
 
     // Set named macro value or add it if it doesn't exist.
     // If the name ends with '?' then don't set the macro if it already exists.
-    fun setValue(name: String, value: String) {
-        if (name == "--" && value !== "") {
+    // `quote` is a single character: ' if a literal value, ` if an expression value.
+    fun setValue(name: String, value: String, quote: String) {
+        if (Options.skipMacroDefs()) {
+            return  // Skip if a safe mode is set.
+        }
+        if (name == "--" && value != "") {
             Options.errorCallback("the predefined blank '--' macro cannot be redefined")
             return
+        }
+        if (quote == "`") {
+            Options.errorCallback("""unsupported: expression macro values: `${value}`""")
         }
         for (def in defs) {
             if (def.name == name) {
@@ -63,90 +68,103 @@ object Macros {
     }
 
     // Render all macro invocations in text string.
-    // The `inline` argument is used to ensure macro errors are not reported
-    // multiple times from block and inline contexts.
-    fun render(text: String, inline: Boolean = true): String {
-        var result = MATCH_MACROS.replace(text, fun(match: MatchResult): String {
-            if (match.value.startsWith('\\')) {
-                return match.value.substring(1)
-            }
-            var params = match.groupValues[2]
-            if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
-                if (inline) Options.errorCallback("existential macro invocations are deprecated: ${match.value}")
-                return match.value
-            }
-            val name = match.groupValues[1]
-            var value = getValue(name)  // Macro value is null if macro is undefined.
-            if (value == null) {
-                if (inline) {
-                    Options.errorCallback("undefined macro: ${match.value}: $text")
+    // Render Simple invocations first, followed by Parametized, Inclusion and Exclusion invocations.
+    fun render(text: String, silent: Boolean = false): String {
+        val MATCH_COMPLEX = Regex("""\\?\{([\w\-]+)([!=|?](?:|.*?[^\\]))}""", RegexOption.DOT_MATCHES_ALL) // Parametrized, Inclusion and Exclusion invocations.
+        val MATCH_SIMPLE = Regex("""\\?\{([\w\-]+)()}""")                       // Simple macro invocation.
+        val saved_simple: MutableList<String> = mutableListOf()
+        var result = text
+        listOf(MATCH_SIMPLE, MATCH_COMPLEX).forEach({ find ->
+            result = find.replace(result, fun(match: MatchResult): String {
+                if (match.value.startsWith('\\')) {
+                    return match.value.substring(1)
                 }
-                return match.value
-            }
-            if (params.isBlank())
-                return value
-            params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
-            when (params[0]) {
-                '|' -> {   // Parametrized macro.
-                    val paramsList = params.substring(1).split('|')
-                    // Substitute macro parameters.
-                    // Matches macro definition formal parameters [$]$<param-number>[[\]:<default-param-value>$]
-                    // 1st group: [$]$
-                    // 2nd group: <param-number> (1, 2..)
-                    // 3rd group: :[\]<default-param-value>$
-                    // 4th group: <default-param-value>
-                    val PARAM_RE = Regex("""\\?(\$\$?)(\d+)(\\?:(|.*?[^\\])\$)?""", RegexOption.DOT_MATCHES_ALL)
-                    value = PARAM_RE.replace(value, fun(mr: MatchResult): String {
-                        if (mr.value.startsWith('\\')) {  // Unescape escaped macro parameters.
-                            return mr.value.substring(1)
-                        }
-                        val p1 = mr.groupValues[1]
-                        val p2 = mr.groupValues[2].toInt()
-                        val p3 = mr.groupValues[3]
-                        val p4 = mr.groupValues[4]
-                        // Unassigned parameters are replaced with a blank string.
-                        var param = if (paramsList.size < p2) "" else paramsList[p2 - 1]
-                        if (p3.isNotBlank()) {
-                            if (p3.startsWith('\\')) { // Unescape escaped default parameter.
-                                param += p3.substring(1)
-                            } else {
-                                if (param == "") {
-                                    param = p4                              // Assign default parameter value.
-                                    param = Regex("""\\\$""").replace(param, "\\$")     // Unescape escaped $ characters in the default value.
+                var params = match.groupValues[2]
+                if (params.startsWith('?')) { // DEPRECATED: Existential macro invocation.
+                    if (!silent) {
+                        Options.errorCallback("existential macro invocations are deprecated: ${match.value}")
+                    }
+                    return match.value
+                }
+                val name = match.groupValues[1]
+                var value = getValue(name)  // Macro value is null if macro is undefined.
+                if (value == null) {
+                    if (!silent) {
+                        Options.errorCallback("undefined macro: ${match.value}: $text")
+                    }
+                    return match.value
+                }
+                if (params.isBlank()) {
+                    return value
+                }
+                params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
+                when (params[0]) {
+                    '|' -> {   // Parametrized macro.
+                        val paramsList = params.substring(1).split('|')
+                        // Substitute macro parameters.
+                        // Matches macro definition formal parameters [$]$<param-number>[[\]:<default-param-value>$]
+                        // 1st group: [$]$
+                        // 2nd group: <param-number> (1, 2..)
+                        // 3rd group: :[\]<default-param-value>$
+                        // 4th group: <default-param-value>
+                        val PARAM_RE = Regex("""\\?(\$\$?)(\d+)(\\?:(|.*?[^\\])\$)?""", RegexOption.DOT_MATCHES_ALL)
+                        value = PARAM_RE.replace(value, fun(mr: MatchResult): String {
+                            if (mr.value.startsWith('\\')) {  // Unescape escaped macro parameters.
+                                return mr.value.substring(1)
+                            }
+                            val p1 = mr.groupValues[1]
+                            val p2 = mr.groupValues[2].toInt()
+                            val p3 = mr.groupValues[3]
+                            val p4 = mr.groupValues[4]
+                            // Unassigned parameters are replaced with a blank string.
+                            var param = if (paramsList.size < p2) "" else paramsList[p2 - 1]
+                            if (p3.isNotBlank()) {
+                                if (p3.startsWith('\\')) { // Unescape escaped default parameter.
+                                    param += p3.substring(1)
+                                } else {
+                                    if (param == "") {
+                                        param = p4 // Assign default parameter value.
+                                        param = Regex("""\\\$""").replace(param, "\\$") // Unescape escaped $ characters in the default value.
+                                    }
                                 }
                             }
-                        }
-                        if (p1 == "$$") {
-                            param = Spans.render(param)
-                        }
-                        return param
-                    })
-                    return value
-                }
-                '!', '=' -> { // Inclusion macro.
-                    val pattern = params.substring(1)
-                    var skip: Boolean
-                    try {
-                        skip = !Regex("^$pattern$").matches(value)
-                    } catch (e: java.util.regex.PatternSyntaxException) {
-                        if (inline) {
-                            Options.errorCallback("illegal macro regular expression: " + pattern + ": " + text)
-                        }
-                        return match.value
+                            if (p1 == "$$") {
+                                param = Spans.render(param)
+                            }
+                            return param
+                        })
+                        return value
                     }
-                    if (params[0] == '!') {
-                        skip = !skip
+                    '!', '=' -> { // Exclusion and Inclusion macro.
+                        val pattern = params.substring(1)
+                        var skip: Boolean
+                        try {
+                            skip = !Regex("^$pattern$").matches(value)
+                        } catch (e: java.util.regex.PatternSyntaxException) {
+                            if (!silent) {
+                                Options.errorCallback("illegal macro regular expression: " + pattern + ": " + text)
+                            }
+                            return match.value
+                        }
+                        if (params[0] == '!') {
+                            skip = !skip
+                        }
+                        return if (skip) "\u0000" else ""   // '\0' flags line for deletion.
                     }
-                    return if (skip) "\u0000" else ""   // '\0' flags line for deletion.
+                    else -> { // Simple macro.
+                        saved_simple.pushLast(value)
+                        return "\u0001"
+                    }
                 }
-                else ->  // Plain macro.
-                    return value
-
-            }
+            })
         })
-        // Delete lines marked for deletion by inclusion macros.
+        // Restore expanded Simple values.
+        result = Regex("""\u0001""").replace(result, { saved_simple.popLast() })
+        // Delete lines flagged by Inclusion/Exclusion macros.
         if (result.indexOf('\u0000') >= 0) {
-            result = result.split('\n').filter { !it.contains('\u0000') }.joinToString("\n")
+            result = result.split('\n')
+                    .filter { !it.contains('\u0000') }
+                    .joinToString("\n")
         }
         return result
     }

@@ -15,7 +15,7 @@ class MacrosTest {
     fun renderTest() {
         assertEquals(2, Macros.defs.size)
 
-        Macros.setValue("x", "1")
+        Macros.setValue("x", "1", "\"")
         assertEquals(3, Macros.defs.size)
         assertEquals("1", Macros.getValue("x"))
         assertEquals(null, Macros.getValue("y"))

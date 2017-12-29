@@ -27,7 +27,7 @@ object Api {
             if (Lists.render(reader, writer)) continue
             if (DelimitedBlocks.render(reader, writer)) continue
             // This code should never be executed (normal paragraphs should match anything).
-            throw RimucException("unexpected error: no matching delimited block found")
+            Options.panic("no matching delimited block found")
         }
         return writer.toString()
 

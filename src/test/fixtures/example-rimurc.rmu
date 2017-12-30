@@ -1,0 +1,73 @@
+/*
+  Custom Rimu Markup definitions for use by the rimuc command.
+  Rename this file to ~/.rimurc and it will be loaded automatically by rimurc.
+*/
+
+
+/*
+  Replacements
+*/
+// Typographic replacements.
+// NOTE: &mdash; and &rightarrow; replacements generate false positives in inline HTML comment tags.
+/\\?--(?!>)/ = '&mdash;'
+/\\?\.{3}/ = '&hellip;'
+/\\?->/ = '&rightarrow;'
+/\\?<-/ = '&leftarrow;'
+/\\?\([cC]\)/ = '&copy;'
+/\\?\((tm|TM)\)/ = '&trade;'
+/\\?\+-/ = '&plusmn;'
+
+// Admonishments.
+/\\?\bTODO\b/ = '<b style="color: red; background-color: yellow;">TODO</b>'
+/^\\?(NOTES?|IMPORTANT|WARNINGS?|TIPS?):/ = '<b>$1</b>:'
+
+
+/*
+  Macros
+*/
+// Text formatting e.g. H{sub|2}O.
+{mark} = '<mark>$1</mark>'
+{del} = '<del>$1</del>'
+{ins} = '<ins>$1</ins>'
+{sup} = '<sup>$1</sup>'
+{sub} = '<sub>$1</sub>'
+
+// DEPRECATED
+// Bootstrap2 icons e.g. {icon|trash}.
+// See http://getbootstrap.com/components/#glyphicons
+{icon} = '<span class="icon-$1"></span>'
+
+/*
+  Quotes
+*/
+// Double-underline (overrides built-in strong quote).
+__ = '<u>|</u>'
+// Left and right double-quote characters.
+" = '&ldquo;|&rdquo;'
+
+
+/*
+  Highlight.js
+*/
+// Turn off auto-hightlighting.
+|code| = '<pre class="no-highlight"><code>|</code></pre>'
+|indented| = '<pre class="no-highlight"><code>|</code></pre>'
+
+
+/*
+  Utility expression macros.
+*/
+// Experimental. Unsupported by rimu-kt.
+/*
+// Date/time.
+{date} = `new Date().toDateString()`
+{time} = `new Date().toTimeString()`
+// Math.
+{add} =      '(parseFloat('$1') + parseFloat('$2'))'
+{subtract} = '(parseFloat('$1') - parseFloat('$2'))'
+{multiply} = '(parseFloat('$1') * parseFloat('$2'))'
+{divide} =   '(parseFloat('$1') / parseFloat('$2'))'
+{sum} = '(parseFloat('$1:0$') + parseFloat('$2:0$') + parseFloat('$3:0$') +
+        + parseFloat('$4:0$') + parseFloat('$5:0$') + parseFloat('$6:0$') +
+        + parseFloat('$7:0$') + parseFloat('$8:0$') + parseFloat('$9:0$'))'
+*/

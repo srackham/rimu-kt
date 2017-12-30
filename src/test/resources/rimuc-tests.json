@@ -282,24 +282,21 @@
     "args": "--prepend-file ./src/examples/example-rimurc.rmu",
     "input": "__foo__ \"bar\" -- ... -> <- (c) (TM) +-",
     "expectedOutput": "<p><u>foo</u> &ldquo;bar&rdquo; &mdash; &hellip; &rightarrow; &leftarrow; &copy; &trade; &plusmn;</p>",
-    "predicate": "equals",
-    "skip": "rimu-kt"
+    "predicate": "equals"
   },
   {
     "description": "rimuc example rimurc singular admonishments",
     "args": "--prepend-file ./src/examples/example-rimurc.rmu",
     "input": "NOTE: TODO\n\nIMPORTANT: foobar\n\nWARNING: foobar\n\nTIP: foobar",
     "expectedOutput": "<p><b>NOTE</b>: <b style=\"color: red; background-color: yellow;\">TODO</b></p>\n<p><b>IMPORTANT</b>: foobar</p>\n<p><b>WARNING</b>: foobar</p>\n<p><b>TIP</b>: foobar</p>",
-    "predicate": "equals",
-    "skip": "rimu-kt"
+    "predicate": "equals"
   },
   {
     "description": "rimuc example rimurc plural admonishments",
     "args": "--prepend-file ./src/examples/example-rimurc.rmu",
     "input": "NOTES: foobar\n\nWARNINGS: foobar\n\nTIPS: foobar",
     "expectedOutput": "<p><b>NOTES</b>: foobar</p>\n<p><b>WARNINGS</b>: foobar</p>\n<p><b>TIPS</b>: foobar</p>",
-    "predicate": "equals",
-    "skip": "rimu-kt"
+    "predicate": "equals"
   },
   {
     "description": "rimuc imported layout",

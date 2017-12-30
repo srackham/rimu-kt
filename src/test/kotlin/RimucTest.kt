@@ -74,8 +74,8 @@ class RimucTest {
     }
 
     @Test
-    fun exitCodeTwo() {
-        exitRule.expectSystemExitWithStatus(2)
+    fun exitCodeOne() {
+        exitRule.expectSystemExitWithStatus(1)
         // Throws java.io.FileNotFoundException.
         main(arrayOf("--no-rimurc", "missing-file-name"))
     }
@@ -111,7 +111,7 @@ class RimucTest {
     fun missingInputFile() {
         expectException(
                 args = arrayOf("missing-file-name"),
-                type = FileNotFoundException::class.java,
+                type = RimucException::class.java,
                 message = "missing-file-name"
         )
     }
@@ -185,6 +185,7 @@ class RimucTest {
                 // Convert args String to Array<String>.
                 var args = (test.string("args") ?: "")
                         .replace("./test/fixtures/", "./src/test/fixtures/")
+                        .replace("./src/examples/example-rimurc.rmu", "./src/test/fixtures/example-rimurc.rmu")
                 if (layout.isNotBlank()) {
                     args = """--layout $layout $args"""
                 }

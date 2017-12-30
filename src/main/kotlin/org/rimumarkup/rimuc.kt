@@ -5,7 +5,6 @@
 package org.rimumarkup
 
 import java.io.File
-import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -169,10 +168,8 @@ class RimucException(message: String) : Exception(message)
 fun main(args: Array<String>) {
     try {
         rimuc(args)
-    } catch (e: RimucException) {
-        System.exit(1)
     } catch (e: Exception) {
-        System.exit(2)
+        System.exit(1)
     }
     System.exit(0)
 }
@@ -337,8 +334,7 @@ fun rimuc(args: Array<String>) {
                 infile == PREPEND -> prepend
                 else -> {
                     if (!File(infile).exists()) {
-//                        die("source file does not exist: " + infile)
-                        throw FileNotFoundException("source file does not exist: " + infile)
+                        die("source file does not exist: " + infile)
                     }
                     fileToString(infile)
                 }
@@ -372,10 +368,10 @@ fun rimuc(args: Array<String>) {
         if (errors != 0) {
             die()
         }
-    } catch (e: RimucException) {
-        throw e
     } catch (e: Exception) {
-        System.err.println("${e::class.java.name}: ${e.message}")
+        if (e !is RimucException) {
+            System.err.println("${e::class.java.name}: ${e.message}")
+        }
         throw e
     }
 }

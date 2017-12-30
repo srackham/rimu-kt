@@ -74,13 +74,6 @@ class RimucTest {
     }
 
     @Test
-    fun exitCodeOne() {
-        exitRule.expectSystemExitWithStatus(1)
-        // Throws RimuException.
-        main(arrayOf("--illegal-option"))
-    }
-
-    @Test
     fun exitCodeTwo() {
         exitRule.expectSystemExitWithStatus(2)
         // Throws java.io.FileNotFoundException.
@@ -172,6 +165,10 @@ class RimucTest {
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
         for ((index, test) in tests.withIndex()) {
+            val skip = (test.string("skip") ?: "").contains("rimu-kt")
+            if (skip) {
+                continue
+            }
             for (layout in listOf<String>("", "classic", "flex", "sequel")) {
                 val layouts = test.boolean("layouts") ?: false
                 // Skip if not a layouts test and we have a layout, or if it is a layouts test but no layout is specified.
@@ -181,11 +178,13 @@ class RimucTest {
                 val description = test.string("description") ?: ""
                 System.err.println("$index: $description")
                 val input = test.string("input") ?: ""
-                val expectedOutput = test.string("expectedOutput") ?: ""
+                val expectedOutput = (test.string("expectedOutput") ?: "")
+                        .replace("./test/fixtures/", "./src/test/fixtures/")
                 val predicate = test.string("predicate") ?: ""
                 val exitCode = test.int("exitCode") ?: 0
                 // Convert args String to Array<String>.
-                var args = test.string("args") ?: ""
+                var args = (test.string("args") ?: "")
+                        .replace("./test/fixtures/", "./src/test/fixtures/")
                 if (layout.isNotBlank()) {
                     args = """--layout $layout $args"""
                 }
@@ -203,7 +202,7 @@ class RimucTest {
                 var exceptionThrown = false
                 try {
                     rimucNoRimurc(argsArray)
-                } catch (e: RimucException) {
+                } catch (e: Exception) {
                     exceptionThrown = true
                 }
                 val output = systemOutRule.log + systemErrRule.log

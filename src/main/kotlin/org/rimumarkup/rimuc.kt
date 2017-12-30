@@ -4,6 +4,8 @@
 
 package org.rimumarkup
 
+import java.io.File
+import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -19,19 +21,26 @@ DESCRIPTION
   then writes the HTML to stdout. If FILES are specified
   the Rimu source is read from FILES. The contents of files
   with an .html extension are passed directly to the output.
+  An input file named '-' is read from stdin.
 
   If a file named .rimurc exists in the user's home directory
-  then its contents is processed (with --safe-mode 0), this
-  happens after --prepend processing but prior to other inputs.
+  then its contents is processed (with --safe-mode 0).
   This behavior can be disabled with the --no-rimurc option.
+
+  Inputs are processed in the following order: .rimurc file,
+  --prepend-file options, --prepend options, FILES...
 
 OPTIONS
   -h, --help
     Display help message.
 
+  --html-replacement TEXT
+    Embedded HTML is replaced by TEXT when --safe-mode is set to 2.
+    Defaults to '<mark>replaced HTML</mark>'.
+
   --layout LAYOUT
-    Generate a styled HTML document with one of the following
-    predefined document layouts:
+    Generate a styled HTML document. rimuc includes the
+    following built-in document layouts:
 
     'classic': Desktop-centric layout.
     'flex':    Flexbox mobile layout (experimental).
@@ -46,8 +55,16 @@ OPTIONS
     Write output to file OUTFILE instead of stdout.
     If OUTFILE is a hyphen '-' write to stdout.
 
+  --pass
+    Pass the stdin input verbatim to the output.
+
   -p, --prepend SOURCE
-    Process the SOURCE text before other inputs.
+    Process the SOURCE text before all other inputs.
+    Rendered with --safe-mode 0.
+
+  --prepend-file PREPEND_FILE
+    Process the PREPEND_FILE contents immediately after --prepend
+    and .rimurc processing.
     Rendered with --safe-mode 0.
 
   --no-rimurc
@@ -66,10 +83,6 @@ OPTIONS
     Add 4 to --safe-mode to ignore Block Attribute elements.
     Add 8 to --safe-mode to allow Macro Definitions.
 
-  --html-replacement TEXT
-    Embedded HTML is replaced by TEXT when --safe-mode is set to 2.
-    Defaults to '<mark>replaced HTML</mark>'.
-
   --theme THEME, --lang LANG, --title TITLE, --highlightjs, --mathjax,
   --no-toc, --custom-toc, --section-numbers, --header-ids, --header-links
     Shortcuts for the following prepended macro definitions:
@@ -86,8 +99,8 @@ OPTIONS
     --prepend "{--title}='TITLE'"
 
 LAYOUT OPTIONS
-  The following options are available when the --layout option is
-  used:
+  The following options are available when the --layout option
+  specifies a built-in layout:
 
   Option             Description
   _______________________________________________________________
@@ -111,7 +124,8 @@ LAYOUT OPTIONS
 
 LAYOUT CLASSES
   The following CSS classes are available for use in Rimu Block
-  Attributes elements when the --layout option is used:
+  Attributes elements when the --layout option specifies a
+  built-in layout:
 
   CSS class        Description
   ______________________________________________________________
@@ -156,12 +170,8 @@ fun main(args: Array<String>) {
     try {
         rimuc(args)
     } catch (e: RimucException) {
-        if (!e.message.isNullOrBlank()) {
-            System.err.println(e.message)
-        }
         System.exit(1)
     } catch (e: Exception) {
-        System.err.println("${e::class.java.name}: ${e.message}")
         System.exit(2)
     }
     System.exit(0)
@@ -172,173 +182,200 @@ fun main(args: Array<String>) {
  * Resides in org.rimumarkup.rimuc package.
  */
 fun rimuc(args: Array<String>) {
+    try {
+        val RESOURCE_TAG = "resource:" // Tag for resource files.
+        val PREPEND = "--prepend options"
+        val STDIN = "-"
 
-    val argsList = args.toMutableList()
+        val argsList = args.toMutableList()
 
-    // Command option values.
-    var safe_mode = 0
-    var html_replacement: String? = null
-    var layout = ""
-    var no_rimurc = false
-    var source = ""
-    var outfile = ""
+        // Command option values.
+        var safe_mode = 0
+        var html_replacement: String? = null
+        var layout = ""
+        var no_rimurc = false
+        val prepend_files: MutableList<String> = mutableListOf()
+        var pass = false
 
-    // Helpers.
-    fun die(message: String = "") {
-        throw RimucException(message)
-    }
-
-    fun popOptionValue(arg: String): String {
-        if (argsList.isEmpty()) {
-            die("missing $arg option value")
+        // Helpers.
+        fun die(message: String = "") {
+            if (message.isNotBlank()) {
+                System.err.println(message)
+            }
+            throw RimucException(message)
         }
-        return argsList.popFirst()
-    }
 
-    outer@
-    while (!argsList.isEmpty()) {
-        val arg = argsList.popFirst()
-        when (arg) {
-            "--help", "-h" -> {
-                print(MANPAGE)
-                return
+        fun popOptionValue(arg: String): String {
+            if (argsList.isEmpty()) {
+                die("missing $arg option value")
             }
-            "--lint", "-l" -> { // Deprecated in Rimu 10.0.0
-            }
-            "--output", "-o" -> {
-                outfile = popOptionValue(arg)
-            }
-            "--prepend", "-p" -> {
-                source += popOptionValue(arg) + "\n"
-            }
-            "--no-rimurc" -> {
-                no_rimurc = true
-            }
-            "--safe-mode",
-            "--safeMode" -> { // Deprecated in Rimu 7.1.0
-                if (argsList.isEmpty()) {
-                    die("missing --safe-mode argument")
+            return argsList.popFirst()
+        }
+
+        // Parse command-line options.
+        var prepend = ""
+        var outfile = ""
+        outer@
+        while (!argsList.isEmpty()) {
+            val arg = argsList.popFirst()
+            when (arg) {
+                "--help", "-h" -> {
+                    print(MANPAGE)
+                    return
                 }
-                safe_mode = popOptionValue(arg).toInt()
-                if (safe_mode !in 0..15) {
-                    die("illegal --safe-mode option value: $safe_mode")
+                "--lint", "-l" -> { // Deprecated in Rimu 10.0.0
                 }
-            }
-            "--html-replacement",
-            "--htmlReplacement" -> { // Deprecated in Rimu 7.1.0
-                html_replacement = popOptionValue(arg)
-            }
-            "--styled", "-s" -> {   // Deprecated in Rimu 10.0.0
-                source += "{--header-ids}='true'\n"
-                if (layout == "") {
-                    layout = "classic"
+                "--output", "-o" -> {
+                    outfile = popOptionValue(arg)
                 }
-            }
-        // Styling macro definitions shortcut options.
-            "--highlightjs",
-            "--mathjax",
-            "--section-numbers",
-            "--theme",
-            "--title",
-            "--lang",
-            "--toc", // Deprecated in Rimu 8.0.0
-            "--no-toc",
-            "--sidebar-toc", // Deprecated in Rimu 10.0.0
-            "--dropdown-toc", // Deprecated in Rimu 10.0.0
-            "--custom-toc",
-            "--header-ids",
-            "--header-links" -> {
-                val macro_value = if (arrayOf("--lang", "--title", "--theme").contains(arg))
-                    popOptionValue(arg)
-                else
-                    "true"
-                source += "{$arg}='$macro_value'\n"
-            }
-            "--layout",
-            "--styled-name" -> { // Deprecated in Rimu 10.0.0
-                layout = popOptionValue(arg)
-                if (!arrayOf("classic", "flex", "sequel", "v8").contains(layout)) {
-                    die("illegal --layout: $layout")
+                "--pass" -> {
+                    pass = true
                 }
-                source += "{--header-ids}='true'\n"
-            }
-            else -> {
-                if (arg[0] == '-') {
-                    die("illegal option: $arg")
+                "--prepend", "-p" -> {
+                    prepend += popOptionValue(arg) + "\n"
                 }
-                argsList.pushFirst(arg) // Contains source file names.
-                break@outer
+                "--prepend-file" -> {
+                    val prepend_file = popOptionValue(arg)
+                    prepend_files.pushLast(prepend_file)
+                }
+                "--no-rimurc" -> {
+                    no_rimurc = true
+                }
+                "--safe-mode",
+                "--safeMode" -> { // Deprecated in Rimu 7.1.0
+                    if (argsList.isEmpty()) {
+                        die("missing --safe-mode argument")
+                    }
+                    safe_mode = popOptionValue(arg).toInt()
+                    if (safe_mode !in 0..15) {
+                        die("illegal --safe-mode option value: $safe_mode")
+                    }
+                }
+                "--html-replacement",
+                "--htmlReplacement" -> { // Deprecated in Rimu 7.1.0
+                    html_replacement = popOptionValue(arg)
+                }
+                "--styled", "-s" -> {   // Deprecated in Rimu 10.0.0
+                    prepend += "{--header-ids}='true'\n"
+                    if (layout == "") {
+                        layout = "classic"
+                    }
+                }
+            // Styling macro definitions shortcut options.
+                "--highlightjs",
+                "--mathjax",
+                "--section-numbers",
+                "--theme",
+                "--title",
+                "--lang",
+                "--toc", // Deprecated in Rimu 8.0.0
+                "--no-toc",
+                "--sidebar-toc", // Deprecated in Rimu 10.0.0
+                "--dropdown-toc", // Deprecated in Rimu 10.0.0
+                "--custom-toc",
+                "--header-ids",
+                "--header-links" -> {
+                    val macro_value = if (arrayOf("--lang", "--title", "--theme").contains(arg))
+                        popOptionValue(arg)
+                    else
+                        "true"
+                    prepend += "{$arg}='$macro_value'\n"
+                }
+                "--layout",
+                "--styled-name" -> { // Deprecated in Rimu 10.0.0
+                    layout = popOptionValue(arg)
+                    if (!arrayOf("classic", "flex", "sequel", "v8").contains(layout)) {
+                        die("illegal --layout: $layout")    // NOTE: Imported layouts are not supported.
+                    }
+                    prepend += "{--header-ids}='true'\n"
+                }
+                else -> {
+                    argsList.pushFirst(arg) // Contains source file names.
+                    break@outer
+                }
             }
         }
-    }
-    val infiles = argsList // argsList contains the list of source files.
-    if (layout.isNotBlank() && outfile.isEmpty() && infiles.size == 1) {
-        // Use the source file name with .html extension for the output file.
-        val infile = infiles[0]
-        outfile = if ('.' in infile) {
-            infile.replaceAfterLast('.', "html")
+        val infiles = argsList // argsList contains the list of source files.
+        if (infiles.isEmpty()) {
+            infiles.pushFirst(STDIN)
+        }
+        if (infiles.size == 1 && layout.isNotBlank() && infiles[0] != "-" && outfile.isEmpty()) {
+            // Use the source file name with .html extension for the output file.
+            val infile = infiles[0]
+            outfile = if ('.' in infile) {
+                infile.replaceAfterLast('.', "html")
+            } else {
+                "$infile.html"
+            }
+        }
+        if (layout.isNotBlank()) {
+            // Envelope source files with header and footer resource file names.
+            infiles.pushFirst("${RESOURCE_TAG}${layout}-header.rmu")
+            infiles.pushLast("${RESOURCE_TAG}${layout}-footer.rmu")
+        }
+        // Prepend $HOME/.rimurc file if it exists.
+        val RIMURC = Paths.get(System.getProperty("user.home"), ".rimurc")
+        if (!no_rimurc && Files.exists(RIMURC)) {
+            prepend_files.pushFirst(RIMURC.toString())
+        }
+        if (prepend != "") {
+            prepend_files.pushLast(PREPEND)
+        }
+        for (f in prepend_files.reversed()) infiles.pushFirst(f)    // Prepend infiles with prepend_files.
+        // Convert Rimu source files to HTML.
+        var output = ""
+        Api.init()
+        var errors = 0
+        val options = RenderOptions()
+        if (html_replacement != null) {
+            options.htmlReplacement = html_replacement
+        }
+        for (infile in infiles) {
+            var source = when {
+                infile.startsWith(RESOURCE_TAG) -> readResource(infile.removePrefix(RESOURCE_TAG))
+                infile == STDIN -> System.`in`.readTextAndClose()
+                infile == PREPEND -> prepend
+                else -> {
+                    if (!File(infile).exists()) {
+//                        die("source file does not exist: " + infile)
+                        throw FileNotFoundException("source file does not exist: " + infile)
+                    }
+                    fileToString(infile)
+                }
+            }
+            if (!(infile.endsWith(".html") || (pass && infile === STDIN))) {
+                // rimurc and resouces trusted with safeMode.
+                options.safeMode = if (infile == RIMURC.toString() || infile.startsWith(RESOURCE_TAG) || infile == PREPEND) 0 else safe_mode
+                options.callback = fun(message: CallbackMessage) {
+                    var s = "${message.type}: ${if (infile == STDIN) "/dev/stdin" else infile}: ${message.text}"
+                    if (s.length > 120) {
+                        s = s.substring(0..116) + "..."
+                    }
+                    System.err.println(s)
+                    if (message.type == "error") {
+                        errors += 1
+                    }
+                }
+                source = render(source, options) + "\n"
+            }
+            source = source.trim()
+            if (source != "") {
+                output += source + "\n"
+            }
+        }
+        output = output.trim()
+        if (outfile.isEmpty() || outfile == "-") {
+            print(output)
         } else {
-            "$infile.html"
+            stringToFile(output, outfile)
         }
-    }
-    if (infiles.isEmpty()) {
-        infiles.pushFirst("/dev/stdin")
-    }
-    if (layout.isNotBlank()) {
-        // Envelope source files with header and footer resource file names.
-        infiles.pushFirst("resource:${layout}-header.rmu")
-        infiles.pushLast("resource:${layout}-footer.rmu")
-    }
-    // Include .rimurc file if it exists.
-    val rimurc = Paths.get(System.getProperty("user.home"), ".rimurc")
-    if (!no_rimurc) {
-        if (Files.exists(rimurc)) {
-            infiles.pushFirst(rimurc.toString())
+        if (errors != 0) {
+            die()
         }
-    }
-    var html = ""
-    Api.init()
-    // Start by processing --prepend options source.
-    if (source.isNotBlank()) {
-        html = render(source) + '\n'
-    }
-    var errors = 0
-    val options = RenderOptions()
-    if (html_replacement != null) {
-        options.htmlReplacement = html_replacement
-    }
-    for (infile in infiles) {
-        val text = if (infile.startsWith("resource:"))
-            readResource(infile.removePrefix("resource:"))
-        else if (infile == "/dev/stdin")
-            System.`in`.readTextAndClose()
-        else
-            fileToString(infile)
-        if (infile.endsWith(".html")) {
-            html += "$text\n"
-            continue
-        }
-        // rimurc and resouces trusted with safeMode.
-        options.safeMode = if (infile == rimurc.toString() || infile.startsWith("resouce:")) 0 else safe_mode
-        options.callback = fun(message: CallbackMessage) {
-            var s = "${message.type}: $infile: ${message.text}"
-            if (s.length > 120) {
-                s = s.substring(0..116) + "..."
-            }
-            System.err.println(s)
-            if (message.type == "error") {
-                errors += 1
-            }
-        }
-        html += render(text, options) + "\n"
-    }
-    html = html.trim()
-    if (outfile.isEmpty()) {
-        print(html)
-    } else {
-        stringToFile(html, outfile)
-    }
-    if (errors != 0) {
-        die()
+    } catch (e: RimucException) {
+        throw e
+    } catch (e: Exception) {
+        System.err.println("${e::class.java.name}: ${e.message}")
+        throw e
     }
 }

@@ -33,7 +33,7 @@ object LineBlocks {
                         reader.lines.addAll(reader.pos + 1, value.split("\n"))
                         return true
                     },
-                    filter = fun(match: MatchResult, reader: Io.Reader, _): String {
+                    filter = fun(_, _, _): String {
                         return "" // Already processed in the `verify` function.
                     }
             ),

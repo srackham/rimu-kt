@@ -15,11 +15,20 @@
 {--no-toc?} = ''
 {--custom-toc?} = ''
 {--header-links?} = ''
-{--small-screen?} = '(max-width: 800px)'
+{--!} The min-width: 1px clause stops page load transitions in IE11 and Edge (https://stackoverflow.com/a/25850649).
+{--small-screen?} = '(min-width: 1px) and (max-width: 800px)'
 {--meta?} = '<meta charset="UTF-8">
   {--!} Make old IE versions use the latest rendering engine.
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">'
+// Additional <head> element children.
+{--head?} = ''
+
+// Sequel layout specific.
+{--toc-width?} = '300px'
+{--nav-width?} = '40px'
+{--content-margin?} = '340px'
+{--transition-duration?} = '0.3s'
 
 /*
   Legend theme.
@@ -40,7 +49,7 @@
 {--sidebar-background?} = '#ffffee'
 {--link-color?} = '#428bca'
 {--border-radius?} = '0'
-{--max-text-width?} = '50rem'
+{--max-text-width?} = '55rem'
 ..
 
 /*
@@ -60,7 +69,7 @@
 {--sidebar-background?} = '#ffffee'
 {--link-color?} = '#527bbd'
 {--border-radius?} = '4px'
-{--max-text-width?} = '50rem'
+{--max-text-width?} = '55rem'
 ..
 
 /*
@@ -80,14 +89,15 @@
 {--sidebar-background?} = '#ffffee'
 {--link-color?} = '#888'
 {--border-radius?} = '0'
-{--max-text-width?} = '50rem'
+{--max-text-width?} = '55rem'
 ..
 
 /*
   HTML header
 */
 <!DOCTYPE HTML>
-<html lang="{--lang}">
+{--lang=}<html>
+{--lang!}<html lang="{--lang}">
 <head>
 {--meta}
 <title>{--title}</title>
@@ -101,6 +111,7 @@
     margin: 0;
     padding: 0;
     white-space: inherit;
+    box-sizing: border-box;
   }
   body {
     font-size: 16px;
@@ -417,14 +428,31 @@
 /*
   Layout styles
 */
+<style>
+  #main {
+    z-index: 1;
+    min-height: 100%;
+    max-width: {--max-text-width};
+    margin-left: 0;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  #article {
+    padding-top: 1px;
+  }
+</style>
+
 {--no-toc!}.+skip
 <style>
+  #main {
+    margin-left: {--content-margin};
+  }
   #nav {
     z-index: 3;
     position: fixed;
     left: 0;
     height: 100%;
-    width: 40px;
+    width: {--nav-width};
     background-color: {--primary-color};
     color: white;
   }
@@ -434,29 +462,17 @@
     top: 0;
     left: 0;
     bottom: 0;
-    margin-left: 40px;
-    width: 300px;
+    margin-left: {--nav-width};
+    width: {--toc-width};
     overflow: auto;
     border-right: 1px solid #ccc;
     background: #eee;
   }
   body.hide-toc #sidebar {
-    display: none !important;
-  }
-  #main {
-    z-index: 1;
-    min-height: 100%;
-    max-width: {--max-text-width};
-    margin-left: 341px;
-    padding-left: 40px;
-    padding-right: 60px;
+    width: 0;
   }
   body.hide-toc #main {
-    margin-left: 40px;
-  }
-  #article {
-    padding-top: 1px;
-    padding-bottom: 10px;
+    margin-left: {--nav-width};
   }
   #toc-button {
     cursor: pointer;
@@ -467,10 +483,24 @@
     display: inline-block;
     padding-left: 5px;
   }
-  @media only screen and {--small-screen} {
-    body {
-      font-size: 20px;
+{--!} Apply TOC slide in/out transition when not in small screen mode.
+  @media not screen and {--small-screen} {
+    #sidebar {
+      opacity: 1;
+      transition: opacity {--transition-duration} ease;
     }
+    body.hide-toc #sidebar {
+      width: 0;
+      opacity: 0;
+    }
+    #main {
+      transition: margin-left {--transition-duration} ease;
+    }
+    body.hide-toc #main {
+      transition: margin-left {--transition-duration} ease;
+    }
+  }
+  @media screen and {--small-screen} {
     body:not(.hide-toc) {
 {--!} Hide body Y scroll bar when #main content is hidden.
       overflow: hidden;
@@ -479,9 +509,7 @@
       width: 100%;
     }
     #main {
-      margin-left: 40px;
-      padding-left: 5px;
-      padding-right: 5px;
+      margin-left: {--nav-width};
     }
     body:not(.hide-toc) #main {
       visibility: hidden;
@@ -489,27 +517,17 @@
     #toc {
       margin-right: 40px;
     }
-    * {
-      overflow-wrap: break-word;
-    }
   }
 </style>
 
-{--no-toc=}.+skip
 <style>
-  #main {
-    min-height: 100%;
-    max-width: {--max-text-width};
-    padding-left: 40px;
-    padding-right: 60px;
-  }
-  @media only screen and {--small-screen} {
+  @media screen and {--small-screen} {
     body {
       font-size: 20px;
     }
     #main {
-      padding-left: 5px;
-      padding-right: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
     }
     * {
       overflow-wrap: break-word;
@@ -534,6 +552,8 @@
     text-transform: uppercase;
   }
 </style>
+
+{--head}
 
 </head>
 <body>

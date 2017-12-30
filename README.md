@@ -9,7 +9,10 @@ in Kotlin.
 
 - Functionally identical to the [JavaScript
   implementation](https://github.com/srackham/rimu) version
-  10.0.0.
+  10.4.2 with the following exceptions:
+  
+  * Does not support _Expression macro values_.
+  
 - Includes
   [rimuc](http://rimumarkup.org/reference.html#rimuc-command)
   command-line compiler.
@@ -32,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.rimumarkup:rimu-kt:10.0.0"
+    compile "org.rimumarkup:rimu-kt:10.4.2"
 }
 ```
 

@@ -94,11 +94,8 @@ object Macros {
                     }
                     return match.value
                 }
-                if (params.isBlank()) {
-                    return value
-                }
                 params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
-                when (params[0]) {
+                when (params.firstOrNull()) {
                     '|' -> {   // Parametrized macro.
                         val paramsList = params.substring(1).split('|')
                         // Substitute macro parameters.
@@ -151,15 +148,19 @@ object Macros {
                         }
                         return if (skip) "\u0000" else ""   // '\0' flags line for deletion.
                     }
-                    else -> { // Simple macro.
+                    null -> { // Simple macro.
                         saved_simple.pushLast(value)
                         return "\u0001"
+                    }
+                    else -> {
+                        Options.panic(""""illegal macro syntax: ${match.value}""" )
+                        return match.value
                     }
                 }
             })
         })
         // Restore expanded Simple values.
-        result = Regex("""\u0001""").replace(result, { saved_simple.popLast() })
+        result = Regex("""\u0001""").replace(result, { saved_simple.popFirst() })
         // Delete lines flagged by Inclusion/Exclusion macros.
         if (result.indexOf('\u0000') >= 0) {
             result = result.split('\n')

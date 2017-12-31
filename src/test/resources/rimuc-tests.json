@@ -253,7 +253,7 @@
     "input": "",
     "expectedOutput": "source file does not exist: ./test/fixtures/a-non-existent-file\n",
     "exitCode": 1,
-    "predicate": "contains"
+    "predicate": "equals"
   },
   {
     "description": "rimuc HTML, empty and stdin input files",

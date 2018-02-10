@@ -113,6 +113,9 @@ object Macros {
                             val p2 = mr.groupValues[2].toInt()
                             val p3 = mr.groupValues[3]
                             val p4 = mr.groupValues[4]
+                            if (p2 == 0) {
+                                return mr.value // $0 is not a valid parameter name.
+                            }
                             // Unassigned parameters are replaced with a blank string.
                             var param = if (paramsList.size < p2) "" else paramsList[p2 - 1]
                             if (p3.isNotBlank()) {

@@ -165,8 +165,8 @@ class RimucTest {
         @Suppress("UNCHECKED_CAST")
         val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
         for ((index, test) in tests.withIndex()) {
-            val skip = (test.string("skip") ?: "").contains("rimu-kt")
-            if (skip) {
+            val unsupported = (test.string("unsupported") ?: "").contains("kt")
+            if (unsupported) {
                 continue
             }
             for (layout in listOf<String>("", "classic", "flex", "sequel")) {

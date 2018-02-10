@@ -39,22 +39,31 @@ object Options {
     fun update(options: RenderOptions) {
         if (options.reset) Api.init() // Reset takes priority.
         // Only update specified (non-null) options.
-        safeMode = options.safeMode ?: safeMode
+        if (options.safeMode != null)
+            update("safeMode",options.safeMode.toString())
         htmlReplacement = options.htmlReplacement ?: htmlReplacement
         callback = options.callback ?: callback
     }
 
     // Set named option value.
     fun update(name: String, value: String) {
-        try {
-            when (name) {
-                "safeMode" -> safeMode = value.toInt()
-                "htmlReplacement" -> htmlReplacement = value
-                "reset" -> if (value.toBoolean()) Api.init()
-                else -> throw IllegalArgumentException()
+        when (name) {
+            "safeMode" -> {
+                val n = value.toIntOrNull()
+                if (n == null || n < 0 || n > 15) {
+                    errorCallback("illegal safeMode API option value: " + value)
+                } else {
+                    safeMode = n
+                }
             }
-        } catch (e: Exception) {
-            throw IllegalArgumentException("Illegal API option: '$name=$value'")
+            "reset" -> {
+                if (value == "true") Api.init()
+                else if (value != "false") errorCallback("illegal reset API option value: " + value)
+            }
+            "htmlReplacement" ->
+                htmlReplacement = value
+            else ->
+                errorCallback("illegal API option name: " + name)
         }
     }
 

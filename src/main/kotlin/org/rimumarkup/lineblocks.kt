@@ -155,9 +155,7 @@ object LineBlocks {
             Definition(
                     match = Regex("""^\\?\.(\w+)\s*=\s*'(.*)'$"""),
                     filter = fun(match: MatchResult, _, _): String {
-                        if (!Regex("""^(safeMode|htmlReplacement|reset)$""").matches(match.groupValues[1])) {
-                            Options.errorCallback("illegal API option: " + match.groupValues[1] + ": " + match.value)
-                        } else if (!Options.isSafeModeNz()) {
+                        if (!Options.isSafeModeNz()) {
                             val value = Utils.replaceInline(match.groupValues[2], ExpansionOptions(macros = true))
                             Options.update(match.groupValues[1], value)
                         }

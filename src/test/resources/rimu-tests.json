@@ -315,6 +315,16 @@
     }
   },
   {
+    "description": "inline links",
+    "input": "<#x1|lorum link> \\<#x1|lorum link>",
+    "expectedOutput": "<p><a href=\"#x1\">lorum link</a> &lt;#x1|lorum link&gt;</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "unsupported": "go",
     "description": "inline anchors and links",
     "input": "Lorum <<#x1>>ipsum <#x1|lorum link> \\<<#x1>>",
     "expectedOutput": "<p>Lorum <span id=\"x1\"></span>ipsum <a href=\"#x1\">lorum link</a> &lt;&lt;#x1&gt;&gt;</p>",
@@ -1346,6 +1356,42 @@
     }
   },
   {
+    "description": "$0 is not a valid macro parameter name",
+    "input": "{v}='$0'\n{v|}",
+    "expectedOutput": "<p>$0</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "reordered macro parameters",
+    "input": "{v1}='foo'\n{v2}='bar'\n{v3}='$2$1'\n{v3|{v2}|{v1}}",
+    "expectedOutput": "<p>barfoo</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "repeated macro parameter limitation (output should be '<p>foofoo</p>')",
+    "input": "{v1}='foo'\n{v2}='$1$1'\n{v2|{v1}}",
+    "expectedOutput": "<p>foo</p>",
+    "expectedCallback": "error: repeated macro parameters: {v2|{v1}}",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "fails if macros \\u0002 placeholder is \\u0001 (conflicts with spans use of \\u0001",
+    "input": "{v}='$$1'\n{v|{v}}",
+    "expectedOutput": "<p>$$1</p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
     "description": "double and single dollar parametrized macro arguments in HTML block element",
     "input": "{v}='<div>$$1 and $2</div>'\n{v|**a** b|c _d_}",
     "expectedOutput": "<div><strong>a</strong> b and c _d_</div>",
@@ -1661,10 +1707,28 @@
     }
   },
   {
-    "description": "Macro Line block value is macro invocation: should not recurse infinitely",
+    "description": "Recursively defined macro in Line Macro context should not loop infinitely",
     "input": "{x}='\\{x}'\n{x}",
     "expectedOutput": "<p>{x}</p>",
     "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Recursively defined macro in Line Macro context should not loop infinitely",
+    "input": "{x}='{x}'\n{x}",
+    "expectedOutput": "<p>{x}</p>",
+    "expectedCallback": "error: undefined macro: {x}: {x}",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "Recursively defined macro in Line Macro context should not loop infinitely",
+    "input": "{x}='foo\n\n{x}'\n{x}",
+    "expectedOutput": "<p>foo\n\n{x}</p>",
+    "expectedCallback": "error: undefined macro: {x}: foo\n\n{x}",
     "options": {
       "reset": true
     }
@@ -1718,6 +1782,7 @@
     }
   },
   {
+    "unsupported": "go",
     "description": "deprecated <<anchor>> block anchor skipped by safeMode=5",
     "input": "<<#x1>>",
     "expectedOutput": "",
@@ -1728,6 +1793,7 @@
     }
   },
   {
+    "unsupported": "go",
     "description": "deprecated <<anchor>> block anchor",
     "input": "<<#x1>>",
     "expectedOutput": "<div id=\"x1\"></div>",
@@ -1737,6 +1803,7 @@
     }
   },
   {
+    "unsupported": "go",
     "description": "deprecated <<anchor>> inline anchor skipped by safeMode=7",
     "input": "Inline <<#x1>>",
     "expectedOutput": "<p>Inline </p>",
@@ -2103,6 +2170,16 @@
     }
   },
   {
+    "description": "replacement has undefined match group",
+    "input": "/foo/='$2'\nfoo",
+    "expectedOutput": "<p></p>",
+    "expectedCallback": "error: undefined replacement group: $2",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "unsupported": "go",
     "description": "Inline comments replacement.",
     "input": "/(^|\\n)\\\\?\\/\\/.*(?=\\n|$)/g = '$1'\nA paragraph\n//Comment\n//Comment\nwith inline comments.",
     "expectedOutput": "<p>A paragraph\n\n\nwith inline comments.</p>",
@@ -2193,10 +2270,37 @@
     }
   },
   {
+    "description": "illegal safeMode API option",
+    "input": ".safeMode='foobar'",
+    "expectedOutput": "",
+    "expectedCallback": "error: illegal safeMode API option value: foobar",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "illegal safeMode API name",
+    "input": ".foo = 'bar'",
+    "expectedOutput": "",
+    "expectedCallback": "error: illegal API option name: foo",
+    "options": {
+      "reset": true
+    }
+  },
+  {
     "description": "callback api: illegal delimited block name",
     "input": "|foobar| = '<p>|</p>'",
     "expectedOutput": "",
     "expectedCallback": "error: illegal delimited block name: foobar: |foobar|='<p>|</p>'",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "callback api: illegal delimited block definition",
+    "input": "|code| = 'foobar'",
+    "expectedOutput": "",
+    "expectedCallback": "error: illegal delimited block definition: |code|='foobar'",
     "options": {
       "reset": true
     }
@@ -2214,7 +2318,7 @@
     "description": "callback api: illegal API option",
     "input": ".zafeMode='2'",
     "expectedOutput": "",
-    "expectedCallback": "error: illegal API option: zafeMode: .zafeMode='2'",
+    "expectedCallback": "error: illegal API option name: zafeMode",
     "options": {
       "reset": true
     }
@@ -2301,54 +2405,54 @@
     }
   },
   {
+    "unsupported": "go,kt",
     "description": "line block macro expression value definition",
     "input": "{foo} = `(parseInt(40) + parseInt(2)) + 'px'`\n{foo}",
     "expectedOutput": "<p>42px</p>",
     "expectedCallback": "",
     "options": {
       "reset": true
-    },
-    "unsupported": "rimu-kt"
+    }
   },
   {
+    "unsupported": "go,kt",
     "description": "multi-line macro expression value definition",
     "input": "{foo} = `(parseInt(40) + parseInt(2)) \n+ 'px'`\n{foo}",
     "expectedOutput": "<p>42px</p>",
     "expectedCallback": "",
     "options": {
       "reset": true
-    },
-    "unsupported": "rimu-kt"
+    }
   },
   {
+    "unsupported": "go,kt",
     "description": "delimited block macro expression line continuation",
     "input": "{foo} = `(parseInt(40) + parseInt(2)) + ` \\\npx``\n{foo}",
     "expectedOutput": "<p>42\npx</p>",
     "expectedCallback": "",
     "options": {
       "reset": true
-    },
-    "unsupported": "rimu-kt"
+    }
   },
   {
+    "unsupported": "go,kt",
     "description": "delimited block macro expression escaped line continuation",
     "input": "{foo} = `(parseInt(40) + parseInt(2)) + ` \\\\\npx``\n{foo}",
     "expectedOutput": "<p>42 px</p>",
     "expectedCallback": "",
     "options": {
       "reset": true
-    },
-    "unsupported": "rimu-kt"
+    }
   },
   {
+    "unsupported": "go,kt",
     "description": "illegal macro expression",
     "input": "{foo} = `1 + x`",
     "expectedOutput": "",
     "expectedCallback": "error: illegal macro expression: x is not defined: 1 + x",
     "options": {
       "reset": true
-    },
-    "unsupported": "rimu-kt"
+    }
   },
   {
     "description": "escape closing brace in macro 'pattern' parameter",
@@ -2480,6 +2584,52 @@
     "description": "list item with attached Quote block followed by another Quote block",
     "input": "- Item 1\n\"\"\nQuote 1\n\"\"\n\"\"\nQuote 2\n\"\"",
     "expectedOutput": "<ul><li>Item 1<blockquote><p>Quote 1</p></blockquote>\n</li></ul><blockquote><p>Quote 2</p></blockquote>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "spaces",
+    "input": " ",
+    "expectedOutput": "",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "white space",
+    "input": " \n \n",
+    "expectedOutput": "",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "filter out reserved characters",
+    "input": "\u0000\u0001\u0002\u0003",
+    "expectedOutput": "",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "illegal render() safeMode value",
+    "input": "",
+    "expectedOutput": "",
+    "expectedCallback": "error: illegal safeMode API option value: -1",
+    "options": {
+      "safeMode": -1,
+      "reset": true
+    }
+  },
+  {
+    "description": "single-line comments take precedence over replacement definitions",
+    "input": "//foo/='bar'\n/foo",
+    "expectedOutput": "<p>/foo</p>",
     "expectedCallback": "",
     "options": {
       "reset": true

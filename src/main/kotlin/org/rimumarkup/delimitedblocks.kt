@@ -159,7 +159,7 @@ object DelimitedBlocks {
             // Indented paragraph.
             Definition(
                     name = "indented",
-                    openMatch = Regex("""^\\?(\s+.*)$"""), // $1 is first line of block.
+                    openMatch = Regex("""^\\?(\s+\S.*)$"""), // $1 is first line of block.
                     closeMatch = Regex("""^$"""), // Blank line or EOF.
                     openTag = "<pre><code>",
                     closeTag = "</code></pre>",

@@ -203,11 +203,11 @@ object Utils {
                 expansionOptions.specials = true
             }
             val i = mr.groupValues[2].toInt()  // match group number.
-            var result = groupValues[i]        // match group text.
             if (i >= groupValues.size) {
                 Options.errorCallback("undefined replacement group: " + mr.value)
                 return ""
             }
+            var result = groupValues[i]        // match group text.
             return replaceInline(result, expansionOptions)
         })
     }

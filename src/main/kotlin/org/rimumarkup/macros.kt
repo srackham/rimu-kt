@@ -163,7 +163,16 @@ object Macros {
             })
         })
         // Restore expanded Simple values.
-        result = Regex("""\u0001""").replace(result, { saved_simple.popFirst() })
+        result = Regex("""\u0001""").replace(result, {
+            if (saved_simple.size == 0) {
+                // This should not happen but there is a limitation: repeated macro substitution parameters
+                // ($1, $2...) cannot contain simple macro invocations.
+                Options.errorCallback("repeated macro parameters: " + text)
+                ""
+            } else {
+                saved_simple.popFirst()
+            }
+        })
         // Delete lines flagged by Inclusion/Exclusion macros.
         if (result.indexOf('\u0000') >= 0) {
             result = result.split('\n')

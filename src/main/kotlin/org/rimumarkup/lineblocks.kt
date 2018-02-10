@@ -29,8 +29,8 @@ object LineBlocks {
                         }
                         // Silent because any macro expansion errors will be subsequently addressed downstream.
                         val value = Macros.render(match.value, true)
-                        if (value.startsWith(match.groupValues[1])) {
-                            // The leading macro invocation expansion failed or returned itself.
+                        if (value.startsWith(match.groupValues[1]) || value.contains("\n" + match.groupValues[1])) {
+                            // The leading macro invocation expansion failed or contains itself.
                             // This stops infinite recursion.
                             return false
                         }

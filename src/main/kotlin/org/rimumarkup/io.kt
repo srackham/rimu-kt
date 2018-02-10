@@ -5,7 +5,7 @@ object Io {
     class Reader(text: String) {
         // Split lines on newline boundaries.
         // Lines are mutable so line macro values can be inserted into the reader.
-        val lines: MutableList<String> = text.split(Regex("""\r\n|\r|\n""")).toMutableList()
+        val lines: MutableList<String>
         var pos = 0       // Line index of current line.
         var cursor: String
             get() {
@@ -16,6 +16,15 @@ object Io {
                 assert(!this.eof())
                 this.lines[pos] = value
             }
+
+        init {
+            var s = text
+            s = s.replace("\u0000", " ") // Used internally by spans package.
+            s = s.replace("\u0001", " ") // Used internally by spans package.
+            s = s.replace("\u0002", " ") // Used internally by macros package.
+            s = s.replace("\u0003", " ") // Used internally by macros package.
+            lines= s.split(Regex("""\r\n|\r|\n""")).toMutableList()
+        }
 
         // Return true if the cursor has advanced over all input lines.
         fun eof(): Boolean {

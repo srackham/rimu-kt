@@ -94,6 +94,10 @@ object Macros {
                     }
                     return match.value
                 }
+                if (find === MATCH_SIMPLE) {
+                    saved_simple.pushLast(value)
+                    return "\u0002" // Placeholder to forestall further expansion of Simple macros.
+                }
                 params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
                 when (params.firstOrNull()) {
                     '|' -> {   // Parametrized macro.
@@ -149,21 +153,17 @@ object Macros {
                         if (params[0] == '!') {
                             skip = !skip
                         }
-                        return if (skip) "\u0000" else ""   // '\0' flags line for deletion.
-                    }
-                    null -> { // Simple macro.
-                        saved_simple.pushLast(value)
-                        return "\u0001"
+                        return if (skip) "\u0003" else ""   // '\0' flags line for deletion.
                     }
                     else -> {
-                        Options.panic(""""illegal macro syntax: ${match.value}""" )
-                        return match.value
+                        Options.errorCallback("illegal macro syntax: " + match.value)
+                        return ""
                     }
                 }
             })
         })
         // Restore expanded Simple values.
-        result = Regex("""\u0001""").replace(result, {
+        result = Regex("""\u0002""").replace(result, {
             if (saved_simple.size == 0) {
                 // This should not happen but there is a limitation: repeated macro substitution parameters
                 // ($1, $2...) cannot contain simple macro invocations.
@@ -174,9 +174,9 @@ object Macros {
             }
         })
         // Delete lines flagged by Inclusion/Exclusion macros.
-        if (result.indexOf('\u0000') >= 0) {
+        if (result.indexOf('\u0003') >= 0) {
             result = result.split('\n')
-                    .filter { !it.contains('\u0000') }
+                    .filter { !it.contains('\u0003') }
                     .joinToString("\n")
         }
         return result

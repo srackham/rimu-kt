@@ -34,7 +34,7 @@ class RimuTest {
             val expectedCallback = test.string("expectedCallback") ?: ""
             val options = test.obj("options") as JsonObject
             val renderOptions = RenderOptions()
-            val unsupported = (test.string("unsupported") ?: "").contains("rimu-kt")
+            val unsupported = (test.string("unsupported") ?: "").contains("kt")
             renderOptions.safeMode = options.int("safeMode")
             renderOptions.htmlReplacement = options.string("htmlReplacement")
             renderOptions.reset = options.boolean("reset") ?: false
@@ -44,8 +44,7 @@ class RimuTest {
             } else {
                 renderOptions.callback = catchLint  // Callback should not occur, this will throw an error.
             }
-            Options.update(renderOptions)
-            val result = Api.render(input)
+            val result = render(input, renderOptions)
             if (unsupported) {
                 assertTrue(description, msg.trim().startsWith("error: unsupported"))
             } else {

@@ -37,7 +37,9 @@ object Options {
     }
 
     fun update(options: RenderOptions) {
-        if (options.reset) Api.init() // Reset takes priority.
+        callback = options.callback ?: callback // Install callback first to ensure option errors are logged.
+        if (options.reset) Api.init()           // Reset takes priority.
+        callback = options.callback ?: callback // Install callback again in case it has been reset.
         // Only update specified (non-null) options.
         if (options.safeMode != null)
             update("safeMode",options.safeMode.toString())

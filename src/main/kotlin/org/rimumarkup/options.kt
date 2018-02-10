@@ -5,12 +5,6 @@ object Options {
     // Global option values.
     // These are initialized when the Option object is instaniated.
     var safeMode = 0
-        set(value) {
-            if (safeMode !in 0..15) {
-                throw IllegalArgumentException("Illegal safeMode value")
-            }
-            field = value
-        }
     var htmlReplacement = ""
     var callback: CallbackFunction = DO_NOTHING
 

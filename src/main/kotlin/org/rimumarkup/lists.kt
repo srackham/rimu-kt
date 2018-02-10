@@ -69,7 +69,6 @@ object Lists {
         ids.clear()
         renderList(startItem, reader, writer)
         // ids should now be empty.
-        assert(ids.isEmpty())
         if (ids.size != 0) Options.panic("list stack failure")
         return true
     }
@@ -190,7 +189,7 @@ object Lists {
         for (def in defs) {
             val match = def.match.find(reader.cursor)
             if (match != null) {
-                if (match.groupValues[0].startsWith('\\')) {
+                if (match.value.startsWith('\\')) {
                     reader.cursor = reader.cursor.substring(1)   // Drop backslash.
                     return ItemInfo.NO_MATCH
                 }

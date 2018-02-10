@@ -14,17 +14,21 @@ object LineBlocks {
     )
 
     val defs = arrayOf(
+            // Comment line.
+            Definition(
+                    match = Regex("""^\\?/{2}(.*)$""")
+            ),
             // Expand lines prefixed with a macro invocation prior to all other processing.
             // macro name = $1, macro value = $2
             Definition(
                     match = Macros.MATCH_LINE,
                     verify = fun(match: MatchResult, reader: Io.Reader): Boolean {
-                        if (Macros.LITERAL_DEF_OPEN.matches(match.groupValues[0]) || Macros.EXPRESSION_DEF_OPEN.matches(match.groupValues[0])) {
+                        if (Macros.LITERAL_DEF_OPEN.matches(match.value) || Macros.EXPRESSION_DEF_OPEN.matches(match.value)) {
                             // Do not process macro definitions.
                             return false
                         }
                         // Silent because any macro expansion errors will be subsequently addressed downstream.
-                        val value = Macros.render(match.groupValues[0], true)
+                        val value = Macros.render(match.value, true)
                         if (value.startsWith(match.groupValues[1])) {
                             // The leading macro invocation expansion failed or returned itself.
                             // This stops infinite recursion.
@@ -110,14 +114,10 @@ object LineBlocks {
                         return Utils.replaceMatch(groupValues, def.replacement, ExpansionOptions(macros = true))
                     }
             ),
-            // Comment line.
-            Definition(
-                    match = Regex("""^\\?/{2}(.*)$""")
-            ),
             // Block image: <image:src|alt>
             // src = $1, alt = $2
             Definition(
-                    match = Regex("""^\\?<image:([^\s|]+)\|(.+?)>$""", RegexOption.DOT_MATCHES_ALL),
+                    match = Regex("""^\\?<image:([^\s|]+)\|(.+?)>$"""),
                     replacement = "<img src=\"$1\" alt=\"$2\">"
             ),
             // Block image: <image:src>
@@ -147,7 +147,7 @@ object LineBlocks {
                     name = "attributes",
                     match = Regex("""^\\?\.[a-zA-Z#"\[+-].*$"""), // A loose match because Block Attributes can contain macro references.
                     verify = fun(match: MatchResult, _): Boolean {
-                        return BlockAttributes.parse(match)
+                        return BlockAttributes.parse(match.value)
                     }
             ),
             // API Option.
@@ -156,7 +156,7 @@ object LineBlocks {
                     match = Regex("""^\\?\.(\w+)\s*=\s*'(.*)'$"""),
                     filter = fun(match: MatchResult, _, _): String {
                         if (!Regex("""^(safeMode|htmlReplacement|reset)$""").matches(match.groupValues[1])) {
-                            Options.errorCallback("illegal API option: " + match.groupValues[1] + ": " + match.groupValues[0])
+                            Options.errorCallback("illegal API option: " + match.groupValues[1] + ": " + match.value)
                         } else if (!Options.isSafeModeNz()) {
                             val value = Utils.replaceInline(match.groupValues[2], ExpansionOptions(macros = true))
                             Options.update(match.groupValues[1], value)
@@ -175,7 +175,7 @@ object LineBlocks {
             if (allowed.size > 0 && !allowed.contains(def.name)) continue
             val match = def.match.find(reader.cursor)
             if (match != null) {
-                if (match.groupValues[0].startsWith('\\')) {
+                if (match.value.startsWith('\\')) {
                     // Drop backslash escape and continue.
                     reader.cursor = reader.cursor.substring(1)
                     continue

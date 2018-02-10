@@ -102,7 +102,7 @@ object Macros {
                         // Matches macro definition formal parameters [$]$<param-number>[[\]:<default-param-value>$]
                         // 1st group: [$]$
                         // 2nd group: <param-number> (1, 2..)
-                        // 3rd group: :[\]<default-param-value>$
+                        // 3rd group: [\]:<default-param-value>$
                         // 4th group: <default-param-value>
                         val PARAM_RE = Regex("""\\?(\$\$?)(\d+)(\\?:(|.*?[^\\])\$)?""", RegexOption.DOT_MATCHES_ALL)
                         value = PARAM_RE.replace(value, fun(mr: MatchResult): String {

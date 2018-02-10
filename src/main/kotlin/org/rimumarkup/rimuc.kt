@@ -340,8 +340,8 @@ fun rimuc(args: Array<String>) {
                 }
             }
             if (!(infile.endsWith(".html") || (pass && infile === STDIN))) {
-                // rimurc and resouces trusted with safeMode.
-                options.safeMode = if (infile == RIMURC.toString() || infile.startsWith(RESOURCE_TAG) || infile == PREPEND) 0 else safe_mode
+                // resources, prepended source and prepended files (including rimurc) are trusted with safeMode.
+                options.safeMode = if (infile.startsWith(RESOURCE_TAG) || infile == PREPEND || prepend_files.contains(infile)) 0 else safe_mode
                 options.callback = fun(message: CallbackMessage) {
                     var s = "${message.type}: ${if (infile == STDIN) "/dev/stdin" else infile}: ${message.text}"
                     if (s.length > 120) {

@@ -24,10 +24,10 @@ object BlockAttributes {
         ids.clear()
     }
 
-    fun parse(match: MatchResult): Boolean {
+    fun parse(attrs: String): Boolean {
         // Parse Block Attributes.
         // class names = $1, id = $2, css-properties = $3, html-attributes = $4, block-options = $5
-        var text = match.groupValues[0]
+        var text = attrs
         text = Utils.replaceInline(text, ExpansionOptions(macros = true))
         val m = Regex("""^\\?\.((?:\s*[a-zA-Z][\w\-]*)++)*+(?:\s+)?(#[a-zA-Z][\w\-]*\s*)?+(?:\s+)?(?:"(.+?)")?+(?:\s+)?(\[.+])?+(?:\s+)?([+-][ \w+-]+)?+$""").find(text)
         if (m == null) {
@@ -100,11 +100,11 @@ object BlockAttributes {
         }
         attrs = attrs.trim()
         if (attrs.isNotBlank()) {
-            val match = Regex("""^<([a-zA-Z]+|h[1-6])(?=[ >])""").find(result)
+            val match = Regex("""^<([a-z]+|h[1-6])(?=[ >])""",RegexOption.IGNORE_CASE).find(result)
             if (match != null) {
                 // Inject attributes after tag name.
-                val before = result.substring(0..match.groupValues[0].length - 1)
-                val after = result.substring(match.groupValues[0].length)
+                val before = result.substring(0..match.value.length - 1)
+                val after = result.substring(match.value.length)
                 result = before + " " + attrs + after
             }
         }

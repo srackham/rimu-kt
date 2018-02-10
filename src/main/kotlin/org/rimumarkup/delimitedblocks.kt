@@ -317,14 +317,16 @@ object DelimitedBlocks {
             return
         }
         val match = Regex("""^(?:(<[a-zA-Z].*>)\|(<[a-zA-Z/].*>))?(?:\s*)?([+-][ \w+-]+)?$""").find(value.trim())
-        if (match != null) {
-            if (match.value.contains('|')) {
-                def.openTag = match.groupValues[1]
-                def.closeTag = match.groupValues[2]
-            }
-            if (match.groupValues[3].isNotBlank()) {
-                def.expansionOptions.parse(match.groupValues[3])
-            }
+        if (match == null) {
+            Options.errorCallback("illegal delimited block definition: |${name}|='${value}'")
+            return
+        }
+        if (match.value.contains('|')) {
+            def.openTag = match.groupValues[1]
+            def.closeTag = match.groupValues[2]
+        }
+        if (match.groupValues[3].isNotBlank()) {
+            def.expansionOptions.parse(match.groupValues[3])
         }
     }
 

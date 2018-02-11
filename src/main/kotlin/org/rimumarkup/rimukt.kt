@@ -10,10 +10,10 @@ import java.nio.file.Paths
 
 val MANPAGE = """
 NAME
-  rimuc - convert Rimu source to HTML
+  rimukt - convert Rimu source to HTML
 
 SYNOPSIS
-  rimuc [OPTIONS...] [FILES...]
+  rimukt [OPTIONS...] [FILES...]
 
 DESCRIPTION
   Reads Rimu source markup from stdin, converts them to HTML
@@ -38,7 +38,7 @@ OPTIONS
     Defaults to '<mark>replaced HTML</mark>'.
 
   --layout LAYOUT
-    Generate a styled HTML document. rimuc includes the
+    Generate a styled HTML document. rimukt includes the
     following built-in document layouts:
 
     'classic': Desktop-centric layout.
@@ -118,7 +118,7 @@ LAYOUT OPTIONS
                      'legend', 'graystone', 'vintage'.
   --title            HTML document title.
   _______________________________________________________________
-  These options are translated by rimuc to corresponding layout
+  These options are translated by rimukt to corresponding layout
   macro definitions using the --prepend option.
 
 LAYOUT CLASSES
@@ -167,7 +167,7 @@ class RimucException(message: String) : Exception(message)
  */
 fun main(args: Array<String>) {
     try {
-        rimuc(args)
+        rimukt(args)
     } catch (e: Exception) {
         System.exit(1)
     }
@@ -176,9 +176,9 @@ fun main(args: Array<String>) {
 
 /**
  * Rimu command-line compiler.
- * Resides in org.rimumarkup.rimuc package.
+ * Resides in org.rimumarkup.rimukt package.
  */
-fun rimuc(args: Array<String>) {
+fun rimukt(args: Array<String>) {
     try {
         val RESOURCE_TAG = "resource:" // Tag for resource files.
         val PREPEND = "--prepend options"

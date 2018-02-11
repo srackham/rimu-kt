@@ -19,7 +19,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.ben-manes.versions'
 
-mainClassName = 'org.rimumarkup.RimucKt'
+mainClassName = 'org.rimumarkup.RimuktKt'
 applicationName = 'rimu-kt'
 group = 'org.rimumarkup'
 version = '10.4.2'
@@ -37,7 +37,7 @@ dependencies {
 
 startScripts {
     // Set name of executable Rimu compile command in binary distribution.
-    applicationName = 'rimuc'
+    applicationName = 'rimukt'
 }
 
 // Create a sources JAR file.

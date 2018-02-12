@@ -74,7 +74,7 @@ object BlockAttributes {
         }
         if (id.isNotBlank()) {
             id = id.toLowerCase()
-            val has_id = result.contains(Regex("""id=".*?"""", RegexOption.IGNORE_CASE))
+            val has_id = result.contains(Regex("""^<[^<]*id=".*?"""", RegexOption.IGNORE_CASE))
             if (has_id || ids.contains(id)) {
                 Options.errorCallback("""duplicate 'id' attribute: ${id}""")
             } else {

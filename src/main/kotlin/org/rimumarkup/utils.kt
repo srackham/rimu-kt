@@ -64,9 +64,10 @@ object BlockAttributes {
         }
         var attrs = ""
         if (classes.isNotBlank()) {
-            if (result.contains(Regex("""class=".*?"""", RegexOption.IGNORE_CASE))) {
-                // Inject class names into existing class attribute.
-                result = result.replaceFirst(Regex("""class="(.*?)"""", RegexOption.IGNORE_CASE), """class="${classes} $1"""")
+            val match = Regex("""^(<[^>]*class=")(.*?)"""", RegexOption.IGNORE_CASE).find(result)
+            if (match != null) {
+                // Inject class names into existing class attribute in first tag.
+                result = result.replaceFirst(match.value,"""${match.groupValues[1]}${classes} ${match.groupValues[2]}"""")
             } else {
                 attrs = """class="${classes}""""
             }
@@ -84,12 +85,12 @@ object BlockAttributes {
             }
         }
         if (css.isNotBlank()) {
-            val match = Regex("""style="(.*?)"""", RegexOption.IGNORE_CASE).find(result)
+            val match = Regex("""^(<[^>]*style=")(.*?)"""", RegexOption.IGNORE_CASE).find(result)
             if (match != null) {
-                // Inject CSS styles into first style attribute.
-                var g1 = match.groupValues[1].trim()
-                if (!g1.endsWith(';')) g1 += ';'
-                result = result.replaceFirst(match.value,"""style="${g1} ${css}"""")
+                // Inject CSS styles into first style attribute in first tag.
+                var group2 = match.groupValues[2].trim()
+                if (!group2.endsWith(';')) group2 += ';'
+                result = result.replaceFirst(match.value,"""${match.groupValues[1]}${group2} ${css}"""")
             } else {
                 attrs += """ style="${css}""""
             }

@@ -6,17 +6,16 @@ in Kotlin.
 
 
 ## Features
-
 - Functionally identical to the [JavaScript
   implementation](https://github.com/srackham/rimu) version
-  10.4.2 with the following exceptions:
-  
-  * Does not support _Expression macro values_.
-  
-- Includes
-  [rimuc](http://rimumarkup.org/reference.html#rimuc-command)
-  command-line compiler.
-- Single runtime dependency: the Kotlin Standard Library.
+  11.0.0 with the following exceptions:
+
+  * Does not support deprecated _Expression macro values_.
+  * Does not support deprecated _Imported Layouts_.
+  * Because the Go `regexp` package uses RE2 regular expressions there
+    are [some limitations](http://rimumarkup.org/reference.html#regular-expressions) on the regular expressions used in
+    Replacements definitions and Inclusion/Exclusion macro
+    invocations.
 
 Details:
 
@@ -29,13 +28,13 @@ Details:
 To use the `rimu-kt` library in a Gradle based project you need to
 include the _JCenter_ repository and the `rimu-kt` dependency e.g.
 
-```
+``` kotlin
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile "org.rimumarkup:rimu-kt:10.4.2"
+    compile "org.rimumarkup:rimu-kt:11.0.0"
 }
 ```
 
@@ -47,12 +46,16 @@ Example code:
   examples](https://github.com/srackham/rimu-kt/blob/master/src/test/java/JavaExamplesTest.java).
 
 
-## rimuc compiler command
+## Rimu compiler command
+The executable is named `rimukt` and is functionally identical to the
+[JavaScript rimuc](http://rimumarkup.org/reference.html#rimuc-command)
+command.
+
 The `rimu-kt` binary distribution can be downloaded from
 [Bintray](https://bintray.com/srackham/generic/rimu-kt#files). Unzip
 the binary distribution and run the
-[rimuc](http://rimumarkup.org/reference.html#rimuc-command) executable
-located in the `./bin` folder.
+[rimukt](http://rimumarkup.org/reference.html#rimuc-command)
+executable located in the `./bin` folder.
 
 
 ## Building Rimu
@@ -66,15 +69,12 @@ To build from source:
 
         ./gradlew test
 
-        
+
 ## Implementation
 The largely one-to-one correspondence between the canonical
 [TypeScript code](https://github.com/srackham/rimu) and the Kotlin
 code eased porting and debugging.  This will also make it easier to
 cross-port new features and bug-fixes.
 
-TypeScript-style namespaces are implemented with Kotlin objects.
-
 Both the Kotlin and JavaScript implementations share the same JSON
-driven test suites comprising over 250 compatibility checks.
-
+driven test suites comprising over 300 compatibility checks.

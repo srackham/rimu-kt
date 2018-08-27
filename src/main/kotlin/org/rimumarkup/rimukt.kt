@@ -43,6 +43,7 @@ OPTIONS
 
     'classic': Desktop-centric layout.
     'flex':    Flexbox mobile layout (experimental).
+    'plain':   Unstyled HTML layout.
     'sequel':  Responsive cross-device layout.
 
     If only one source file is specified and the --output
@@ -281,7 +282,7 @@ fun rimukt(args: Array<String>) {
                 "--layout",
                 "--styled-name" -> { // Deprecated in Rimu 10.0.0
                     layout = popOptionValue(arg)
-                    if (!arrayOf("classic", "flex", "sequel", "v8").contains(layout)) {
+                    if (!arrayOf("classic", "flex", "plain", "sequel", "v8").contains(layout)) {
                         die("illegal --layout: $layout")    // NOTE: Imported layouts are not supported.
                     }
                     prepend += "{--header-ids}='true'\n"

@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
+val VERSION = "11.1.0"
 val MANPAGE = """
 NAME
   rimukt - convert Rimu source to HTML
@@ -97,6 +98,9 @@ OPTIONS
     --prepend "{--section-numbers}='true'"
     --prepend "{--theme}='THEME'"
     --prepend "{--title}='TITLE'"
+
+  --version
+    Print version number.
 
 LAYOUT OPTIONS
   The following options are available when the --layout option
@@ -219,6 +223,10 @@ fun rimukt(args: Array<String>) {
             when (arg) {
                 "--help", "-h" -> {
                     print(MANPAGE)
+                    return
+                }
+                "--version" -> {
+                    print(VERSION + "\n")
                     return
                 }
                 "--lint", "-l" -> { // Deprecated in Rimu 10.0.0

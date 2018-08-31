@@ -19,7 +19,7 @@ class KotlinExamplesTest() {
 
     @Test
     fun simpleExampleTest() {
-        val result = render("Hello *Rimu*!", RenderOptions(reset = true))
+        val result = render("Hello *Rimu*!", RenderOptions(reset = true, safeMode = 2))
         assertEquals("<p>Hello <em>Rimu</em>!</p>", result)
     }
 

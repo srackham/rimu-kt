@@ -22,7 +22,7 @@ apply plugin: 'com.github.ben-manes.versions'
 mainClassName = 'org.rimumarkup.RimuktKt'
 applicationName = 'rimu-kt'
 group = 'org.rimumarkup'
-version = '11.0.0'
+version = '11.1.0'
 
 repositories {
     jcenter()

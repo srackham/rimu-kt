@@ -13,13 +13,6 @@ import java.io.FileOutputStream
 import java.nio.file.Paths
 
 
-fun parseJsonText(jsonText: String): Any? {
-    val parser = Parser()
-    val stringBuilder = StringBuilder(jsonText)
-    val result = parser.parse(stringBuilder)
-    return result
-}
-
 class RimuktTest {
     @Rule
     @JvmField
@@ -48,8 +41,24 @@ class RimuktTest {
 
 
     /*
-        Helper functions.
+        Helpers.
      */
+    private class RimucTestSpec(
+        val unsupported: String = "",
+        val description: String,
+        val args: String,
+        val input: String,
+        val expectedOutput: String,
+        val exitCode: Int = 0,
+        val predicate: String,
+        val layouts: Boolean = false
+    )
+
+    private fun parseRimucTestSpecs(jsonText: String): List<RimucTestSpec>? {
+        val result = Klaxon().parseArray<RimucTestSpec>(jsonText)
+        return result
+    }
+
     private fun noRimurc(args: Array<String>) {
         // Do not include the .rimurc file.
         val argsList = arrayListOf("--no-rimurc")
@@ -100,18 +109,18 @@ class RimuktTest {
     @Test
     fun missingOutputArgument() {
         expectException(
-                args = arrayOf("--output"),
-                type = RimucException::class.java,
-                message = "missing --output option value"
+            args = arrayOf("--output"),
+            type = RimucException::class.java,
+            message = "missing --output option value"
         )
     }
 
     @Test
     fun missingInputFile() {
         expectException(
-                args = arrayOf("missing-file-name"),
-                type = RimucException::class.java,
-                message = "missing-file-name"
+            args = arrayOf("missing-file-name"),
+            type = RimucException::class.java,
+            message = "missing-file-name"
         )
     }
 
@@ -161,42 +170,37 @@ class RimuktTest {
     @Test
     fun rimucCompatibilityTests() {
         val jsonText = readResource("/rimuc-tests.json")
-        @Suppress("UNCHECKED_CAST")
-        val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
+        val tests = parseRimucTestSpecs(jsonText)!!
         for ((index, test) in tests.withIndex()) {
-            val unsupported = (test.string("unsupported") ?: "").contains("kt")
-            if (unsupported) {
+            if (test.unsupported.contains("kt")) {
                 continue
             }
             for (layout in listOf<String>("", "classic", "flex", "sequel")) {
-                val layouts = test.boolean("layouts") ?: false
                 // Skip if not a layouts test and we have a layout, or if it is a layouts test but no layout is specified.
-                if (!layouts && layout.isNotBlank() || layouts && layout.isBlank()) {
+                if (!test.layouts && layout.isNotBlank() || test.layouts && layout.isBlank()) {
                     continue
                 }
-                val description = test.string("description") ?: ""
+                val description = test.description
                 System.err.println("$index: $description")
-                val input = test.string("input") ?: ""
-                val expectedOutput = (test.string("expectedOutput") ?: "")
-                        .replace("./test/fixtures/", "./src/test/fixtures/")
-                val predicate = test.string("predicate") ?: ""
-                val exitCode = test.int("exitCode") ?: 0
+                val expectedOutput = test.expectedOutput
+                    .replace("./test/fixtures/", "./src/test/fixtures/")
+                val exitCode = test.exitCode
                 // Convert args String to Array<String>.
-                var args = (test.string("args") ?: "")
-                        .replace("./test/fixtures/", "./src/test/fixtures/")
-                        .replace("./src/examples/example-rimurc.rmu", "./src/test/fixtures/example-rimurc.rmu")
+                var args = test.args
+                    .replace("./test/fixtures/", "./src/test/fixtures/")
+                    .replace("./src/examples/example-rimurc.rmu", "./src/test/fixtures/example-rimurc.rmu")
                 if (layout.isNotBlank()) {
                     args = """--layout $layout $args"""
                 }
                 val argsArray: Array<String>
                 if (args.isNotBlank()) {
                     argsArray = args.trim().split(Regex("""\s+"""))
-                            .map { it.removeSurrounding("\"") }
-                            .toTypedArray()
+                        .map { it.removeSurrounding("\"") }
+                        .toTypedArray()
                 } else {
                     argsArray = arrayOf()   // Use empty array is there are no arguments.
                 }
-                stdinMock.provideLines(input)
+                stdinMock.provideLines(test.input)
                 systemOutRule.clearLog()
                 systemErrRule.clearLog()
                 var exceptionThrown = false
@@ -211,7 +215,7 @@ class RimuktTest {
                 } else {
                     assertFalse(description, exceptionThrown)
                 }
-                when (predicate) {
+                when (test.predicate) {
                     "contains" ->
                         assertTrue(description, output.contains(expectedOutput))
                     "!contains" ->
@@ -222,7 +226,7 @@ class RimuktTest {
                         assertNotEquals(description, expectedOutput, output)
                     "startsWith" ->
                         assertTrue(description, output.startsWith(expectedOutput))
-                    else -> throw IllegalArgumentException("""${description}: illegal predicate: ${predicate}""")
+                    else -> throw IllegalArgumentException("""${description}: illegal predicate: ${test.predicate}""")
                 }
             }
         }

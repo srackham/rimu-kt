@@ -12,6 +12,26 @@ import org.rimumarkup.*
 
  */
 
+private class RimuTestOptions(
+    val reset: Boolean = false,
+    val safeMode: Int? = null,
+    val htmlReplacement: String? = null
+)
+
+private class RimuTestSpec(
+    val unsupported: String = "",
+    val description: String,
+    val input: String,
+    val expectedOutput: String,
+    val expectedCallback: String,
+    val options: RimuTestOptions
+)
+
+private fun parseRimuTestSpecs(jsonText: String): List<RimuTestSpec>? {
+    val result = Klaxon().parseArray<RimuTestSpec>(jsonText)
+    return result
+}
+
 class RimuTest {
 
     private val catchLint: CallbackFunction = fun(message: CallbackMessage) {
@@ -24,33 +44,28 @@ class RimuTest {
     @Test
     fun rimuCompatibilityTests() {
         val jsonText = readResource("/rimu-tests.json")
-        @Suppress("UNCHECKED_CAST")
-        val tests = parseJsonText(jsonText) as JsonArray<JsonObject>
+        val tests = parseRimuTestSpecs(jsonText)!!
         for ((index, test) in tests.withIndex()) {
-            val description = test.string("description") ?: ""
+            val description = test.description
             System.err.println("$index: $description")
-            val input = test.string("input") ?: ""
-            val expectedOutput = test.string("expectedOutput") ?: ""
-            val expectedCallback = test.string("expectedCallback") ?: ""
-            val options = test.obj("options") as JsonObject
             val renderOptions = RenderOptions()
-            val unsupported = (test.string("unsupported") ?: "").contains("kt")
-            renderOptions.safeMode = options.int("safeMode")
-            renderOptions.htmlReplacement = options.string("htmlReplacement")
-            renderOptions.reset = options.boolean("reset") ?: false
+            val unsupported = test.unsupported.contains("kt")
+            renderOptions.safeMode = test.options.safeMode
+            renderOptions.htmlReplacement = test.options.htmlReplacement
+            renderOptions.reset = test.options.reset
             var msg = ""
-            if (expectedCallback.isNotBlank() || unsupported) {
+            if (test.expectedCallback.isNotBlank() || unsupported) {
                 renderOptions.callback = fun(message) { msg += "${message.type}: ${message.text}\n" } // Capture the callback message.
             } else {
                 renderOptions.callback = catchLint  // Callback should not occur, this will throw an error.
             }
-            val result = render(input, renderOptions)
+            val result = render(test.input, renderOptions)
             if (unsupported) {
                 assertTrue(description, msg.trim().startsWith("error: unsupported"))
             } else {
-                assertEquals(description, expectedOutput, result)
-                if (expectedCallback.isNotBlank()) {
-                    assertTrue(description, msg.trim().equals(expectedCallback))
+                assertEquals(description, test.expectedOutput, result)
+                if (test.expectedCallback.isNotBlank()) {
+                    assertTrue(description, msg.trim().equals(test.expectedCallback))
                 }
             }
         }

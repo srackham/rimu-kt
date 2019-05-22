@@ -1,66 +1,66 @@
 buildscript {
-    ext.kotlin_version = '1.3.21'
+    ext.kotlin_version = "1.3.21"
 
     repositories {
         jcenter()
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
 plugins {
-    id "com.github.ben-manes.versions" version "0.20.0"
-    id "com.jfrog.bintray" version "1.8.4"
+    id("com.github.ben-manes.versions") version("0.20.0")
+    id("com.jfrog.bintray") version("1.8.4")
 }
 
-apply plugin: 'application'
-apply plugin: 'java'
-apply plugin: 'kotlin'
-apply plugin: 'maven-publish'
+apply(plugin: "application")
+apply(plugin: "java")
+apply(plugin: "kotlin")
+apply(plugin: "maven-publish")
 
-mainClassName = 'org.rimumarkup.RimuktKt'
-applicationName = 'rimu-kt'
-group = 'org.rimumarkup'
-version = '11.1.0'
+mainClassName = "org.rimumarkup.RimuktKt"
+applicationName = "rimu-kt"
+group = "org.rimumarkup"
+version = "11.1.0"
 
 repositories {
     jcenter()
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    testCompile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
-    testCompile 'com.beust:klaxon:5.0.5'
+    compile("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
+    testCompile("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+    testCompile(group: "junit", name: "junit", version: "4.12")
+    testCompile("com.github.stefanbirkner:system-rules:1.19.0")
+    testCompile("com.beust:klaxon:5.0.5")
 }
 
 startScripts {
     // Set name of executable Rimu compile command in binary distribution.
-    applicationName = 'rimukt'
+    applicationName = "rimukt"
 }
 
 // Create a sources JAR file.
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier 'sources'
-    from sourceSets.main.allSource
-    exclude '**/*.rmu'     // Exclude resource files.
+    archiveClassifier = "sources"
+    from(sourceSets.main.allSource)
+    exclude("**/*.rmu")     // Exclude resource files.
 }
 
 publishing {
     publications {
         library(MavenPublication) {
-            from components.java
-            artifact sourcesJar
+            from(components.java)
+            artifact(sourcesJar)
         }
     }
 }
 
 Properties localProperties = new Properties()
-if (new File('./local.properties').isFile()) {
-    localProperties.load(new FileInputStream('./local.properties'))
+if (new File("./local.properties").isFile()) {
+    localProperties.load(new FileInputStream("./local.properties"))
 }
 
 // Used by bintrayUpload task publishes Maven library to Bintray.
@@ -69,18 +69,18 @@ bintray {
     dryRun = false
     publish = false
     override = false
-    user = localProperties['bintray.user']
-    key = localProperties['bintray.apikey']
-    publications = ['library']
+    user = localProperties["bintray.user"]
+    key = localProperties["bintray.apikey"]
+    publications = ["library"]
     pkg {
-        repo = 'maven'
+        repo = "maven"
         name = project.applicationName
-        licenses = ['MIT']
-        vcsUrl = 'https://github.com/srackham/rimu-kt'
-        websiteUrl = 'https://srackham.github.io/rimu'
-        issueTrackerUrl = 'https://github.com/srackham/rimu/issues'
-        desc = 'Rimu Markup for the JVM.'
-        labels = ['rimu', 'markup', 'asciidoc', 'markdown']
+        licenses = ["MIT"]
+        vcsUrl = "https://github.com/srackham/rimu-kt"
+        websiteUrl = "https://srackham.github.io/rimu"
+        issueTrackerUrl = "https://github.com/srackham/rimu/issues"
+        desc = "Rimu Markup for the JVM."
+        labels = ["rimu", "markup", "asciidoc", "markdown"]
         publicDownloadNumbers = false
         version {
             name = project.version

@@ -6,9 +6,13 @@ group = "org.rimumarkup"
 version = "11.1.1"
 description = "Rimu Markup for the JVM."
 
-val secretProperties = Properties() // Contains Bintray account credentials.
+val secretProperties = Properties()
 if (File("./secret.properties").isFile()) {
     secretProperties.load(FileInputStream("./secret.properties"))
+} else {
+    // Default values.
+    secretProperties["bintray.user"] = ""
+    secretProperties["bintray.apikey"] = ""
 }
 
 application {

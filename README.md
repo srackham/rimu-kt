@@ -8,7 +8,7 @@ in Kotlin.
 ## Features
 - Functionally identical to the [JavaScript
   implementation](https://github.com/srackham/rimu) version
-  11.1.0 with the following exceptions:
+  11.1 with the following exceptions:
 
   * Does not support deprecated _Expression macro values_.
   * Does not support deprecated _Imported Layouts_.
@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.rimumarkup:rimu-kt:11.1.0"
+    compile("org.rimumarkup:rimu-kt:11.1.1")
 }
 ```
 
@@ -46,7 +46,7 @@ Example code:
   examples](https://github.com/srackham/rimu-kt/blob/master/src/test/java/JavaExamplesTest.java).
 
 
-## Rimu compiler command
+## Rimu CLI command
 The executable is named `rimukt` and is functionally identical to the
 [JavaScript rimuc](http://rimumarkup.org/reference.html#rimuc-command)
 command.
@@ -55,6 +55,15 @@ The `rimu-kt` binary distribution can be downloaded from
 [Bintray](https://bintray.com/srackham/generic/rimu-kt#files). Unzip
 the binary distribution and run the `rimukt` executable located in
 the `./bin` folder.
+
+Run a simple test from the command prompt to check the `rimugo` CLI command is
+working:
+
+    echo 'Hello *Rimu*!' | ./bin/rimukt
+
+This should output:
+
+    <p>Hello <em>Rimu</em>!</p>
 
 
 ## Building Rimu

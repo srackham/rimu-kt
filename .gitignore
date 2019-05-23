@@ -6,7 +6,7 @@
 .gradle/
 build/
 out/
-local.properties
+secret.properties
 
 # Other
 gitignore/

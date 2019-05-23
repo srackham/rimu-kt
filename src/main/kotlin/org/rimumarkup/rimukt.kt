@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-val VERSION = "11.1.1"
+val VERSION = "11.1.2"
 val MANPAGE = """
 NAME
   rimukt - convert Rimu source to HTML

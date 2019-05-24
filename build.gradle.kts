@@ -23,9 +23,9 @@ application {
 plugins {
     application
     kotlin("jvm").version("1.3.31")
-    java
     `maven-publish`
-    id("com.jfrog.bintray").version("1.8.4")
+    id("com.jfrog.bintray").version("1.8.4") // https://github.com/bintray/gradle-bintray-plugin
+    id("com.github.ben-manes.versions").version("0.21.0") // https://github.com/ben-manes/gradle-versions-plugin
 }
 
 repositories {

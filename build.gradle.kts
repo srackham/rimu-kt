@@ -64,7 +64,7 @@ bintray {
     setPublications("rimu") // Name of MavenPublication object.
     user = secretProperties["bintray.user"] as String
     key = secretProperties["bintray.apikey"] as String
-    dryRun = false
+    dryRun = true
     publish = false // Manually publish rimu-kt files from the Bintray maven repo browser UI at https://bintray.com/srackham/maven
     override = false // Whether to override version artifacts already published.
     pkg(delegateClosureOf<BintrayExtension.PackageConfig> {

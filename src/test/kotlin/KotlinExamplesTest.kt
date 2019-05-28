@@ -1,7 +1,5 @@
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.rimumarkup.RenderOptions
 import org.rimumarkup.render
@@ -30,7 +28,7 @@ class KotlinExamplesTest() {
         options.callback = fun(message) { callbackMessage = "${message.type}: ${message.text}" } // Capture the callback message.
         val result = render("Unknown {x}", options)
         assertEquals("<p>Unknown {x}</p>", result)
-        Assert.assertEquals("error: undefined macro: {x}: Unknown {x}", callbackMessage)
+        assertEquals("error: undefined macro: {x}: Unknown {x}", callbackMessage)
     }
 }
 

@@ -28,7 +28,7 @@ public class JavaExamplesTest {
     private String callbackMessage;
 
     @Test
-    public final void callabckExampleTest() {
+    public final void callbackExampleTest() {
         RenderOptions options = new RenderOptions();
         // Capture the callback message.
         options.callback = (CallbackMessage message) -> {

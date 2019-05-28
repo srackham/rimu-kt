@@ -74,7 +74,7 @@ object Macros {
         val MATCH_SIMPLE = Regex("""\\?\{([\w\-]+)()}""")                       // Simple macro invocation.
         val saved_simple: MutableList<String> = mutableListOf()
         var result = text
-        listOf(MATCH_SIMPLE, MATCH_COMPLEX).forEach({ find ->
+        listOf(MATCH_SIMPLE, MATCH_COMPLEX).forEach { find ->
             result = find.replace(result, fun(match: MatchResult): String {
                 if (match.value.startsWith('\\')) {
                     return match.value.substring(1)
@@ -161,9 +161,9 @@ object Macros {
                     }
                 }
             })
-        })
+        }
         // Restore expanded Simple values.
-        result = Regex("""\u0002""").replace(result, {
+        result = Regex("""\u0002""").replace(result) {
             if (saved_simple.size == 0) {
                 // This should not happen but there is a limitation: repeated macro substitution parameters
                 // ($1, $2...) cannot contain simple macro invocations.
@@ -172,7 +172,7 @@ object Macros {
             } else {
                 saved_simple.popFirst()
             }
-        })
+        }
         // Delete lines flagged by Inclusion/Exclusion macros.
         if (result.indexOf('\u0003') >= 0) {
             result = result.split('\n')

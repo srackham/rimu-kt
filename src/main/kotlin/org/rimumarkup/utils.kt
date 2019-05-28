@@ -103,7 +103,7 @@ object BlockAttributes {
             val match = Regex("""^<([a-z]+|h[1-6])(?=[ >])""",RegexOption.IGNORE_CASE).find(result)
             if (match != null) {
                 // Inject attributes after tag name.
-                val before = result.substring(0..match.value.length - 1)
+                val before = result.substring(0 until match.value.length)
                 val after = result.substring(match.value.length)
                 result = before + " " + attrs + after
             }
@@ -207,7 +207,7 @@ object Utils {
                 Options.errorCallback("undefined replacement group: " + mr.value)
                 return ""
             }
-            var result = groupValues[i]        // match group text.
+            val result = groupValues[i]        // match group text.
             return replaceInline(result, expansionOptions)
         })
     }

@@ -88,7 +88,7 @@ object Spans {
             quoted += quote[0]
             nextIndex += 1
         }
-        val before = fragment.text.substring(0..match.range.first - 1)
+        val before = fragment.text.substring(0 until match.range.first)
         val after = fragment.text.substring(nextIndex)
         result.add(Fragment(text = before, done = false))
         result.add(Fragment(text = def.openTag, done = true))
@@ -127,26 +127,26 @@ object Spans {
 
     // Replace replacements placeholders with replacements text from savedReplacements[].
     fun postReplacements(text: String): String {
-        return text.replace(Regex("""[\u0000\u0001]"""), { match ->
+        return text.replace(Regex("""[\u0000\u0001]""")) { match ->
             val fragment = savedReplacements.removeAt(0)
             if (match.value == "\u0000")
                 fragment.text
             else
                 Utils.replaceSpecialChars(fragment.verbatim)
-        })
+        }
     }
 
     // Fragment replacements in all fragments and return resulting fragments array.
     fun fragReplacements(fragments: List<Fragment>): List<Fragment> {
         var result = fragments.toList()
         val tmp = mutableListOf<Fragment>()
-        Replacements.defs.forEach({ def ->
+        Replacements.defs.forEach { def ->
             tmp.clear()
-            result.forEach({ fragment ->
+            result.forEach { fragment ->
                 tmp.addAll(fragReplacement(fragment, def))
-            })
+            }
             result = tmp.toList()
-        })
+        }
         return result
     }
 
@@ -163,7 +163,7 @@ object Spans {
         // Arrive here if we have a matched replacement.
         // The replacement splits the input fragment into 3 output fragments:
         // Text before the replacement, replaced text and text after the replacement.
-        val before: String = fragment.text.substring(0..match.range.first - 1)
+        val before: String = fragment.text.substring(0 until match.range.first)
         val after: String = fragment.text.substring(match.range.last + 1)
         val result = mutableListOf<Fragment>()
         result.add(Fragment(text = before, done = false))

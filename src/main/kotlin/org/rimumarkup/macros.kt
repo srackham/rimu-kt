@@ -72,7 +72,6 @@ object Macros {
     fun render(text: String, silent: Boolean = false): String {
         val MATCH_COMPLEX = Regex("""\\?\{([\w\-]+)([!=|?](?:|.*?[^\\]))}""", RegexOption.DOT_MATCHES_ALL) // Parametrized, Inclusion and Exclusion invocations.
         val MATCH_SIMPLE = Regex("""\\?\{([\w\-]+)()}""")                       // Simple macro invocation.
-        val saved_simple: MutableList<String> = mutableListOf()
         var result = text
         listOf(MATCH_SIMPLE, MATCH_COMPLEX).forEach { find ->
             result = find.replace(result, fun(match: MatchResult): String {
@@ -95,8 +94,7 @@ object Macros {
                     return match.value
                 }
                 if (find === MATCH_SIMPLE) {
-                    saved_simple.pushLast(value)
-                    return "\u0002" // Placeholder to forestall further expansion of Simple macros.
+                    return value
                 }
                 params = Regex("""\\}""").replace(params, "}")   // Unescape escaped } characters.
                 when (params.firstOrNull()) {
@@ -153,7 +151,7 @@ object Macros {
                         if (params[0] == '!') {
                             skip = !skip
                         }
-                        return if (skip) "\u0003" else ""   // '\0' flags line for deletion.
+                        return if (skip) "\u0002" else ""   // Line deletion flag.
                     }
                     else -> {
                         Options.errorCallback("illegal macro syntax: " + match.value)
@@ -162,21 +160,10 @@ object Macros {
                 }
             })
         }
-        // Restore expanded Simple values.
-        result = Regex("""\u0002""").replace(result) {
-            if (saved_simple.size == 0) {
-                // This should not happen but there is a limitation: repeated macro substitution parameters
-                // ($1, $2...) cannot contain simple macro invocations.
-                Options.errorCallback("repeated macro parameters: " + text)
-                ""
-            } else {
-                saved_simple.popFirst()
-            }
-        }
         // Delete lines flagged by Inclusion/Exclusion macros.
-        if (result.indexOf('\u0003') >= 0) {
+        if (result.indexOf('\u0002') >= 0) {
             result = result.split('\n')
-                    .filter { !it.contains('\u0003') }
+                    .filter { !it.contains('\u0002') }
                     .joinToString("\n")
         }
         return result

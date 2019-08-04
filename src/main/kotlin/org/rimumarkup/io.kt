@@ -22,7 +22,6 @@ object Io {
             s = s.replace("\u0000", " ") // Used internally by spans package.
             s = s.replace("\u0001", " ") // Used internally by spans package.
             s = s.replace("\u0002", " ") // Used internally by macros package.
-            s = s.replace("\u0003", " ") // Used internally by macros package.
             lines= s.split(Regex("""\r\n|\r|\n""")).toMutableList()
         }
 

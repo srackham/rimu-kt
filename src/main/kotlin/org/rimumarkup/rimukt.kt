@@ -38,6 +38,10 @@ OPTIONS
     Embedded HTML is replaced by TEXT when --safe-mode is set to 2.
     Defaults to '<mark>replaced HTML</mark>'.
 
+  -s, --styled
+    Style output using default layout.
+    Shortcut for '--layout sequel --header-ids --no-toc'
+
   --layout LAYOUT
     Generate a styled HTML document. rimukt includes the
     following built-in document layouts:
@@ -261,13 +265,7 @@ fun rimukt(args: Array<String>) {
                 "--htmlReplacement" -> { // Deprecated in Rimu 7.1.0
                     html_replacement = popOptionValue(arg)
                 }
-                "--styled", "-s" -> {   // Deprecated in Rimu 10.0.0
-                    prepend += "{--header-ids}='true'\n"
-                    if (layout == "") {
-                        layout = "classic"
-                    }
-                }
-            // Styling macro definitions shortcut options.
+                // Styling macro definitions shortcut options.
                 "--highlightjs",
                 "--mathjax",
                 "--section-numbers",
@@ -294,6 +292,11 @@ fun rimukt(args: Array<String>) {
                         die("illegal --layout: $layout")    // NOTE: Imported layouts are not supported.
                     }
                     prepend += "{--header-ids}='true'\n"
+                }
+                "--styled", "-s" -> {
+                    prepend += "{--header-ids}='true'\n"
+                    prepend += "{--no-toc}='true'\n"
+                    layout = "sequel"
                 }
                 else -> {
                     argsList.pushFirst(arg) // Contains source file names.

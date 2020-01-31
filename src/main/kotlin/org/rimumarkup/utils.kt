@@ -57,7 +57,7 @@ object BlockAttributes {
 
     // Inject HTML attributes into the HTML `tag` and return result.
     // Consume HTML attributes unless the 'tag' argument is blank.
-    fun injectHtmlAttributes(tag: String): String {
+    fun injectHtmlAttributes(tag: String, consume: Boolean=true): String {
         var result = tag
         if (result.isBlank()) {
             return result
@@ -109,10 +109,12 @@ object BlockAttributes {
             }
         }
         // Consume the attributes.
-        classes = ""
-        id = ""
-        css = ""
-        attributes = ""
+        if (consume) {
+            classes = ""
+            id = ""
+            css = ""
+            attributes = ""
+        }
         return result
     }
 

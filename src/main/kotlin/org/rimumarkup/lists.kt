@@ -96,14 +96,13 @@ object Lists {
         val groupValues = item.groupValues
         var text: String
         if (groupValues.size == 4) { // 3 match groups => definition list.
-            writer.write(BlockAttributes.injectHtmlAttributes(def.termOpenTag as String))
+            writer.write(BlockAttributes.injectHtmlAttributes(def.termOpenTag as String,consume = false))
+            BlockAttributes.id=""
             text = Utils.replaceInline(groupValues[1], ExpansionOptions(macros = true, spans = true))
             writer.write(text)
             writer.write(def.termCloseTag as String)
-            writer.write(def.itemOpenTag)
-        } else {
-            writer.write(BlockAttributes.injectHtmlAttributes(def.itemOpenTag))
         }
+        writer.write(BlockAttributes.injectHtmlAttributes(def.itemOpenTag))
         // Process of item text from first line.
         val item_lines = Io.Writer()
         text = groupValues.last()

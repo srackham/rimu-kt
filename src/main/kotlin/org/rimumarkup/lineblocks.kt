@@ -107,6 +107,7 @@ object LineBlocks {
                     replacement = "<h$1>$$2</h$1>",
                     filter = fun(match: MatchResult, _, def): String {
                         // Replace $1 with header number e.g. "###" -> "3"
+                        // TODO: Move <hN> tag number injection to end of filter c.f. Dart port.
                         val groupValues = match.groupValues.mapIndexed { index, s -> if (index == 1) s.length.toString() else s }.toMutableList()
                         if (!Macros.getValue("--header-ids").isNullOrBlank() && BlockAttributes.id == "") {
                             BlockAttributes.id = BlockAttributes.slugify(groupValues[2])

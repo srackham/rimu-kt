@@ -322,6 +322,7 @@ object DelimitedBlocks {
             return
         }
         if (match.value.contains('|')) {
+            // Open and close tags are defined.
             def.openTag = match.groupValues[1]
             def.closeTag = match.groupValues[2]
         }

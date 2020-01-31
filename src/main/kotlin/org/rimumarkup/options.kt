@@ -27,7 +27,7 @@ object Options {
 
     // Return true if Block Attribute elements are ignored.
     fun skipBlockAttributes(): Boolean {
-        return safeMode != 0 && (safeMode and 0x4) != 0
+        return (safeMode and 0x4) != 0
     }
 
     fun update(options: RenderOptions) {
@@ -38,7 +38,6 @@ object Options {
         if (options.safeMode != null)
             update("safeMode",options.safeMode.toString())
         htmlReplacement = options.htmlReplacement ?: htmlReplacement
-        callback = options.callback ?: callback
     }
 
     // Set named option value.

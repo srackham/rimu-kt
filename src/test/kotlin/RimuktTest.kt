@@ -94,10 +94,11 @@ class RimuktTest {
     @Test
     fun checkResourceExists() {
         // Throws exception if there is a missing resource file.
-        for (style in arrayOf("classic", "flex", "v8")) {
+        for (style in arrayOf("classic", "flex", "plain","sequel","v8")) {
             readResource("$style-header.rmu")
             readResource("$style-footer.rmu")
         }
+        readResource("manpage.txt")
     }
 
     @Test

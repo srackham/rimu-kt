@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-val VERSION = "11.1.4"
+val VERSION = "11.1.5"
 
 /**
  * Thrown by the Rimu compiler on encountering illegal command options or missing inputs.

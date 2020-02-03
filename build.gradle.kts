@@ -3,7 +3,7 @@ import java.io.FileInputStream
 import com.jfrog.bintray.gradle.BintrayExtension
 
 group = "org.rimumarkup"
-version = "11.1.4"
+version = "11.1.5"
 description = "Rimu Markup for the JVM."
 
 val secretProperties = Properties()

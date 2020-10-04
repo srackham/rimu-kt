@@ -189,7 +189,7 @@ class RimuktTest {
                 // Convert args String to Array<String>.
                 var args = test.args
                     .replace("./test/fixtures/", "./src/test/fixtures/")
-                    .replace("./src/examples/example-rimurc.rmu", "./src/test/fixtures/example-rimurc.rmu")
+                    .replace("./examples/example-rimurc.rmu", "./src/test/fixtures/example-rimurc.rmu")
                 if (layout.isNotBlank()) {
                     args = """--layout $layout $args"""
                 }

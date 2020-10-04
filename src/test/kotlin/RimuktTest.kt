@@ -210,7 +210,8 @@ class RimuktTest {
                 } catch (e: Exception) {
                     exceptionThrown = true
                 }
-                val output = systemOutRule.log + systemErrRule.log
+                var output = systemOutRule.log + systemErrRule.log
+                output = output.replace("\r","")    // Strip Windows return characters.
                 if (exitCode != 0) {
                     assertTrue(description, exceptionThrown)
                 } else {

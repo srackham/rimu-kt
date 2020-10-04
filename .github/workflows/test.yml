@@ -1,0 +1,29 @@
+name: Build and test Rimu Kotlin
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        java-version: ['11']
+        gradle-version: ['6.0']
+#        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Use Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v1
+          with:
+            java-version: ${{ matrix.java-version }}
+      - name: Use Gradle ${{ matrix.gradle-version }}
+        uses: eskatos/gradle-command-action@v1
+        with:
+          gradle-version: ${{ matrix.gradle-version }}
+          arguments: build

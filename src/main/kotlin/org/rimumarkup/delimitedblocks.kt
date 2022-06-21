@@ -37,7 +37,7 @@ object DelimitedBlocks {
 
     // Multi-line block element definition.
     data class Definition(
-            val name: String = "", // Optional unique identifier.
+            val name: String = "", // Unique identifier.
             val openMatch: Regex, // $1 (if defined) is appended to block content.
             var closeMatch: Regex?,
             var openTag: String,
@@ -55,6 +55,7 @@ object DelimitedBlocks {
 
             // Multi-line macro literal value definition.
             Definition(
+                    name = "macro-definition",
                     openMatch = Macros.LITERAL_DEF_OPEN, // $1 is first line of macro.
                     closeMatch = Macros.LITERAL_DEF_CLOSE,
                     openTag = "",
@@ -67,6 +68,7 @@ object DelimitedBlocks {
             ),
             // Multi-line macro expression value definition.
             Definition(
+                    name = "deprecated-macro-expression",
                     openMatch = Macros.EXPRESSION_DEF_OPEN, // $1 is first line of macro.
                     closeMatch = Macros.EXPRESSION_DEF_CLOSE,
                     openTag = "",
@@ -257,9 +259,11 @@ object DelimitedBlocks {
             // Read content up to the closing delimiter.
             reader.next()
             val content = reader.readTo(def.closeMatch ?: def.openMatch)
-            if (content == null) {
-                Options.errorCallback("unterminated delimited block: " + match.value)
-            } else lines.addAll(content)
+            if (reader.eof() && listOf("code", "comment", "division", "quote").contains(def.name)) {
+                Options.errorCallback("unterminated "+def.name+" block: " + match.value)
+            }
+            lines.addAll(content)
+            reader.next(); // Skip closing delimiter.
             // Calculate block expansion options.
             val expansionOptions = ExpansionOptions()
             expansionOptions.merge(def.expansionOptions)

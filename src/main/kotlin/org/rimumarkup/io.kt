@@ -22,7 +22,7 @@ object Io {
             s = s.replace("\u0000", " ") // Used internally by spans package.
             s = s.replace("\u0001", " ") // Used internally by spans package.
             s = s.replace("\u0002", " ") // Used internally by macros package.
-            lines= s.split(Regex("""\r\n|\r|\n""")).toMutableList()
+            lines = s.split(Regex("""\r\n|\r|\n""")).toMutableList()
         }
 
         // Return true if the cursor has advanced over all input lines.
@@ -38,9 +38,9 @@ object Io {
         // Read to the first line matching the re.
         // Return the array of lines preceding the match plus a line containing
         // the $1 match group (if it exists).
-        // Return null if an EOF is encountered.
-        // Exit with the reader pointing to the line following the match.
-        fun readTo(re: Regex): List<String>? {
+        // If an EOF is encountered return all lines.
+        // Exit with the reader pointing to the line containing the matched line.
+        fun readTo(re: Regex): List<String> {
             val result = mutableListOf<String>()
             var match: MatchResult? = null
             while (!this.eof()) {
@@ -49,18 +49,12 @@ object Io {
                     if (match.groupValues.size > 1) {
                         result.add(match.groupValues[1])   // $1
                     }
-                    this.next()
                     break
                 }
                 result.add(this.cursor)
                 this.next()
             }
-            // Blank line matches EOF.
-            if (match != null || re.toString() == "^$" && this.eof()) {
-                return result
-            } else {
-                return null
-            }
+            return result
         }
 
         fun skipBlankLines() {

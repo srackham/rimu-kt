@@ -42,7 +42,7 @@ object Io {
         // Exit with the reader pointing to the line containing the matched line.
         fun readTo(re: Regex): List<String> {
             val result = mutableListOf<String>()
-            var match: MatchResult? = null
+            var match: MatchResult?
             while (!this.eof()) {
                 match = re.find(this.cursor)
                 if (match != null) {

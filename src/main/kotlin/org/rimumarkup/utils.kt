@@ -73,7 +73,7 @@ object BlockAttributes {
             }
         }
         if (id.isNotBlank()) {
-            id = id.toLowerCase()
+            id = id.lowercase()
             val has_id = result.contains(Regex("""^<[^<]*id=".*?"""", RegexOption.IGNORE_CASE))
             if (has_id || ids.contains(id)) {
                 Options.errorCallback("""duplicate 'id' attribute: ${id}""")
@@ -122,14 +122,14 @@ object BlockAttributes {
         var slug = text.replace(Regex("""\W+"""), "-") // Replace non-alphanumeric characters with dashes.
                 .replace(Regex("""-+"""), "-")          // Replace multiple dashes with single dash.
                 .replace(Regex("""(^-)|(-$)"""), "")    // Trim leading and trailing dashes.
-                .toLowerCase()
+                .lowercase()
         if (slug.isBlank()) slug = "x"
         if (ids.contains(slug)) { // Another element already has that id.
             var i = 2
             while (ids.contains(slug + "-" + i)) {
                 i++
             }
-            slug += "-" + i
+            slug = slug.plus("-" + i)
         }
         return slug
     }
@@ -257,16 +257,6 @@ fun <E> MutableList<E>.pushLast(element: E) {
     this.add(element)
 }
 
-/**
- * Removes and returns last element.
- * @return last element.
- * @throws [NoSuchElementException] if queue is empty.
- */
-fun <E> MutableList<E>.popLast(): E {
-    return this.removeAt(this.size - 1)
-}
-
-
 // General purpose utility functions.
 
 fun InputStream.readTextAndClose(charset: Charset = Charsets.UTF_8): String {
@@ -298,4 +288,3 @@ fun readResource(fileName: String): String {
     }
     return url.readText()
 }
-

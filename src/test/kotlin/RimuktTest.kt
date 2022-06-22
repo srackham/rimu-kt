@@ -6,7 +6,6 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit
 import org.junit.contrib.java.lang.system.SystemErrRule
 import org.junit.contrib.java.lang.system.SystemOutRule
 import org.junit.contrib.java.lang.system.TextFromStandardInputStream
-import org.junit.rules.ExpectedException
 import org.junit.rules.TemporaryFolder
 import org.rimumarkup.*
 import java.io.FileOutputStream
@@ -16,24 +15,20 @@ import java.nio.file.Paths
 class RimuktTest {
     @Rule
     @JvmField
-    val systemOutRule = SystemOutRule().enableLog()
+    val systemOutRule = SystemOutRule().enableLog()!!
 
     @Rule
     @JvmField
-    val systemErrRule = SystemErrRule().enableLog()
+    val systemErrRule = SystemErrRule().enableLog()!!
 
     // NOTE: The target of this rule does not return if it executes a System.exit() so you can't follow it with additional tests.
     @Rule
     @JvmField
-    val exitRule = ExpectedSystemExit.none()
+    val exitRule = ExpectedSystemExit.none()!!
 
     @Rule
     @JvmField
-    val stdinMock = TextFromStandardInputStream.emptyStandardInputStream()
-
-    @Rule
-    @JvmField
-    var exceptionRule = ExpectedException.none()
+    val stdinMock = TextFromStandardInputStream.emptyStandardInputStream()!!
 
     @Rule
     @JvmField
@@ -55,8 +50,7 @@ class RimuktTest {
     )
 
     private fun parseRimucTestSpecs(jsonText: String): List<RimucTestSpec>? {
-        val result = Klaxon().parseArray<RimucTestSpec>(jsonText)
-        return result
+        return Klaxon().parseArray(jsonText)
     }
 
     private fun noRimurc(args: Array<String>) {
@@ -66,10 +60,8 @@ class RimuktTest {
         rimukt(argsList.toTypedArray())
     }
 
-    private fun expectException(args: Array<String>, type: Class<out Exception>, message: String) {
-        exceptionRule.expect(type)
-        exceptionRule.expectMessage(message)
-        noRimurc(args)
+    private fun expectRimucException(args: Array<String>, message: String) {
+        assertThrows(message,RimucException::class.java) {noRimurc(args)}
     }
 
     /*
@@ -109,18 +101,16 @@ class RimuktTest {
 
     @Test
     fun missingOutputArgument() {
-        expectException(
+        expectRimucException(
             args = arrayOf("--output"),
-            type = RimucException::class.java,
             message = "missing --output option value"
         )
     }
 
     @Test
     fun missingInputFile() {
-        expectException(
+        expectRimucException(
             args = arrayOf("missing-file-name"),
-            type = RimucException::class.java,
             message = "missing-file-name"
         )
     }
@@ -176,7 +166,7 @@ class RimuktTest {
             if (test.unsupported.contains("kt")) {
                 continue
             }
-            for (layout in listOf<String>("", "classic", "flex", "sequel")) {
+            for (layout in listOf("", "classic", "flex", "sequel")) {
                 // Skip if not a layouts test and we have a layout, or if it is a layouts test but no layout is specified.
                 if (!test.layouts && layout.isNotBlank() || test.layouts && layout.isBlank()) {
                     continue
@@ -193,13 +183,12 @@ class RimuktTest {
                 if (layout.isNotBlank()) {
                     args = """--layout $layout $args"""
                 }
-                val argsArray: Array<String>
-                if (args.isNotBlank()) {
-                    argsArray = args.trim().split(Regex("""\s+"""))
+                val argsArray: Array<String> = if (args.isNotBlank()) {
+                    args.trim().split(Regex("""\s+"""))
                         .map { it.removeSurrounding("\"") }
                         .toTypedArray()
                 } else {
-                    argsArray = arrayOf()   // Use empty array is there are no arguments.
+                    arrayOf()   // Use empty array is there are no arguments.
                 }
                 stdinMock.provideLines(test.input)
                 systemOutRule.clearLog()

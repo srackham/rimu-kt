@@ -15,9 +15,9 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:4.13.2")
     testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
-    implementation("com.beust:klaxon:5.0.5")
+    implementation("com.beust:klaxon:5.6")
 }
 
 tasks.test {

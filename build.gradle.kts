@@ -32,3 +32,4 @@ tasks.withType<KotlinCompile> {
 application {
     mainClass.set("org.rimumarkup.RimuktKt")
 }
+application.applicationName = "rimukt"  // Set executable script name.

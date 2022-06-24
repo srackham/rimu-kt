@@ -5,7 +5,7 @@ plugins {
     application
 }
 
-version = "11.1.5"
+version = "11.3.0"
 description = "Rimu Markup for the JVM."
 
 repositories {

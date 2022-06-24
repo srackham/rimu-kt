@@ -1,13 +1,13 @@
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.rimumarkup.Api
 import org.rimumarkup.DelimitedBlocks
 import org.rimumarkup.Io
 
 class DelimitedBlocksTest {
 
-    @Before
+    @BeforeEach
     fun before() {
         Api.init()
     }

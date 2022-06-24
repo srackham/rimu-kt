@@ -1,39 +1,17 @@
-import com.beust.klaxon.*
-import org.junit.Assert.*
-import org.junit.Rule
-import org.junit.Test
-import org.junit.contrib.java.lang.system.ExpectedSystemExit
-import org.junit.contrib.java.lang.system.SystemErrRule
-import org.junit.contrib.java.lang.system.SystemOutRule
-import org.junit.contrib.java.lang.system.TextFromStandardInputStream
-import org.junit.rules.TemporaryFolder
+import com.beust.klaxon.Klaxon
+import com.github.stefanbirkner.systemlambda.SystemLambda.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.rimumarkup.*
 import java.io.FileOutputStream
-import java.nio.file.Paths
+import java.nio.file.Path
 
 
 class RimuktTest {
-    @Rule
+    @TempDir
     @JvmField
-    val systemOutRule = SystemOutRule().enableLog()!!
-
-    @Rule
-    @JvmField
-    val systemErrRule = SystemErrRule().enableLog()!!
-
-    // NOTE: The target of this rule does not return if it executes a System.exit() so you can't follow it with additional tests.
-    @Rule
-    @JvmField
-    val exitRule = ExpectedSystemExit.none()!!
-
-    @Rule
-    @JvmField
-    val stdinMock = TextFromStandardInputStream.emptyStandardInputStream()!!
-
-    @Rule
-    @JvmField
-    var tempFolderRule = TemporaryFolder()
-
+    var tempDir: Path? = null
 
     /*
         Helpers.
@@ -61,7 +39,7 @@ class RimuktTest {
     }
 
     private fun expectRimucException(args: Array<String>, message: String) {
-        assertThrows(message,RimucException::class.java) {noRimurc(args)}
+        assertThrows(RimucException::class.java, {noRimurc(args)},message)
     }
 
     /*
@@ -69,15 +47,18 @@ class RimuktTest {
      */
     @Test
     fun exitCodeZero() {
-        exitRule.expectSystemExitWithStatus(0)
-        main(arrayOf("-h"))
+        val statusCode = catchSystemExit {
+            main(arrayOf("-h"))
+        }
+        assertEquals(0, statusCode)
     }
 
     @Test
     fun exitCodeOne() {
-        exitRule.expectSystemExitWithStatus(1)
-        // Throws java.io.FileNotFoundException.
-        main(arrayOf("--no-rimurc", "missing-file-name"))
+        val statusCode = catchSystemExit {
+            main(arrayOf("--no-rimurc", "missing-file-name"))
+        }
+        assertEquals(1, statusCode)
     }
 
     /*
@@ -95,8 +76,10 @@ class RimuktTest {
 
     @Test
     fun helpCommand() {
-        noRimurc(arrayOf("-h"))
-        assertTrue("help message starts with NAME", systemOutRule.log.startsWith("\nNAME"))
+        val output = tapSystemOut {
+            noRimurc(arrayOf("-h"))
+        }
+        assertTrue(output.startsWith("\nNAME"),"help message starts with NAME")
     }
 
     @Test
@@ -118,29 +101,33 @@ class RimuktTest {
     @Test
     fun compileFromFiles() {
         // Write two temporary input files to be compiled.
-        val file1 = tempFolderRule.newFile("test-file-1")
+        val file1= (tempDir?.resolve("test-file-1")).toString()
         FileOutputStream(file1).writeTextAndClose("Hello World!")
-        val file2 = tempFolderRule.newFile("test-file-2")
+        val file2= (tempDir?.resolve("test-file-2")).toString()
         FileOutputStream(file2).writeTextAndClose("Hello again World!")
-        noRimurc(arrayOf(file1.path, file2.path))
-        assertEquals("<p>Hello World!</p>\n<p>Hello again World!</p>", systemOutRule.log)
+        val output = tapSystemOut {
+            noRimurc(arrayOf(file1, file2))
+        }
+        assertEquals("<p>Hello World!</p>\n<p>Hello again World!</p>", output)
     }
 
     @Test
     fun compileToFile() {
-        stdinMock.provideLines("Hello World!")
-        val fileName = Paths.get(tempFolderRule.root.path, "test-file").toString()
-        noRimurc(arrayOf("-o", fileName))
+        val fileName= (tempDir?.resolve("test-file")).toString()
+        withTextFromSystemIn("Hello World!")
+            .execute {
+                noRimurc(arrayOf("-o", fileName))
+            }
         assertEquals("<p>Hello World!</p>", fileToString(fileName))
     }
 
     @Test
     fun compileToImplicitStyledOutputFile() {
         // If the --styled option is specified and a single input file then an output HTML file with the same file name is generated.
-        val infile = tempFolderRule.newFile("test-file.rmu")
+        val infile= (tempDir?.resolve("test-file.rmu")).toString()
         FileOutputStream(infile).writeTextAndClose("Hello World!")
-        noRimurc(arrayOf("--styled", infile.path))
-        val outfile = infile.path.replaceAfterLast('.', "html")
+        noRimurc(arrayOf("--styled", infile))
+        val outfile = infile.replaceAfterLast('.', "html")
         val text = fileToString(outfile)
         assertTrue(text.contains("<!DOCTYPE HTML>"))
         assertTrue(text.contains("<p>Hello World!</p>"))
@@ -149,10 +136,12 @@ class RimuktTest {
     @Test
     fun compileHtmlFile() {
         // Input files with .html extensions are passed through.
-        val infile = tempFolderRule.newFile("test-file.html")
+        val infile= (tempDir?.resolve("test-file.html")).toString()
         FileOutputStream(infile).writeTextAndClose("<p>Hello World!</p>")
-        noRimurc(arrayOf(infile.path))
-        assertEquals("<p>Hello World!</p>", systemOutRule.log)
+        val output = tapSystemErrAndOut {
+            noRimurc(arrayOf(infile))
+        }
+        assertEquals("<p>Hello World!</p>", output)
     }
 
     /**
@@ -190,33 +179,34 @@ class RimuktTest {
                 } else {
                     arrayOf()   // Use empty array is there are no arguments.
                 }
-                stdinMock.provideLines(test.input)
-                systemOutRule.clearLog()
-                systemErrRule.clearLog()
                 var exceptionThrown = false
-                try {
-                    noRimurc(argsArray)
-                } catch (e: Exception) {
-                    exceptionThrown = true
+                var output = tapSystemErrAndOut {
+                    withTextFromSystemIn(test.input)
+                        .execute {
+                    try {
+                        noRimurc(argsArray)
+                    } catch (e: Exception) {
+                        exceptionThrown = true
+                    }
                 }
-                var output = systemOutRule.log + systemErrRule.log
+                }
                 output = output.replace("\r","")    // Strip Windows return characters.
                 if (exitCode != 0) {
-                    assertTrue(description, exceptionThrown)
+                    assertTrue( exceptionThrown,description)
                 } else {
-                    assertFalse(description, exceptionThrown)
+                    assertFalse( exceptionThrown,description)
                 }
                 when (test.predicate) {
                     "contains" ->
-                        assertTrue(description, output.contains(expectedOutput))
+                        assertTrue( output.contains(expectedOutput),description)
                     "!contains" ->
-                        assertFalse(description, output.contains(expectedOutput))
+                        assertFalse( output.contains(expectedOutput),description)
                     "equals" ->
-                        assertEquals(description, expectedOutput, output)
+                        assertEquals( expectedOutput, output,description)
                     "!equals" ->
-                        assertNotEquals(description, expectedOutput, output)
+                        assertNotEquals( expectedOutput, output,description)
                     "startsWith" ->
-                        assertTrue(description, output.startsWith(expectedOutput))
+                        assertTrue( output.startsWith(expectedOutput),description)
                     else -> throw IllegalArgumentException("""${description}: illegal predicate: ${test.predicate}""")
                 }
             }

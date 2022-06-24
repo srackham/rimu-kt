@@ -1,6 +1,6 @@
-import org.junit.Assert.*
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.rimumarkup.Quotes
 import org.rimumarkup.Replacements
 import org.rimumarkup.Spans
@@ -9,7 +9,7 @@ import org.rimumarkup.Spans
  * Basic rendering tests (full syntax tested in RenderTest).
  */
 class SpansTest {
-    @Before
+    @BeforeEach
     fun init() {
         Quotes.init()
         assertEquals(Quotes.DEFAULT_DEFS.size, Quotes.defs.size)

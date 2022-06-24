@@ -263,13 +263,13 @@ object DelimitedBlocks {
                 Options.errorCallback("unterminated "+def.name+" block: " + match.value)
             }
             lines.addAll(content)
-            reader.next(); // Skip closing delimiter.
+            reader.next() // Skip closing delimiter.
             // Calculate block expansion options.
             val expansionOptions = ExpansionOptions()
             expansionOptions.merge(def.expansionOptions)
             expansionOptions.merge(BlockAttributes.options)
             // Translate block.
-            if (!(expansionOptions.skip ?: false)) {
+            if (expansionOptions.skip != true) {
                 var text = lines.joinToString("\n")
                 if (def.contentFilter != null) {
                     text = (def.contentFilter)(text, match, expansionOptions)
@@ -280,7 +280,7 @@ object DelimitedBlocks {
                 } else {
                     opentag = BlockAttributes.injectHtmlAttributes(opentag)
                 }
-                if (expansionOptions.container ?: false) {
+                if (expansionOptions.container == true) {
                     BlockAttributes.options.container = null  // Consume before recursion.
                     text = Api.render(text)
                 } else {

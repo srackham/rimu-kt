@@ -217,13 +217,13 @@ object Utils {
     // Replace the inline elements specified in options in text and return the result.
     fun replaceInline(text: String, expansionOptions: ExpansionOptions): String {
         var result = text
-        if (expansionOptions.macros ?: false) {
+        if (expansionOptions.macros == true) {
             result = Macros.render(result)
         }
         // Spans also expand special characters.
-        if (expansionOptions.spans ?: false) {
+        if (expansionOptions.spans == true) {
             result = Spans.render(result)
-        } else if (expansionOptions.specials ?: false) {
+        } else if (expansionOptions.specials == true) {
             result = replaceSpecialChars(result)
         }
         return result

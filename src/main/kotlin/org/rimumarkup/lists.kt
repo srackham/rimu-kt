@@ -20,7 +20,7 @@ object Lists {
     ) {
         companion object {
             // Static identity items.
-            val NO_MATCH = ItemInfo("NO_MATCH", listOf<String>(), defs[0])
+            val NO_MATCH = ItemInfo("NO_MATCH", listOf(), defs[0])
         }
     }
 
@@ -134,7 +134,7 @@ object Lists {
                 break // Multiple attached blocks are not permitted.
             if (blank_lines == 0) {
                 val savedIds = ids
-                ids = mutableListOf<String>()
+                ids = mutableListOf()
                 if (DelimitedBlocks.render(reader, attached_lines, listOf("comment", "code", "division", "html", "quote"))) {
                     attached_done = true
                 } else {

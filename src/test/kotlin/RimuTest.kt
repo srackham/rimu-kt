@@ -1,7 +1,6 @@
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 import com.beust.klaxon.*
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import org.rimumarkup.*
 
 /*
@@ -28,8 +27,7 @@ private class RimuTestSpec(
 )
 
 private fun parseRimuTestSpecs(jsonText: String): List<RimuTestSpec>? {
-    val result = Klaxon().parseArray<RimuTestSpec>(jsonText)
-    return result
+    return Klaxon().parseArray(jsonText)
 }
 
 class RimuTest {
@@ -61,11 +59,11 @@ class RimuTest {
             }
             val result = render(test.input, renderOptions)
             if (unsupported) {
-                assertTrue(description, msg.trim().startsWith("error: unsupported"))
+                assertTrue( msg.trim().startsWith("error: unsupported"),description)
             } else {
-                assertEquals(description, test.expectedOutput, result)
+                assertEquals(test.expectedOutput, result,description)
                 if (test.expectedCallback.isNotBlank()) {
-                    assertTrue(description, msg.trim().equals(test.expectedCallback))
+                    assertTrue(msg.trim().equals(test.expectedCallback),description)
                 }
             }
         }

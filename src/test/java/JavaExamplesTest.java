@@ -1,17 +1,16 @@
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.rimumarkup.CallbackMessage;
 import org.rimumarkup.RenderOptions;
 import org.rimumarkup.Rimu;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Java Rimu examples.
  */
 public class JavaExamplesTest {
 
-    @Before
+    @BeforeEach
     public void before() {
         // Initialize Rimu to default state.
         RenderOptions options = new RenderOptions();
@@ -22,7 +21,7 @@ public class JavaExamplesTest {
     @Test
     public final void simpleExampleTest() {
         String result = Rimu.render("Hello *Rimu*!");
-        assertEquals("<p>Hello <em>Rimu</em>!</p>", result);
+        Assertions.assertEquals("<p>Hello <em>Rimu</em>!</p>", result);
     }
 
     private String callbackMessage;
@@ -38,7 +37,7 @@ public class JavaExamplesTest {
             return null;
         };
         String result = Rimu.render("Unknown {x}", options);
-        assertEquals("<p>Unknown {x}</p>", result);
-        assertEquals("error: undefined macro: {x}: Unknown {x}", callbackMessage);
+        Assertions.assertEquals("<p>Unknown {x}</p>", result);
+        Assertions.assertEquals("error: undefined macro: {x}: Unknown {x}", callbackMessage);
     }
 }

@@ -14,10 +14,11 @@ repositories {
 }
 
 dependencies {
+    implementation("com.beust:klaxon:5.6")
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
-    implementation("com.beust:klaxon:5.6")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation ("com.github.stefanbirkner:system-lambda:1.2.1")
 }
 
 tasks.test {

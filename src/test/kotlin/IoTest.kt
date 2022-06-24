@@ -1,13 +1,11 @@
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 import org.rimumarkup.Io
 
 class IoTest {
     @Test
     fun readerTest() {
-        var reader: Io.Reader
-
-        reader = Io.Reader("")
+        var reader: Io.Reader = Io.Reader("")
         assertEquals(false, reader.eof())
         assertEquals(1, reader.lines.size)
         assertEquals("", reader.cursor)

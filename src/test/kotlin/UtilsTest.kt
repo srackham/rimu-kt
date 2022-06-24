@@ -1,21 +1,20 @@
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.io.TempDir
 import org.rimumarkup.*
-import java.nio.file.Paths
+import java.nio.file.Path
 
 class UtilsTest {
 
-    @Before
+    @BeforeEach
     fun before() {
         Api.init()
     }
 
-    @Rule
+    @TempDir
     @JvmField
-    var tempFolderRule = TemporaryFolder()
+    var tempDir: Path? = null
 
     @Test
     fun readResouceTest() {
@@ -26,7 +25,7 @@ class UtilsTest {
     @Test
     fun stringToFromFile() {
         // Test file read/write string function.
-        val fileName = Paths.get(tempFolderRule.root.path, "test.txt").toString()
+        val fileName= (tempDir?.resolve("test.txt")).toString()
         stringToFile("Hello World!", fileName)
         assertEquals("Hello World!", fileToString(fileName))
     }

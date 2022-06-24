@@ -1,7 +1,6 @@
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.rimumarkup.Api
 import org.rimumarkup.DelimitedBlocks
 import org.rimumarkup.Quotes
@@ -9,7 +8,7 @@ import org.rimumarkup.Replacements
 
 class ApiTest {
 
-    @Before
+    @BeforeEach
     fun before() {
         Api.init()
     }
@@ -23,16 +22,16 @@ class ApiTest {
         def1.expansionOptions.spans = false
         DelimitedBlocks.init()
         val def2 = DelimitedBlocks.getDefinition("paragraph")!!
-        assertTrue("DelimitedBlocks.init() shallow copy", def2 !== def1)
-        assertTrue("DelimitedBlocks.init() deep copy", def2.expansionOptions.spans == true)
+        assertTrue( def2 !== def1,"DelimitedBlocks.init() shallow copy")
+        assertTrue( def2.expansionOptions.spans == true,"DelimitedBlocks.init() deep copy")
 
         Quotes.defs[0].openTag = "TEST"
         Quotes.init()
-        assertTrue("Quotes.init() shallow copy", Quotes.defs[0].openTag != "TEST")
+        assertTrue( Quotes.defs[0].openTag != "TEST","Quotes.init() shallow copy")
 
         Replacements.defs[0].replacement = "TEST"
         Replacements.init()
-        assertTrue("Replacements.init() shallow copy", Replacements.defs[0].replacement != "TEST")
+        assertTrue( Replacements.defs[0].replacement != "TEST","Replacements.init() shallow copy")
     }
 
     /**

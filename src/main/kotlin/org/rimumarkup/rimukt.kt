@@ -145,13 +145,12 @@ fun rimukt(args: Array<String>) {
                 }
             }
         }
-        val infiles = argsList // argsList contains the list of source files.
-        if (infiles.isEmpty()) {
-            infiles.pushFirst(STDIN)
+        if (argsList.isEmpty()) {
+            argsList.pushFirst(STDIN)
         }
-        if (infiles.size == 1 && layout.isNotBlank() && infiles[0] != "-" && outfile.isEmpty()) {
+        if (argsList.size == 1 && layout.isNotBlank() && argsList[0] != "-" && outfile.isEmpty()) {
             // Use the source file name with .html extension for the output file.
-            val infile = infiles[0]
+            val infile = argsList[0]
             outfile = if ('.' in infile) {
                 infile.replaceAfterLast('.', "html")
             } else {
@@ -160,8 +159,8 @@ fun rimukt(args: Array<String>) {
         }
         if (layout.isNotBlank()) {
             // Envelope source files with header and footer resource file names.
-            infiles.pushFirst("${RESOURCE_TAG}${layout}-header.rmu")
-            infiles.pushLast("${RESOURCE_TAG}${layout}-footer.rmu")
+            argsList.pushFirst("${RESOURCE_TAG}${layout}-header.rmu")
+            argsList.pushLast("${RESOURCE_TAG}${layout}-footer.rmu")
         }
         // Prepend $HOME/.rimurc file if it exists.
         val RIMURC = Paths.get(System.getProperty("user.home"), ".rimurc")
@@ -171,7 +170,7 @@ fun rimukt(args: Array<String>) {
         if (prepend != "") {
             prepend_files.pushLast(PREPEND)
         }
-        for (f in prepend_files.reversed()) infiles.pushFirst(f)    // Prepend infiles with prepend_files.
+        for (f in prepend_files.reversed()) argsList.pushFirst(f)    // Prepend infiles with prepend_files.
         // Convert Rimu source files to HTML.
         var output = ""
         Api.init()
@@ -180,7 +179,7 @@ fun rimukt(args: Array<String>) {
         if (html_replacement != null) {
             options.htmlReplacement = html_replacement
         }
-        for (infile in infiles) {
+        for (infile in argsList) {
             var source = when {
                 infile.startsWith(RESOURCE_TAG) -> readResource(infile.removePrefix(RESOURCE_TAG))
                 infile == STDIN -> System.`in`.readTextAndClose()
@@ -194,7 +193,8 @@ fun rimukt(args: Array<String>) {
             }
             if (!(infile.endsWith(".html") || (pass && infile === STDIN))) {
                 // resources, prepended source and prepended files (including rimurc) are trusted with safeMode.
-                options.safeMode = if (infile.startsWith(RESOURCE_TAG) || infile == PREPEND || prepend_files.contains(infile)) 0 else safe_mode
+                options.safeMode =
+                    if (infile.startsWith(RESOURCE_TAG) || infile == PREPEND || prepend_files.contains(infile)) 0 else safe_mode
                 options.callback = fun(message: CallbackMessage) {
                     var s = "${message.type}: ${if (infile == STDIN) "/dev/stdin" else infile}: ${message.text}"
                     if (s.length > 120) {

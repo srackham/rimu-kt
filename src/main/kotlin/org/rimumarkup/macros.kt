@@ -144,7 +144,7 @@ object Macros {
                             skip = !Regex("^$pattern$").matches(value)
                         } catch (e: java.util.regex.PatternSyntaxException) {
                             if (!silent) {
-                                Options.errorCallback("illegal macro regular expression: " + pattern + ": " + text)
+                                Options.errorCallback("illegal macro regular expression: $pattern: $text")
                             }
                             return match.value
                         }

@@ -173,13 +173,12 @@ object DelimitedBlocks {
                     contentFilter = fun(text: String, _, _): String {
                         // Strip indent from start of each line.
                         val first_indent = Regex("""\S""").find(text)!!.range.first
-                        return text.split("\n")
-                                .map { line ->
-                                    // Strip first line indent width or up to first non-space character.
-                                    var indent = Regex("""\S|$""").find(line)!!.range.first
-                                    if (indent > first_indent) indent = first_indent
-                                    line.substring(indent)
-                                }.joinToString("\n")
+                        return text.split("\n").joinToString("\n") { line ->
+                            // Strip first line indent width or up to first non-space character.
+                            var indent = Regex("""\S|$""").find(line)!!.range.first
+                            if (indent > first_indent) indent = first_indent
+                            line.substring(indent)
+                        }
                     }
             ),
             // Quote paragraph.
@@ -197,11 +196,10 @@ object DelimitedBlocks {
                     delimiterFilter = delimiterTextFilter,
                     contentFilter = fun(text: String, _, _): String {
                         // Strip leading > from start of each line and unescape escaped leading >.
-                        return text.split("\n")
-                                .map { line ->
-                                    line.replace(Regex("""^>"""), "")
-                                            .replace(Regex("""^\\>"""), ">")
-                                }.joinToString("\n")
+                        return text.split("\n").joinToString("\n") { line ->
+                            line.replace(Regex("""^>"""), "")
+                                .replace(Regex("""^\\>"""), ">")
+                        }
                     }
             ),
             // Paragraph (lowest priority, cannot be escaped).

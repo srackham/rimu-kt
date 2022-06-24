@@ -7,8 +7,9 @@ package org.rimumarkup
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.system.exitProcess
 
-val VERSION = "11.1.5"
+const val VERSION = "11.1.5"
 
 /**
  * Thrown by the Rimu compiler on encountering illegal command options or missing inputs.
@@ -22,9 +23,9 @@ fun main(args: Array<String>) {
     try {
         rimukt(args)
     } catch (e: Exception) {
-        System.exit(1)
+        exitProcess(1)
     }
-    System.exit(0)
+    exitProcess(0)
 }
 
 /**
@@ -66,7 +67,7 @@ fun rimukt(args: Array<String>) {
         var prepend = ""
         var outfile = ""
         outer@
-        while (!argsList.isEmpty()) {
+        while (argsList.isNotEmpty()) {
             val arg = argsList.popFirst()
             when (arg) {
                 "--help", "-h" -> {

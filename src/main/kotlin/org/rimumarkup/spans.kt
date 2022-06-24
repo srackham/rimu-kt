@@ -22,8 +22,7 @@ object Spans {
     )
 
     fun render(source: String): String {
-        var result: String
-        result = preReplacements(source)
+        var result: String = preReplacements(source)
         var fragments = mutableListOf(Fragment(text = result, done = false))
         fragments = fragQuotes(fragments).toMutableList()
         fragSpecials(fragments)
@@ -115,14 +114,14 @@ object Spans {
         savedReplacements.clear()
         val fragments = fragReplacements(listOf(Fragment(text = text, done = false)))
         // Reassemble text with replacement placeholders.
-        return fragments.fold("", { result, fragment ->
+        return fragments.fold("") { result, fragment ->
             if (fragment.done) {
                 savedReplacements.add(fragment)  // Save replaced text.
                 result + '\u0000'          // Placeholder for replaced text.
             } else {
                 result + fragment.text
             }
-        })
+        }
     }
 
     // Replace replacements placeholders with replacements text from savedReplacements[].

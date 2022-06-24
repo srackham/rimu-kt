@@ -67,9 +67,7 @@ object Quotes {
 
     // Synthesise re's to find and unescape quotes.
     fun initializeRegExps() {
-        val quotes = defs
-                .map { def -> Regex.escape(def.quote) }
-                .joinToString("|")
+        val quotes = defs.joinToString("|") { def -> Regex.escape(def.quote) }
         // $1 is quote character(s), $2 is quoted text.
         // Quoted text cannot begin or end with whitespace.
         // Quoted can span multiple lines.

@@ -46,19 +46,19 @@ object Options {
             "safeMode" -> {
                 val n = value.toIntOrNull()
                 if (n == null || n < 0 || n > 15) {
-                    errorCallback("illegal safeMode API option value: " + value)
+                    errorCallback("illegal safeMode API option value: $value")
                 } else {
                     safeMode = n
                 }
             }
             "reset" -> {
                 if (value == "true") Api.init()
-                else if (value != "false") errorCallback("illegal reset API option value: " + value)
+                else if (value != "false") errorCallback("illegal reset API option value: $value")
             }
             "htmlReplacement" ->
                 htmlReplacement = value
             else ->
-                errorCallback("illegal API option name: " + name)
+                errorCallback("illegal API option name: $name")
         }
     }
 
@@ -84,7 +84,7 @@ object Options {
 
     // Called when an unexpected program error occurs.
     fun panic(message: String) {
-        val msg = "panic: " + message
+        val msg = "panic: $message"
         System.err.println(msg)
         errorCallback(msg)
     }

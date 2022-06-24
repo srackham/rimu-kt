@@ -105,7 +105,7 @@ object BlockAttributes {
                 // Inject attributes after tag name.
                 val before = result.substring(0 until match.value.length)
                 val after = result.substring(match.value.length)
-                result = before + " " + attrs + after
+                result = "$before $attrs$after"
             }
         }
         // Consume the attributes.
@@ -126,10 +126,10 @@ object BlockAttributes {
         if (slug.isBlank()) slug = "x"
         if (ids.contains(slug)) { // Another element already has that id.
             var i = 2
-            while (ids.contains(slug + "-" + i)) {
+            while (ids.contains("$slug-$i")) {
                 i++
             }
-            slug = slug.plus("-" + i)
+            slug = slug.plus("-$i")
         }
         return slug
     }
@@ -174,7 +174,7 @@ data class ExpansionOptions(
                         "skip" -> this.skip = value
                     }
                 } else {
-                    Options.errorCallback("illegal block option: " + opt)
+                    Options.errorCallback("illegal block option: $opt")
                 }
             }
         }

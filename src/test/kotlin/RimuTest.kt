@@ -63,7 +63,7 @@ class RimuTest {
             } else {
                 assertEquals(test.expectedOutput, result,description)
                 if (test.expectedCallback.isNotBlank()) {
-                    assertTrue(msg.trim().equals(test.expectedCallback),description)
+                    assertTrue(msg.trim() == test.expectedCallback,description)
                 }
             }
         }

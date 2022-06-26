@@ -17,7 +17,6 @@ repositories {
 dependencies {
     implementation("com.beust:klaxon:5.5")
     testImplementation(kotlin("test"))
-    testImplementation("junit:junit:4.13.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation ("com.github.stefanbirkner:system-lambda:1.2.1")
 }

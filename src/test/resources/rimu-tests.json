@@ -324,6 +324,15 @@
     }
   },
   {
+    "description": "horizontal rule (GFM)",
+    "input": "___\n\nHello World!\n\n****",
+    "expectedOutput": "<p><hr></p>\n<p>Hello World!</p>\n<p><hr></p>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
     "description": "inline links",
     "input": "<#x1|lorum link> \\<#x1|lorum link>",
     "expectedOutput": "<p><a href=\"#x1\">lorum link</a> &lt;#x1|lorum link&gt;</p>",
@@ -570,6 +579,15 @@
   {
     "description": "quote block",
     "input": "\"\"\nTo be...\n\nor not to be!\n\"\"",
+    "expectedOutput": "<blockquote><p>To be...</p>\n<p>or not to be!</p></blockquote>",
+    "expectedCallback": "",
+    "options": {
+      "reset": true
+    }
+  },
+  {
+    "description": "quote block (GFM multiline blockquote)",
+    "input": ">>>\nTo be...\n\nor not to be!\n>>>",
     "expectedOutput": "<blockquote><p>To be...</p>\n<p>or not to be!</p></blockquote>",
     "expectedCallback": "",
     "options": {

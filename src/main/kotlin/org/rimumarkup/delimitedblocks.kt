@@ -107,7 +107,7 @@ object DelimitedBlocks {
             // Quote block.
             Definition(
                     name = "quote",
-                    openMatch = Regex("""^\\?("{2,})([\w\s-]*)$"""), // $1 is delimiter text, $2 is optional class names.
+                    openMatch = Regex("""^\\?("{2,}|>{2,})([\w\s-]*)$"""), // $1 is delimiter text, $2 is optional class names.
                     closeMatch = null,
                     openTag = "<blockquote>",
                     closeTag = "</blockquote>",

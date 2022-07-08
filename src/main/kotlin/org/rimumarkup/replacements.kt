@@ -131,12 +131,6 @@ object Replacements {
                     replacement = """<br>$1"""
             ),
 
-        // Horizontal rule is three or more underscore, asterisk or hyphen characters (GFM behaviour)).
-        Definition(
-            match = Regex("""^(_{3,}|\*{3,}|-{3,})$"""),
-            replacement = """<hr>"""
-        ),
-
         // This hack ensures backslashes immediately preceding closing code quotes are rendered
             // verbatim (Markdown behaviour).
             // Works by finding escaped closing code quotes and replacing the backslash and the character

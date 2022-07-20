@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-const val VERSION = "11.3.1"
+const val VERSION = "11.4.0"
 
 /**
  * Thrown by the Rimu compiler on encountering illegal command options or missing inputs.

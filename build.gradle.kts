@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "Rimu Markup for the JVM."
-version = "11.3.1"
+version = "11.4.0"
 group = "org.rimumarkup"
 
 plugins {

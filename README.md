@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    implementation("com.github.srackham:rimu-kt:11.1.5")
+    implementation("com.github.srackham:rimu-kt:11.4.0")
 }
 ```
 The above code is taken from the [Minimal Rimu Kotlin

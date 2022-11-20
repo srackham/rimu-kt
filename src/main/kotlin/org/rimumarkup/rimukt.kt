@@ -174,7 +174,7 @@ fun rimukt(args: Array<String>) {
         for (f in prepend_files.reversed()) argsList.pushFirst(f)    // Prepend infiles with prepend_files.
         // Convert Rimu source files to HTML.
         var output = ""
-        Api.init()
+        Document.init()
         var errors = 0
         val options = RenderOptions()
         if (html_replacement != null) {

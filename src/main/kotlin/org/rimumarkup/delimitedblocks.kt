@@ -280,7 +280,7 @@ object DelimitedBlocks {
                 }
                 if (expansionOptions.container == true) {
                     BlockAttributes.options.container = null  // Consume before recursion.
-                    text = Api.render(text)
+                    text = Document.render(text)
                 } else {
                     text = Utils.replaceInline(text, expansionOptions)
                 }

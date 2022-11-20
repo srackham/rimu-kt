@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
-import org.rimumarkup.Api
+import org.rimumarkup.Document
 import org.rimumarkup.DelimitedBlocks
 import org.rimumarkup.Quotes
 import org.rimumarkup.Replacements
@@ -10,7 +10,7 @@ class ApiTest {
 
     @BeforeEach
     fun before() {
-        Api.init()
+        Document.init()
     }
 
     /**
@@ -57,7 +57,7 @@ Quoted
 \{x}={x|}
 {x|2|3}
 """
-        val result = Api.render(input)
+        val result = Document.render(input)
         assertEquals("""<h1>Title</h1>
 <p>Paragraph <strong>bold</strong> <code>code</code> <em>emphasised text</em></p>
 <pre class="test-class" title="Code"><code>Indented `paragraph`</code></pre>

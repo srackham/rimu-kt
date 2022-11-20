@@ -1,6 +1,6 @@
 package org.rimumarkup
 
-object Api {
+object Document {
 
     init {
         init()

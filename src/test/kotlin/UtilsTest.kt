@@ -9,7 +9,7 @@ class UtilsTest {
 
     @BeforeEach
     fun before() {
-        Api.init()
+        Document.init()
     }
 
     @TempDir

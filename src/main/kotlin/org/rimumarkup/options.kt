@@ -32,7 +32,7 @@ object Options {
 
     fun update(options: RenderOptions) {
         callback = options.callback ?: callback // Install callback first to ensure option errors are logged.
-        if (options.reset) Api.init()           // Reset takes priority.
+        if (options.reset) Document.init()           // Reset takes priority.
         callback = options.callback ?: callback // Install callback again in case it has been reset.
         // Only update specified (non-null) options.
         if (options.safeMode != null)
@@ -52,7 +52,7 @@ object Options {
                 }
             }
             "reset" -> {
-                if (value == "true") Api.init()
+                if (value == "true") Document.init()
                 else if (value != "false") errorCallback("illegal reset API option value: $value")
             }
             "htmlReplacement" ->

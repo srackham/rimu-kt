@@ -1,14 +1,14 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
-import org.rimumarkup.Api
+import org.rimumarkup.Document
 import org.rimumarkup.Macros
 
 class MacrosTest {
 
     @BeforeEach
     fun before() {
-        Api.init()
+        Document.init()
     }
 
     @Test
@@ -33,7 +33,7 @@ class MacrosTest {
 {y!}Keep this line
 {y!1}Drop this line!
 {undefined}"""
-        val result = Api.render(input)
+        val result = Document.render(input)
         assertEquals("""<p>{x}=1
 123</p>
 <p>Keep this line

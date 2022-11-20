@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
-import org.rimumarkup.Api
+import org.rimumarkup.Document
 import org.rimumarkup.DelimitedBlocks
 import org.rimumarkup.Io
 
@@ -9,7 +9,7 @@ class DelimitedBlocksTest {
 
     @BeforeEach
     fun before() {
-        Api.init()
+        Document.init()
     }
 
     @Test
